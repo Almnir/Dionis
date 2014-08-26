@@ -1,0 +1,567 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema attributeFormDefault="unqualified"
+           elementFormDefault="qualified"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+           jaxb:version="2.1">
+
+    <!-- ToDo: add enum in bindings -->
+    <xs:simpleType name="PortSpeedType">
+        <xs:annotation>
+            <xs:appinfo>
+                <jaxb:typesafeEnumClass>
+                    <jaxb:typesafeEnumMember value="50" name="X_50"/>
+                    <jaxb:typesafeEnumMember value="75" name="X_75"/>
+                    <jaxb:typesafeEnumMember value="110" name="X_110"/>
+                    <jaxb:typesafeEnumMember value="134.5" name="X_134_5"/>
+                    <jaxb:typesafeEnumMember value="150" name="X_150"/>
+                    <jaxb:typesafeEnumMember value="300" name="X_300"/>
+                    <jaxb:typesafeEnumMember value="600" name="X_600"/>
+                    <jaxb:typesafeEnumMember value="1200" name="X_1200"/>
+                    <jaxb:typesafeEnumMember value="1800" name="X_1800"/>
+                    <jaxb:typesafeEnumMember value="2000" name="X_2000"/>
+                    <jaxb:typesafeEnumMember value="2400" name="X_2400"/>
+                    <jaxb:typesafeEnumMember value="3600" name="X_3600"/>
+                    <jaxb:typesafeEnumMember value="4800" name="X_4800"/>
+                    <jaxb:typesafeEnumMember value="7200" name="X_7200"/>
+                    <jaxb:typesafeEnumMember value="9600" name="X_9600"/>
+                    <jaxb:typesafeEnumMember value="14400" name="X_14400"/>
+                    <jaxb:typesafeEnumMember value="19200" name="X_19200"/>
+                    <jaxb:typesafeEnumMember value="38400" name="X_38400"/>
+                    <jaxb:typesafeEnumMember value="57600" name="X_57600"/>
+                    <jaxb:typesafeEnumMember value="115200" name="X_115200"/>
+                </jaxb:typesafeEnumClass>
+            </xs:appinfo>
+        </xs:annotation>
+        <xs:restriction base="xs:float">
+            <xs:enumeration value="50"/>
+            <xs:enumeration value="75"/>
+            <xs:enumeration value="110"/>
+            <xs:enumeration value="134.5"/>
+            <xs:enumeration value="150"/>
+            <xs:enumeration value="300"/>
+            <xs:enumeration value="600"/>
+            <xs:enumeration value="1200"/>
+            <xs:enumeration value="1800"/>
+            <xs:enumeration value="2000"/>
+            <xs:enumeration value="2400"/>
+            <xs:enumeration value="3600"/>
+            <xs:enumeration value="4800"/>
+            <xs:enumeration value="7200"/>
+            <xs:enumeration value="9600"/>
+            <xs:enumeration value="14400"/>
+            <xs:enumeration value="19200"/>
+            <xs:enumeration value="38400"/>
+            <xs:enumeration value="57600"/>
+            <xs:enumeration value="115200"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- ToDo: add enum in bindings -->
+    <xs:simpleType name="PortStopBitType">
+        <xs:annotation>
+            <xs:appinfo>
+                <jaxb:typesafeEnumClass>
+                    <jaxb:typesafeEnumMember value="1" name="X_1"/>
+                    <jaxb:typesafeEnumMember value="1.5" name="X_1_5"/>
+                    <jaxb:typesafeEnumMember value="2" name="X_2"/>
+                </jaxb:typesafeEnumClass>
+            </xs:appinfo>
+        </xs:annotation>
+        <xs:restriction base="xs:float">
+            <xs:enumeration value="1"/>
+            <xs:enumeration value="1.5"/>
+            <xs:enumeration value="2"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="BooleanType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Yes"/>
+            <xs:enumeration value="No"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="IPType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="(0.0.0.0|((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?))"/>
+            <xs:minLength value="7"/>
+            <xs:maxLength value="15"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="MACType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="(([0-9a-fA-F]{2}[-]){5}([0-9a-fA-F]{2}))"/>
+            <xs:length value="17"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="HostType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="(([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,6})"/>
+            <xs:minLength value="5"/>
+            <xs:maxLength value="255"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="PortType">
+        <xs:restriction base="xs:unsignedShort">
+            <xs:minInclusive value="0"/>
+            <xs:maxInclusive value="65535"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="PortsSIOControlType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="XON/XOFF"/>
+            <xs:enumeration value="RTS/CTS"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="PortsSIOParityType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="NONE"/>
+            <xs:enumeration value="ODD"/>
+            <xs:enumeration value="EVEN"/>
+            <xs:enumeration value="MARK"/>
+            <xs:enumeration value="SPACE"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="PortsSIODirectionType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Input"/>
+            <xs:enumeration value="Output"/>
+            <xs:enumeration value="Dynamic"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="ClusterModeType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="No"/>
+            <xs:enumeration value="Master"/>
+            <xs:enumeration value="Slave"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="ConsoleKeyboardType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="яверты"/>
+            <xs:enumeration value="йцукен"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="ConsoleEditorType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Norton"/>
+            <xs:enumeration value="Dionis"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="ConsoleMonitoringType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Close"/>
+            <xs:enumeration value="No_password"/>
+            <xs:enumeration value="Open"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="ConsolePortsLedType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Pointer"/>
+            <xs:enumeration value="Symbol"/>
+            <xs:enumeration value="No"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="ConsoleTimeLedType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="No"/>
+            <xs:enumeration value="Current"/>
+            <xs:enumeration value="Working"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="ConsoleScreenBlankingAwakeType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Key"/>
+            <xs:enumeration value="Output"/>
+            <xs:enumeration value="Key+output"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="WeekDayType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Mon"/>
+            <xs:enumeration value="Tue"/>
+            <xs:enumeration value="Wed"/>
+            <xs:enumeration value="Thu"/>
+            <xs:enumeration value="Fri"/>
+            <xs:enumeration value="Sat"/>
+            <xs:enumeration value="Sun"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="RemoteControlModeType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Review"/>
+            <xs:enumeration value="Management"/>
+            <xs:enumeration value="Capture"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="LogsModeType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Cyclic"/>
+            <xs:enumeration value="Continuous"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="LogsPartsType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Current"/>
+            <xs:enumeration value="All"/>
+            <xs:enumeration value="A_day"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="PasswordGuessType">
+        <xs:annotation>
+            <xs:appinfo>
+                <jaxb:typesafeEnumClass>
+                    <jaxb:typesafeEnumMember value="no" name="NO"/>
+                    <jaxb:typesafeEnumMember value="3" name="THREE"/>
+                    <jaxb:typesafeEnumMember value="9" name="NINE"/>
+                    <jaxb:typesafeEnumMember value=">20" name="MORE_THEN_TWENTY"/>
+                </jaxb:typesafeEnumClass>
+            </xs:appinfo>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="no"/>
+            <xs:enumeration value="3"/>
+            <xs:enumeration value="9"/>
+            <xs:enumeration value=">20"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="TimeServiceZoneType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="-12:00"/>
+            <xs:enumeration value="-11:00"/>
+            <xs:enumeration value="-10:00"/>
+            <xs:enumeration value="-09:00"/>
+            <xs:enumeration value="-08:00"/>
+            <xs:enumeration value="-07:00"/>
+            <xs:enumeration value="-06:00"/>
+            <xs:enumeration value="-05:00"/>
+            <xs:enumeration value="-04:00"/>
+            <xs:enumeration value="-03:30"/>
+            <xs:enumeration value="-03:00"/>
+            <xs:enumeration value="-02:00"/>
+            <xs:enumeration value="-01:00"/>
+            <xs:enumeration value="+00:00"/>
+            <xs:enumeration value="+01:00"/>
+            <xs:enumeration value="+02:00"/>
+            <xs:enumeration value="+03:00"/>
+            <xs:enumeration value="+04:00"/>
+            <xs:enumeration value="+05:00"/>
+            <xs:enumeration value="+06:00"/>
+            <xs:enumeration value="+07:00"/>
+            <xs:enumeration value="+08:00"/>
+            <xs:enumeration value="+09:00"/>
+            <xs:enumeration value="+10:00"/>
+            <xs:enumeration value="+11:00"/>
+            <xs:enumeration value="+12:00"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="InterfaceType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="SLIP"/>
+            <xs:enumeration value="CSLIP"/>
+            <xs:enumeration value="PPP"/>
+            <xs:enumeration value="GRE"/>
+            <xs:enumeration value="VLAN"/>
+            <xs:enumeration value="ODI"/>
+            <xs:enumeration value="Factor"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="InterfaceModeType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Static"/>
+            <xs:enumeration value="Input"/>
+            <xs:enumeration value="Output"/>
+            <xs:enumeration value="Duplex"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="InterfaceNatType">
+        <xs:annotation>
+            <xs:appinfo>
+                <jaxb:typesafeEnumClass>
+                    <jaxb:typesafeEnumMember value=" " name="EMPTY"/>
+                    <jaxb:typesafeEnumMember value="Internal" name="INTERNAL"/>
+                    <jaxb:typesafeEnumMember value="External" name="EXTERNAL"/>
+                </jaxb:typesafeEnumClass>
+            </xs:appinfo>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value=" "/>
+            <xs:enumeration value="Internal"/>
+            <xs:enumeration value="External"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="InterfaceDFType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Copy"/>
+            <xs:enumeration value="Set"/>
+            <xs:enumeration value="Reset"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="InterfaceParametrsMediaType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Optical"/>
+            <xs:enumeration value="Twisted_pair"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="InterfaceParametrsModeType">
+        <xs:annotation>
+            <xs:appinfo>
+                <jaxb:typesafeEnumClass>
+                    <jaxb:typesafeEnumMember value="Auto" name="AUTO"/>
+                    <jaxb:typesafeEnumMember value="100Full" name="X_100_FULL"/>
+                    <jaxb:typesafeEnumMember value="100Half" name="X_100_HALF"/>
+                    <jaxb:typesafeEnumMember value="10Full" name="X_10_FULL"/>
+                    <jaxb:typesafeEnumMember value="10Half" name="X_10_HALF"/>
+                    <jaxb:typesafeEnumMember value="Call" name="CALL"/>
+                    <jaxb:typesafeEnumMember value="Receive" name="RECEIVE"/>
+                </jaxb:typesafeEnumClass>
+            </xs:appinfo>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Auto"/>
+            <xs:enumeration value="100Full"/>
+            <xs:enumeration value="100Half"/>
+            <xs:enumeration value="10Full"/>
+            <xs:enumeration value="10Half"/>
+
+            <xs:enumeration value="Call"/>
+            <xs:enumeration value="Receive"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="InterfaceParametrType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="SIO"/>
+            <xs:enumeration value="VLAN"/>
+            <xs:enumeration value="SYN"/>
+
+            <xs:enumeration value="Call"/>
+            <xs:enumeration value="Receive"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="InterfaceAuthorityType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="No"/>
+            <xs:enumeration value="PAP"/>
+            <xs:enumeration value="CHAP"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="FilterStatusType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Solve"/>
+            <xs:enumeration value="Ban"/>
+            <xs:enumeration value="Reset"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="FilterProtocolType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="ANY"/>
+            <xs:enumeration value="ICMP"/>
+            <xs:enumeration value="TCP"/>
+            <xs:enumeration value="UDP"/>
+            <xs:enumeration value="TNL"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="FilterTCPFlagsType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="SYN"/>
+            <xs:enumeration value="ACK"/>
+            <xs:enumeration value="No"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="FilterPortsType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="All"/>
+            <xs:enumeration value="Source"/>
+            <xs:enumeration value="Target"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="FilterOperationType">
+        <xs:annotation>
+            <xs:appinfo>
+                <jaxb:typesafeEnumClass>
+                    <jaxb:typesafeEnumMember value="NOP" name="NOP"/>
+                    <jaxb:typesafeEnumMember value="==" name="EQUAL"/>
+                    <jaxb:typesafeEnumMember value="!=" name="NOT_EQUAL"/>
+                    <jaxb:typesafeEnumMember value=">" name="MORE"/>
+                    <jaxb:typesafeEnumMember value=">=" name="MORE_EQUAL"/>
+                    <jaxb:typesafeEnumMember value="&lt;" name="LESS"/>
+                    <jaxb:typesafeEnumMember value="&lt;=" name="LESS_EQUAL"/>
+                </jaxb:typesafeEnumClass>
+            </xs:appinfo>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="NOP"/>
+            <xs:enumeration value="=="/>
+            <xs:enumeration value="!="/>
+            <xs:enumeration value=">"/>
+            <xs:enumeration value=">="/>
+            <xs:enumeration value="&lt;"/>
+            <xs:enumeration value="&lt;="/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="FilterLinkType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="AND"/>
+            <xs:enumeration value="OR"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="TunnelProtocolType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="ANY"/>
+            <xs:enumeration value="ICMP"/>
+            <xs:enumeration value="TCP"/>
+            <xs:enumeration value="UDP"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="DNSZoneStatusType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Internal"/>
+            <xs:enumeration value="External"/>
+            <xs:enumeration value="Normal"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="DNSRRType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="A"/>
+            <xs:enumeration value="NS"/>
+            <xs:enumeration value="CNAME"/>
+            <xs:enumeration value="PTR"/>
+            <xs:enumeration value="MX"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="DHCPType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Subnet"/>
+            <xs:enumeration value="Host"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="RipVersionType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="ANY"/>
+            <xs:enumeration value="RIP-1_and_RIP-2"/>
+            <xs:enumeration value="RIP-2"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="RipRouteVersionType">
+        <xs:annotation>
+            <xs:appinfo>
+                <jaxb:typesafeEnumClass>
+                    <jaxb:typesafeEnumMember value="1" name="RIP_1"/>
+                    <jaxb:typesafeEnumMember value="2" name="RIP_2"/>
+                </jaxb:typesafeEnumClass>
+            </xs:appinfo>
+        </xs:annotation>
+        <xs:restriction base="xs:byte">
+            <!-- RIP-1 -->
+            <xs:enumeration value="1"/>
+            <!-- RIP-2 -->
+            <xs:enumeration value="2"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="SNMPTrapVersionType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="v1"/>
+            <xs:enumeration value="v2c"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="UserActionType">
+        <xs:restriction base="xs:string">
+            <!-- deleted -->
+            <xs:enumeration value="d"/>
+            <!-- new -->
+            <xs:enumeration value="n"/>
+            <!-- modifed -->
+            <xs:enumeration value="m"/>
+            <!--  delete only local user -->
+            <xs:enumeration value="e"/>
+            <!-- added -->
+            <xs:enumeration value="a"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="UserTunnelUseType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="No"/>
+            <xs:enumeration value="Yes"/>
+            <xs:enumeration value="Only"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="UserModeType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="ANY"/>
+            <xs:enumeration value="Terminal"/>
+            <xs:enumeration value="PPP_SLIP"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="PassChangePeriodType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="No"/>
+            <xs:enumeration value="Day"/>
+            <xs:enumeration value="Week"/>
+            <xs:enumeration value="Month"/>
+            <xs:enumeration value="Quarter"/>
+            <xs:enumeration value="Year"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="UserSheduleType">
+        <xs:union>
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value=""/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType>
+                <xs:restriction base="xs:unsignedByte">
+                    <xs:maxInclusive value="24"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:union>
+    </xs:simpleType>
+
+</xs:schema>
+

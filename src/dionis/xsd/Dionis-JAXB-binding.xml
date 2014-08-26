@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jaxb:bindings
+        xmlns:xs="http://www.w3.org/2001/XMLSchema"
+        xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+        version="2.1">
+
+    <jaxb:globalBindings
+            generateIsSetMethod="true"
+            enableFailFastCheck="true"
+            localScoping="toplevel">
+        <jaxb:serializable uid="33554432"/>
+    </jaxb:globalBindings>
+
+    <jaxb:bindings schemaLocation="Dionis.xsd">
+        <jaxb:bindings multiple="true" node="
+        //xs:element[@id='port_speed']
+        |//xs:element[@id='port_stop_bit']">
+            <jaxb:property>
+                <jaxb:baseType name="FloatAdapter">
+                    <jaxb:javaType name="java.lang.Float"
+                                   parseMethod="ru.cniieisu.stc.bisszi.impl.module.dionisfw.xml.formatters.FloatFormatter.parseFloat"
+                                   printMethod="ru.cniieisu.stc.bisszi.impl.module.dionisfw.xml.formatters.FloatFormatter.printFloat"/>
+                </jaxb:baseType>
+            </jaxb:property>
+        </jaxb:bindings>
+
+        <jaxb:bindings multiple="true" node="
+        //xs:element[@id='nat_pat']
+        |//xs:element[@id='arp_proxy']">
+            <jaxb:property>
+                <jaxb:baseType>
+                    <jaxb:javaType name="java.lang.Boolean"
+                                   parseMethod="ru.cniieisu.stc.bisszi.impl.module.dionisfw.xml.formatters.BooleanFormatter.parseBoolean"
+                                   printMethod="ru.cniieisu.stc.bisszi.impl.module.dionisfw.xml.formatters.BooleanFormatter.printBoolean"/>
+                </jaxb:baseType>
+            </jaxb:property>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xs:element[@id='time_service_zone']">
+            <jaxb:property>
+                <jaxb:baseType>
+                    <jaxb:javaType name="java.util.TimeZone"
+                                   parseMethod="ru.cniieisu.stc.bisszi.impl.module.dionisfw.xml.formatters.TimeZoneTimeFormatter.parseTimeZoneTime"
+                                   printMethod="ru.cniieisu.stc.bisszi.impl.module.dionisfw.xml.formatters.TimeZoneTimeFormatter.printTimeZoneTime"/>
+                </jaxb:baseType>
+            </jaxb:property>
+        </jaxb:bindings>
+    </jaxb:bindings>
+
+</jaxb:bindings>
+
+
