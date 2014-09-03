@@ -13,7 +13,7 @@ import dionis.utils.DionisXML;
 import dionis.xml.Dionis;
 
 /**
- * Класс основных действий с данными XML
+ * Класс XML Access Object
  * 
  * @author Ярных А.О.
  * 
@@ -21,7 +21,9 @@ import dionis.xml.Dionis;
 public class DionisXAO {
 
 	private static DionisXML dionisXML = new DionisXML();
-	private static Dionis dionis = null;
+
+	// статический объект конфигурации "Диониса"
+	public static Dionis dionis = new Dionis();
 
 	private DionisXAO() {
 	}

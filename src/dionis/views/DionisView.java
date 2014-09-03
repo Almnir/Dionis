@@ -1,8 +1,17 @@
 package dionis.views;
 
-import java.util.Map;
+import java.util.ArrayList;
 import java.util.TimeZone;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
@@ -36,6 +45,10 @@ import dionis.dialogs.AddressTableDialog;
 import dionis.dialogs.NATAddressDialog;
 import dionis.dialogs.PortConfigurationDialog;
 import dionis.models.DionisXAO;
+import dionis.models.NATAddressModel;
+import dionis.models.PortsModel;
+import dionis.providers.NATLabelProvider;
+import dionis.providers.PortLabelProvider;
 import dionis.utils.Constants;
 import dionis.xml.ARP;
 import dionis.xml.ARPTableStatic;
@@ -44,13 +57,16 @@ import dionis.xml.BooleanType;
 import dionis.xml.Dionis;
 import dionis.xml.Global;
 import dionis.xml.Host;
-import dionis.xml.Hosts;
 import dionis.xml.Level;
 import dionis.xml.Local;
 import dionis.xml.NAT;
 import dionis.xml.NATTableStatic;
 import dionis.xml.Parametrs;
 import dionis.xml.Password;
+import dionis.xml.Ports;
+import dionis.xml.PortsSIOControlType;
+import dionis.xml.PortsSIODirectionType;
+import dionis.xml.PortsSIOParityType;
 import dionis.xml.RemoteControl;
 import dionis.xml.SIO;
 import dionis.xml.SYN;
@@ -60,12 +76,18 @@ import dionis.xml.TracingRoute;
 import dionis.xml.TracingServers;
 import dionis.xml.Type;
 
+/**
+ * Класс отображения плагина управления Dionis
+ * 
+ * @author Ярных А.О.
+ * 
+ */
 public class DionisView extends ViewPart {
 
 	public static final String ID = "dionis.views.DionisView";
 	private CTabFolder tabFolder;
 	private Shell shell;
-	private Table table;
+	private TableViewer table;
 	private Text text;
 	private Spinner spinner;
 	private Spinner spinner_1;
@@ -81,7 +103,7 @@ public class DionisView extends ViewPart {
 	private Text text_1;
 	private Spinner spinner_9;
 	private Spinner spinner_8;
-	private Table table_1;
+	private TableViewer table_1;
 	private Button btnArp;
 	private Table table_2;
 	private Button btnEthernet;
@@ -128,27 +150,6 @@ public class DionisView extends ViewPart {
 	private Text text_7;
 	private Text text_8;
 
-	/*
-	 * class ViewContentProvider implements IStructuredContentProvider { public
-	 * void inputChanged(Viewer v, Object oldInput, Object newInput) { }
-	 * 
-	 * public void dispose() { }
-	 * 
-	 * public Object[] getElements(Object parent) { return new String[] { "One",
-	 * "Two", "Three" }; } }
-	 * 
-	 * class ViewLabelProvider extends LabelProvider implements
-	 * ITableLabelProvider { public String getColumnText(Object obj, int index)
-	 * { return getText(obj); }
-	 * 
-	 * public Image getColumnImage(Object obj, int index) { return
-	 * getImage(obj); }
-	 * 
-	 * public Image getImage(Object obj) { return
-	 * PlatformUI.getWorkbench().getSharedImages()
-	 * .getImage(ISharedImages.IMG_OBJ_ELEMENT); } } class NameSorter extends
-	 * ViewerSorter { }
-	 */
 	public DionisView() {
 		super();
 	}
@@ -228,6 +229,7 @@ public class DionisView extends ViewPart {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	private void createCommonSettingsTabs() {
 		CTabItem tabItem = new CTabItem(tabFolder, SWT.NONE);
 		tabItem.setText("Порты");
@@ -236,38 +238,89 @@ public class DionisView extends ViewPart {
 		tabItem.setControl(composite_4);
 		composite_4.setLayout(new GridLayout(1, false));
 
-		table = new Table(composite_4, SWT.BORDER | SWT.FULL_SELECTION
+		table = new TableViewer(composite_4, SWT.BORDER | SWT.FULL_SELECTION
 				| SWT.SINGLE);
-		table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-		table.setHeaderVisible(true);
-		table.setLinesVisible(true);
 
-		Menu menu = new Menu(table);
+		table.getTable().setLayoutData(
+				new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		table.getTable().setHeaderVisible(true);
+		table.getTable().setLinesVisible(true);
+
+		Menu menu = new Menu(table.getTable());
 
 		MenuItem menuItem = new MenuItem(menu, SWT.PUSH);
 		menuItem.setText("Изменить");
-		table.setMenu(menu);
+		table.getTable().setMenu(menu);
 
 		menuItem.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				TableItem[] selectedItems = table.getSelection();
-				if (selectedItems != null && selectedItems.length > 0) {
-					if (!selectedItems[0].getText().contains("SYN")) {
+				// если выбрана строка
+				if (table.getTable().getSelection() != null
+						&& table.getTable().getSelection().length > 0) {
+					// если не SYN порт выбран
+					if (!table.getTable().getSelection()[0].getText().contains(
+							"SYN")) {
 						PortConfigurationDialog dialog = new PortConfigurationDialog(
-								shell);
-						dialog.open();
+								shell, table.getSelection());
+						if (dialog.open() == Window.OK) {
+							Job job = new Job("ports") {
+
+								@Override
+								protected IStatus run(IProgressMonitor monitor) {
+									Display.getDefault().asyncExec(
+											new Runnable() {
+												@Override
+												public void run() {
+													table.setInput(PortsModel
+															.getInstance()
+															.getAllPorts());
+												}
+											});
+									return Status.OK_STATUS;
+								}
+							};
+							job.setPriority(Job.SHORT);
+							job.schedule();
+						}
 					}
 				}
 			}
 		});
 
-		TableColumn tblclmnNewColumn = new TableColumn(table, SWT.NONE);
-		tblclmnNewColumn.setWidth(100);
-		tblclmnNewColumn.setText("Порт");
+		TableViewerColumn tblclmnNewColumn = new TableViewerColumn(table,
+				SWT.NONE);
 
-		TableColumn tblclmnNewColumn_1 = new TableColumn(table, SWT.NONE);
-		tblclmnNewColumn_1.setWidth(100);
-		tblclmnNewColumn_1.setText("Настройка");
+		tblclmnNewColumn.getColumn().setWidth(100);
+		tblclmnNewColumn.getColumn().setText("Порт");
+
+		TableViewerColumn tblclmnNewColumn_1 = new TableViewerColumn(table,
+				SWT.NONE);
+		tblclmnNewColumn_1.getColumn().setWidth(100);
+		tblclmnNewColumn_1.getColumn().setText("Настройка");
+
+		table.setContentProvider(ArrayContentProvider.getInstance());
+		table.setLabelProvider(new PortLabelProvider());
+		// == тест
+		SIO sio = new SIO();
+		SIO sio2 = new SIO();
+		sio.setBits((byte) 8);
+		sio.setControl(PortsSIOControlType.RTS_CTS);
+		sio.setDirection(PortsSIODirectionType.DYNAMIC);
+		// sio.setNumber((short)0);
+		sio.setParity(PortsSIOParityType.NONE);
+		sio.setSpeed((float) 75.0);
+		sio.setStopBit((float) 1.5);
+		SYN syn = new SYN();
+		syn.setNumber((byte) 0);
+		java.util.List<SIO> sioList = new ArrayList<>();
+		sioList.add(sio);
+		sioList.add(sio2);
+		java.util.List<SYN> synList = new ArrayList<>();
+		synList.add(syn);
+		PortsModel.getInstance().setAllPorts(sioList, synList);
+		// == тест
+		table.setInput(PortsModel.getInstance().getAllPorts());
+		table.getTable().select(0);
 
 		CTabItem tabItem_1 = new CTabItem(tabFolder, SWT.NONE);
 		tabItem_1.setText("Базовые константы");
@@ -474,13 +527,14 @@ public class DionisView extends ViewPart {
 		composite_8.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true,
 				1, 1));
 
-		table_1 = new Table(composite_8, SWT.BORDER | SWT.FULL_SELECTION);
-		table_1.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-		table_1.setHeaderVisible(true);
-		table_1.setLinesVisible(true);
+		table_1 = new TableViewer(composite_8, SWT.BORDER | SWT.FULL_SELECTION);
+		table_1.getTable().setLayoutData(
+				new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		table_1.getTable().setHeaderVisible(true);
+		table_1.getTable().setLinesVisible(true);
 
-		Menu menu_1 = new Menu(table_1);
-		table_1.setMenu(menu_1);
+		Menu menu_1 = new Menu(table_1.getTable());
+		table_1.getTable().setMenu(menu_1);
 
 		final MenuItem menuItem1_1 = new MenuItem(menu_1, SWT.NONE);
 		menuItem1_1.setText("Изменить");
@@ -492,7 +546,7 @@ public class DionisView extends ViewPart {
 		menu_1.addListener(SWT.Show, new Listener() {
 			@Override
 			public void handleEvent(Event event) {
-				TableItem[] selected = table_1.getSelection();
+				TableItem[] selected = table_1.getTable().getSelection();
 				if (selected.length == 0) {
 					menuItem1_1.setEnabled(false);
 					menuItem1_2.setEnabled(true);
@@ -505,30 +559,100 @@ public class DionisView extends ViewPart {
 			}
 		});
 
+		// Изменить
 		menuItem1_1.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
+				// если выбрана строка
+				if (table_1.getTable().getSelection() != null
+						&& table_1.getTable().getSelection().length > 0) {
+					NATAddressDialog dialog = new NATAddressDialog(shell,
+							table_1.getSelection());
+					if (dialog.open() == Window.OK) {
+						Job job = new Job("nat") {
+
+							@Override
+							protected IStatus run(IProgressMonitor monitor) {
+								Display.getDefault().asyncExec(new Runnable() {
+									@Override
+									public void run() {
+										table_1.setInput(NATAddressModel
+												.getInstance()
+												.getNatTableArray());
+									}
+								});
+								return Status.OK_STATUS;
+							}
+						};
+						job.setPriority(Job.SHORT);
+						job.schedule();
+					}
+				}
 
 			}
 		});
+		// Добавить
 		menuItem1_2.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				NATAddressDialog dialog = new NATAddressDialog(shell);
-				dialog.open();
+				NATAddressDialog dialog = new NATAddressDialog(shell, null);
+				if (dialog.open() == Window.OK) {
+					Job job = new Job("nat") {
+
+						@Override
+						protected IStatus run(IProgressMonitor monitor) {
+							Display.getDefault().asyncExec(new Runnable() {
+								@Override
+								public void run() {
+									table_1.setInput(NATAddressModel
+											.getInstance().getNatTableArray());
+								}
+							});
+							return Status.OK_STATUS;
+						}
+					};
+					job.setPriority(Job.SHORT);
+					job.schedule();
+				}
 			}
 		});
+		// Удалить
 		menuItem1_3.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
+				IStructuredSelection sel = (IStructuredSelection) table_1
+						.getSelection();
+				NATTableStatic natTable = (NATTableStatic) sel
+						.getFirstElement();
+				NATAddressModel.getInstance().removeNatTable(natTable);
+				Job job = new Job("remove") {
 
+					@Override
+					protected IStatus run(IProgressMonitor monitor) {
+						Display.getDefault().asyncExec(new Runnable() {
+							@Override
+							public void run() {
+								table_1.setInput(NATAddressModel.getInstance()
+										.getNatTableArray());
+							}
+						});
+						return Status.OK_STATUS;
+					}
+				};
+				job.setPriority(Job.SHORT);
+				job.schedule();
 			}
 		});
 
-		TableColumn tableColumn = new TableColumn(table_1, SWT.NONE);
+		TableColumn tableColumn = new TableColumn(table_1.getTable(), SWT.NONE);
 		tableColumn.setWidth(100);
 		tableColumn.setText("Внутренний адрес");
 
-		TableColumn tblclmnNewColumn_2 = new TableColumn(table_1, SWT.NONE);
+		TableColumn tblclmnNewColumn_2 = new TableColumn(table_1.getTable(),
+				SWT.NONE);
 		tblclmnNewColumn_2.setWidth(100);
 		tblclmnNewColumn_2.setText("Внешний адрес");
+
+		table_1.setContentProvider(ArrayContentProvider.getInstance());
+		table_1.setLabelProvider(new NATLabelProvider());
+		table_1.setInput(NATAddressModel.getInstance().getNatTableArray());
 
 		CTabItem tbtmNewItem_4 = new CTabItem(tabFolder, SWT.NONE);
 		tbtmNewItem_4.setText("Удалённое управление");
@@ -951,7 +1075,12 @@ public class DionisView extends ViewPart {
 		combo_4 = new Combo(group_9, SWT.NONE);
 		combo_4.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false,
 				1, 1));
-		combo_4.setItems((String[]) Constants.TIME_ZONES.keySet().toArray());
+		// выборка только смещений GMT+
+		String[] slice = new String[Constants.TIME_ZONES.length];
+		for (int i = 0; i < slice.length; ++i) {
+			slice[i] = Constants.TIME_ZONES[i][0];
+		}
+		combo_4.setItems(slice);
 
 		text_6 = new Text(group_9, SWT.BORDER);
 		text_6.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1,
@@ -1124,7 +1253,7 @@ public class DionisView extends ViewPart {
 	}
 
 	private void getAll() {
-		// Объект десериализованной конфигурации
+		// Объект конфигурации
 		Dionis dionis = DionisXAO.getDionis();
 		Parametrs parametrs = dionis.getParametrs();
 		/** Порты **/
@@ -1138,26 +1267,36 @@ public class DionisView extends ViewPart {
 			// вторая колонка содержит все параметры в виде строки
 			// (возможно не лучший вариант)
 			StringBuilder secondColumn = new StringBuilder(
-					String.valueOf(sioPort.getSpeed()));
+					String.valueOf(sioPort.isSetSpeed() ? sioPort.getSpeed()
+							: ""));
 			secondColumn.append(" ");
-			secondColumn.append(String.valueOf(sioPort.getBits()));
-			secondColumn.append(String.valueOf(sioPort.getParity().name()));
-			secondColumn.append(String.valueOf(sioPort.getStopBit())).append(
-					" ");
-			secondColumn.append(String.valueOf(sioPort.getControl().name()))
-					.append(" ");
-			secondColumn.append(String.valueOf(sioPort.getDirection().name()))
-					.append(" ");
-			secondColumn.append(String.valueOf(sioPort.getModem()));
+			secondColumn.append(sioPort.isSetBits() ? String.valueOf(sioPort
+					.getBits()) : "");
+			secondColumn.append(" ");
+			secondColumn.append(sioPort.isSetParity() ? String.valueOf(sioPort
+					.getParity().name()) : "");
+			secondColumn.append(" ");
+			secondColumn.append(
+					sioPort.isSetStopBit() ? String.valueOf(sioPort
+							.getStopBit()) : "").append(" ");
+			secondColumn.append(
+					sioPort.isSetControl() ? String.valueOf(sioPort
+							.getControl().name()) : "").append(" ");
+			secondColumn.append(
+					sioPort.isSetDirection() ? String.valueOf(sioPort
+							.getDirection().name()) : "").append(" ");
+			secondColumn.append(sioPort.isSetModem() ? String.valueOf(sioPort
+					.getModem()) : "");
+			secondColumn.append(" ");
 			// создаём строку
-			TableItem item = new TableItem(table, SWT.NONE);
+			TableItem item = new TableItem(table.getTable(), SWT.NONE);
 			// отображаем строку
 			item.setText(new String[] { firstColumn, secondColumn.toString() });
 		}
 		// добавление SYN портов
 		for (int i = 0; i < synPorts.size(); ++i) {
 			String firstColumn = "SYN_" + String.valueOf(i);
-			TableItem item = new TableItem(table, SWT.NONE);
+			TableItem item = new TableItem(table.getTable(), SWT.NONE);
 			item.setText(new String[] { firstColumn, " " });
 		}
 
@@ -1237,7 +1376,7 @@ public class DionisView extends ViewPart {
 					}
 				}
 			}
-			TableItem item = new TableItem(table_1, SWT.NONE);
+			TableItem item = new TableItem(table_1.getTable(), SWT.NONE);
 			item.setText(new String[] { firstColumn.toString(),
 					secondColumn.toString() });
 		}
@@ -1404,17 +1543,16 @@ public class DionisView extends ViewPart {
 				TimeZone tz = timeserv.getZone();
 				String tzGMT = tz.getDisplayName();
 				// находим индекс выборки GMT+
-				int indexTZ = 0;
-				for (String tzg : Constants.TIME_ZONES.keySet()) {
-					if (tzg.equals(tzGMT)) {
-						indexTZ++;
+				int i = 0;
+				for (; i < Constants.TIME_ZONES.length; ++i) {
+					if (Constants.TIME_ZONES[i].equals(tzGMT)) {
 						break;
 					}
 				}
 				// устанавливаем выбор GMT+
-				combo_4.select(indexTZ);
+				combo_4.select(i);
 				// устанавливаем наименование часового пояса
-				text_6.setText(Constants.TIME_ZONES.get(tzGMT));
+				text_6.setText(Constants.TIME_ZONES[i][1]);
 			}
 			// Основное
 			text_7.setText(timeserv.isSetName() ? timeserv.getName() : "");
@@ -1422,6 +1560,17 @@ public class DionisView extends ViewPart {
 			text_8.setText(timeserv.isSetSummerName() ? timeserv
 					.getSummerName() : "");
 		}
+
+	}
+
+	private void saveAll() {
+		// Объект конфигурации
+		Dionis dionis = DionisXAO.getDionis();
+		Parametrs param = new Parametrs();
+		Ports ports = new Ports();
+
+		param.setPorts(ports);
+		dionis.setParametrs(param);
 	}
 
 	@Override

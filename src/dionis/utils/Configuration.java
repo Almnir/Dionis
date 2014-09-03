@@ -19,4 +19,5 @@ public class Configuration {
 	/** Путь до файлов сериализации **/
 	public static Path inputBase = Paths.get("/home/alm/dionis.xml");
 	public static Path outputBase = Paths.get("/home/alm/dionis_out.xml");
+	
 }
