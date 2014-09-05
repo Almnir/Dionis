@@ -93,7 +93,8 @@ public class NATAddressDialog extends Dialog {
 				1);
 		gd_text.widthHint = 187;
 		text.setLayoutData(gd_text);
-
+		text.setText("0.0.0.0");
+		
 		Label label = new Label(container, SWT.NONE);
 		label.setText("порт");
 
@@ -113,6 +114,7 @@ public class NATAddressDialog extends Dialog {
 				1);
 		gd_text_1.widthHint = 211;
 		text_1.setLayoutData(gd_text_1);
+		text_1.setText("0.0.0.0");
 
 		Label lblNewLabel_1 = new Label(container, SWT.NONE);
 		lblNewLabel_1.setText("порт");
@@ -158,13 +160,31 @@ public class NATAddressDialog extends Dialog {
 
 	private void getAll() {
 		if (newadd == false) {
+			// добавление
 			btnpat.setSelection(natTable.isPAT());
 			text.setText(natTable.getLocal().getIP());
 			spinner.setSelection(natTable.getLocal().getPort());
 			text_1.setText(natTable.getGlobal().getIP());
 			spinner_1.setSelection(natTable.getGlobal().getPort());
 			spinner_2.setSelection(natTable.getBits());
-		} 
+			// отключать порты, если нет правила трансляции портов
+			if (natTable.isPAT()) {
+				spinner.setEnabled(true);
+				spinner_1.setEnabled(true);
+			} else {
+				spinner.setEnabled(false);
+				spinner_1.setEnabled(false);
+			}
+
+		} else {
+			// новое
+			btnpat.setSelection(false);
+			text.setText("0.0.0.0");
+			text_1.setText("0.0.0.0");
+			spinner.setSelection(0); spinner.setEnabled(false);
+			spinner_1.setSelection(0);spinner_1.setEnabled(false);
+			spinner_2.setSelection(0);
+		}
 	}
 
 	@Override
@@ -202,14 +222,13 @@ public class NATAddressDialog extends Dialog {
 				// если есть - заменить на текущее
 				natList.set(indexx, natTable);
 			}
-			// меняем список SIO портов в модели на изменённый
-			NATAddressModel.getInstance().setNatTable(natList);
 		} else {
 			// новый список портов
 			natList = new ArrayList<NATTableStatic>();
 			natList.add(natTable);
 		}
-		
+		// меняем список SIO портов в модели на изменённый
+		NATAddressModel.getInstance().setNatTable(natList);
 		super.okPressed();
 	}
 

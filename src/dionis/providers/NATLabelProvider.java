@@ -39,11 +39,24 @@ public class NATLabelProvider extends LabelProvider implements
 		return rv;
 	}
 
+	/**
+	 * Метод, формирующий строку таблицы по заданным параметрам
+	 * 
+	 * @param ip
+	 * @param port
+	 * @param bits
+	 * @return String
+	 */
 	private String buildString(String ip, String port, String bits) {
 		StringBuilder sb = new StringBuilder();
-		sb.append(ip).append(":");
-		sb.append(port).append("/");
-		sb.append(bits);
+		sb.append(ip);
+		if (!port.equals("") || !port.equals("0")) {
+			sb.append(":");
+			sb.append(port).append("/");
+		}
+		if (!bits.equals("")) {
+			sb.append(bits);
+		}
 		return sb.toString();
 	}
 }

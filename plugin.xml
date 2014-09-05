@@ -22,10 +22,11 @@
    <extension
          point="org.eclipse.ui.views">
       <view
+            allowMultiple="false"
             class="dionis.views.DionisView"
             id="Dionis.DionisView"
             name="DionisView"
-            restorable="true">
+            restorable="false">
       </view>
    </extension>
    <extension

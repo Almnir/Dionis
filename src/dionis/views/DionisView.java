@@ -9,6 +9,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.window.Window;
@@ -44,9 +45,11 @@ import dionis.dialogs.ARPElementDialog;
 import dionis.dialogs.AddressTableDialog;
 import dionis.dialogs.NATAddressDialog;
 import dionis.dialogs.PortConfigurationDialog;
+import dionis.models.ARPModel;
 import dionis.models.DionisXAO;
 import dionis.models.NATAddressModel;
 import dionis.models.PortsModel;
+import dionis.providers.ARPLabelProvider;
 import dionis.providers.NATLabelProvider;
 import dionis.providers.PortLabelProvider;
 import dionis.utils.Constants;
@@ -105,7 +108,6 @@ public class DionisView extends ViewPart {
 	private Spinner spinner_8;
 	private TableViewer table_1;
 	private Button btnArp;
-	private Table table_2;
 	private Button btnEthernet;
 	private Button btnCheckButton_3;
 	private Button btnSlipppp;
@@ -149,12 +151,14 @@ public class DionisView extends ViewPart {
 	private Text text_6;
 	private Text text_7;
 	private Text text_8;
+	private Table table_2;
 
 	public DionisView() {
 		super();
 	}
 
 	public void createPartControl(Composite parent) {
+		parent.setVisible(true);
 
 		shell = parent.getShell();
 
@@ -218,6 +222,8 @@ public class DionisView extends ViewPart {
 				SWT.COLOR_TITLE_INACTIVE_BACKGROUND_GRADIENT));
 
 		cleanTabs();
+		tabFolder.setVisible(true);
+		tabFolder.setEnabled(true);
 		createCommonSettingsTabs();
 		tabFolder.setSelection(0);
 	}
@@ -356,6 +362,8 @@ public class DionisView extends ViewPart {
 		spinner = new Spinner(group, SWT.BORDER);
 		spinner.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false,
 				1, 1));
+		spinner.setMinimum(1);
+		spinner.setMaximum(255);
 
 		Label lblTcp = new Label(group, SWT.NONE);
 		lblTcp.setText("Макс. размер TCP пакета(MSS)");
@@ -363,9 +371,12 @@ public class DionisView extends ViewPart {
 		Label lblNewLabel_12 = new Label(group, SWT.NONE);
 		new Label(group, SWT.NONE);
 
+		// Макс. размер TCP пакета(MSS)
 		spinner_1 = new Spinner(group, SWT.BORDER);
 		spinner_1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false,
 				false, 1, 1));
+		spinner_1.setMinimum(512);
+		spinner_1.setMaximum(8192);
 
 		Label lblNewLabel_1 = new Label(group, SWT.NONE);
 		lblNewLabel_1.setText("Размер TCP окна");
@@ -373,9 +384,12 @@ public class DionisView extends ViewPart {
 		Label lblNewLabel_13 = new Label(group, SWT.NONE);
 		new Label(group, SWT.NONE);
 
+		// Размер TCP окна
 		spinner_2 = new Spinner(group, SWT.BORDER);
 		spinner_2.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false,
 				false, 1, 1));
+		spinner_2.setMinimum(0);
+		spinner_2.setMaximum(65535);
 
 		Label lblNewLabel_2 = new Label(group, SWT.NONE);
 		lblNewLabel_2.setText("Количество TCB блоков");
@@ -383,9 +397,12 @@ public class DionisView extends ViewPart {
 		Label lblNewLabel_14 = new Label(group, SWT.NONE);
 		new Label(group, SWT.NONE);
 
+		// Количество TCB блоков
 		spinner_3 = new Spinner(group, SWT.BORDER);
 		spinner_3.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false,
 				false, 1, 1));
+		spinner_3.setMinimum(16);
+		spinner_3.setMaximum(450);
 
 		Label lblNewLabel_3 = new Label(group, SWT.NONE);
 		lblNewLabel_3.setText("Размер буфера TCB блока");
@@ -393,9 +410,12 @@ public class DionisView extends ViewPart {
 		Label lblNewLabel_15 = new Label(group, SWT.NONE);
 		new Label(group, SWT.NONE);
 
+		// Размер буфера TCB блока
 		spinner_4 = new Spinner(group, SWT.BORDER);
 		spinner_4.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false,
 				false, 1, 1));
+		spinner_4.setMinimum(8);
+		spinner_4.setMaximum(64);
 
 		Label lblNewLabel_4 = new Label(group, SWT.NONE);
 		lblNewLabel_4.setText("Количество proxy-буферов");
@@ -403,9 +423,12 @@ public class DionisView extends ViewPart {
 		Label lblNewLabel_16 = new Label(group, SWT.NONE);
 		new Label(group, SWT.NONE);
 
+		// Количество proxy-буферов
 		spinner_5 = new Spinner(group, SWT.BORDER);
 		spinner_5.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false,
 				false, 1, 1));
+		spinner_5.setMinimum(8);
+		spinner_5.setMaximum(255);
 
 		Group group_1 = new Group(composite_5, SWT.NONE);
 		group_1.setText("Кластер");
@@ -430,9 +453,15 @@ public class DionisView extends ViewPart {
 		Label lblNewLabel_6 = new Label(group_1, SWT.NONE);
 		lblNewLabel_6.setText("Таймер");
 
+		// Таймер
 		spinner_7 = new Spinner(group_1, SWT.BORDER);
-		spinner_7.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false,
-				1, 1));
+		GridData gd_spinner_7 = new GridData(SWT.LEFT, SWT.CENTER, true, false,
+				1, 1);
+		gd_spinner_7.widthHint = 51;
+		spinner_7.setLayoutData(gd_spinner_7);
+
+		spinner_7.setMinimum(0);
+		spinner_7.setMaximum(60);
 
 		CTabItem tbtmNewItem_1 = new CTabItem(tabFolder, SWT.NONE);
 		tbtmNewItem_1.setText("Трансляция адресов NAT");
@@ -568,7 +597,7 @@ public class DionisView extends ViewPart {
 					NATAddressDialog dialog = new NATAddressDialog(shell,
 							table_1.getSelection());
 					if (dialog.open() == Window.OK) {
-						Job job = new Job("nat") {
+						Job job = new Job("change") {
 
 							@Override
 							protected IStatus run(IProgressMonitor monitor) {
@@ -595,7 +624,7 @@ public class DionisView extends ViewPart {
 			public void widgetSelected(SelectionEvent e) {
 				NATAddressDialog dialog = new NATAddressDialog(shell, null);
 				if (dialog.open() == Window.OK) {
-					Job job = new Job("nat") {
+					Job job = new Job("add") {
 
 						@Override
 						protected IStatus run(IProgressMonitor monitor) {
@@ -727,65 +756,143 @@ public class DionisView extends ViewPart {
 		btnArp.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, true, false, 1, 1));
 		btnArp.setText("Разрешить proxy-ARP");
 
-		Label lblArp = new Label(composite_9, SWT.NONE);
-		lblArp.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, true, false, 1, 1));
-		lblArp.setText("Статическая ARP таблица");
+		Group grpArp = new Group(composite_9, SWT.NONE);
+		grpArp.setText("Статическая ARP таблица");
+		grpArp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		grpArp.setLayout(new GridLayout(1, false));
 
-		table_2 = new Table(composite_9, SWT.BORDER | SWT.FULL_SELECTION);
+		final TableViewer tableViewer = new TableViewer(grpArp, SWT.BORDER
+				| SWT.FULL_SELECTION);
+		table_2 = tableViewer.getTable();
 		table_2.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		table_2.setHeaderVisible(true);
-		table_2.setLinesVisible(true);
+
+		TableViewerColumn tableViewerColumn_1 = new TableViewerColumn(
+				tableViewer, SWT.NONE);
+		TableColumn tblclmnNewColumn_23 = tableViewerColumn_1.getColumn();
+		tblclmnNewColumn_23.setWidth(100);
+		tblclmnNewColumn_23.setText("MAC адрес");
+
+		TableViewerColumn tableViewerColumn = new TableViewerColumn(
+				tableViewer, SWT.NONE);
+		TableColumn tblclmnNewColumn_22 = tableViewerColumn.getColumn();
+		tblclmnNewColumn_22.setWidth(100);
+		tblclmnNewColumn_22.setText("IP адрес");
 
 		Menu menu_2 = new Menu(table_2);
 		table_2.setMenu(menu_2);
 
-		final MenuItem menuItem2_1 = new MenuItem(menu_2, SWT.NONE);
-		menuItem2_1.setText("Изменить");
-		final MenuItem menuItem2_2 = new MenuItem(menu_2, SWT.NONE);
-		menuItem2_2.setText("Добавить");
-		final MenuItem menuItem2_3 = new MenuItem(menu_2, SWT.NONE);
-		menuItem2_3.setText("Удалить");
+		tableViewer.setContentProvider(new ArrayContentProvider());
+		tableViewer.setLabelProvider(new ARPLabelProvider());
+		tableViewer.setInput(ARPModel.getInstance().getAllARPArray());
 
+		final MenuItem mntmNewItem = new MenuItem(menu_2, SWT.NONE);
+		mntmNewItem.setText("Изменить");
+		// Изменить
+		mntmNewItem.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				if (table_2.getSelection() != null
+						&& table_2.getSelection().length > 0) {
+					IStructuredSelection sel = (IStructuredSelection) tableViewer
+							.getSelection();
+					ARPElementDialog dialog = new ARPElementDialog(shell, sel);
+					if (dialog.open() == Window.OK) {
+						Job job = new Job("change") {
+
+							@Override
+							protected IStatus run(IProgressMonitor monitor) {
+								Display.getDefault().asyncExec(new Runnable() {
+									@Override
+									public void run() {
+										tableViewer
+												.setInput(ARPModel
+														.getInstance()
+														.getAllARPArray());
+									}
+								});
+								return Status.OK_STATUS;
+							}
+						};
+						job.setPriority(Job.SHORT);
+						job.schedule();
+
+					}
+				}
+			}
+		});
+
+		final MenuItem mntmNewItem_1 = new MenuItem(menu_2, SWT.NONE);
+		mntmNewItem_1.setText("Добавить");
+
+		mntmNewItem_1.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				ARPElementDialog dialog = new ARPElementDialog(shell, null);
+				if (dialog.open() == Window.OK) {
+					Job job = new Job("add") {
+
+						@Override
+						protected IStatus run(IProgressMonitor monitor) {
+							Display.getDefault().asyncExec(new Runnable() {
+								@Override
+								public void run() {
+									tableViewer.setInput(ARPModel.getInstance()
+											.getAllARPArray());
+								}
+							});
+							return Status.OK_STATUS;
+						}
+					};
+					job.setPriority(Job.SHORT);
+					job.schedule();
+
+				}
+			}
+		});
+
+		final MenuItem mntmNewItem_2 = new MenuItem(menu_2, SWT.NONE);
+		mntmNewItem_2.setText("Удалить");
+
+		mntmNewItem_2.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				IStructuredSelection sel = (IStructuredSelection) tableViewer
+						.getSelection();
+				String[] data = (String[]) sel.getFirstElement();
+				ARPModel.getInstance().removeARP(data);
+				Job job = new Job("remove") {
+
+					@Override
+					protected IStatus run(IProgressMonitor monitor) {
+						Display.getDefault().asyncExec(new Runnable() {
+							@Override
+							public void run() {
+								tableViewer.setInput(ARPModel.getInstance()
+										.getAllARPArray());
+							}
+						});
+						return Status.OK_STATUS;
+					}
+				};
+				job.setPriority(Job.SHORT);
+				job.schedule();
+			}
+		});
+
+		// обработчик отображения пунктов всплывающего меню
 		menu_2.addListener(SWT.Show, new Listener() {
 			@Override
 			public void handleEvent(Event event) {
 				TableItem[] selected = table_2.getSelection();
 				if (selected.length == 0) {
-					menuItem2_1.setEnabled(false);
-					menuItem2_2.setEnabled(true);
-					menuItem2_3.setEnabled(false);
+					mntmNewItem.setEnabled(false);
+					mntmNewItem_1.setEnabled(true);
+					mntmNewItem_2.setEnabled(false);
 				} else {
-					menuItem2_1.setEnabled(true);
-					menuItem2_2.setEnabled(true);
-					menuItem2_3.setEnabled(true);
+					mntmNewItem.setEnabled(true);
+					mntmNewItem_1.setEnabled(true);
+					mntmNewItem_2.setEnabled(true);
 				}
 			}
 		});
-
-		menuItem2_1.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e) {
-
-			}
-		});
-		menuItem2_2.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e) {
-				ARPElementDialog dialog = new ARPElementDialog(shell);
-				dialog.open();
-			}
-		});
-		menuItem2_3.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e) {
-
-			}
-		});
-
-		TableColumn tblclmnIp = new TableColumn(table_2, SWT.NONE);
-		tblclmnIp.setWidth(100);
-		tblclmnIp.setText("IP адрес");
-
-		TableColumn tblclmnMac = new TableColumn(table_2, SWT.NONE);
-		tblclmnMac.setWidth(100);
-		tblclmnMac.setText("MAC адрес");
 
 		CTabItem tbtmNewItem_2 = new CTabItem(tabFolder, SWT.NONE);
 		tbtmNewItem_2.setText("Трассировка");
