@@ -1,4 +1,4 @@
-package dionis.models;
+package dionis.beans;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;

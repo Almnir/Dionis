@@ -35,6 +35,7 @@ import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Table;
@@ -45,13 +46,17 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.ui.part.ViewPart;
 
+import dionis.beans.InterfaceBean;
 import dionis.dialogs.ARPElementDialog;
 import dionis.dialogs.AddressTableDialog;
+import dionis.dialogs.InterfaceDialog;
 import dionis.dialogs.NATAddressDialog;
 import dionis.dialogs.PortConfigurationDialog;
+import dionis.formatters.TimeZoneTimeFormatter;
 import dionis.models.ARPModel;
 import dionis.models.AddressModel;
 import dionis.models.DionisXAO;
+import dionis.models.InterfaceModel;
 import dionis.models.NATAddressModel;
 import dionis.models.PortsModel;
 import dionis.providers.ARPLabelProvider;
@@ -1320,8 +1325,8 @@ public class DionisView extends ViewPart {
 		tabItem.setControl(composite_4);
 		composite_4.setLayout(new GridLayout(1, false));
 
-		TableViewer tableViewer_2 = new TableViewer(composite_4, SWT.BORDER | SWT.FULL_SELECTION);
-		Table table_4 = tableViewer_2.getTable();
+		final TableViewer tableViewer_2 = new TableViewer(composite_4, SWT.BORDER | SWT.FULL_SELECTION);
+		final Table table_4 = tableViewer_2.getTable();
 		table_4.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		table_4.setHeaderVisible(true);
 		table_4.setLinesVisible(true);
@@ -1381,7 +1386,79 @@ public class DionisView extends ViewPart {
 		TableColumn tblclmnNewColumn_13 = new TableColumn(table_4, SWT.NONE);
 		tblclmnNewColumn_13.setWidth(100);
 		tblclmnNewColumn_13.setText("Таблица маршрутов");
+		
+		Menu menu = new Menu(table_4);
+		table_4.setMenu(menu);
+		
+		final MenuItem menuItem = new MenuItem(menu, SWT.NONE);
+		menuItem.setText("Изменить");
 
+		final MenuItem menuItem_1 = new MenuItem(menu, SWT.NONE);
+		menuItem_1.setText("Добавить");
+
+//		InterfaceModel.getInstance().addData(new InterfaceBean());
+		
+		menuItem_1.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				InterfaceDialog dialog = new InterfaceDialog(shell, table_4.getSelectionIndex());
+				if (dialog.open() == Window.OK) {
+					if (InterfaceModel.getInstance().getData() != null) {
+//						System.out.println(InterfaceModel.getInstance().getData().get(0).getName());
+//						System.out.println(InterfaceModel.getInstance().getData().get(0).getType().name());
+//						System.out.println(InterfaceModel.getInstance().getData().get(0).getMode().name());
+//						System.out.println(InterfaceModel.getInstance().getData().get(0).getIp().getLocal());
+//						System.out.println(InterfaceModel.getInstance().getData().get(0).getIp().getRemote());
+//						System.out.println(InterfaceModel.getInstance().getData().get(0).getDisableDatagrams().getNotTunneled());
+					}
+				}
+			}
+		});
+		
+		final MenuItem mntmNewItem = new MenuItem(menu, SWT.NONE);
+		mntmNewItem.setText("Удалить");
+
+		mntmNewItem.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+//				IStructuredSelection sel = (IStructuredSelection) tableViewer_2
+//						.getSelection();
+//				String[] data = (String[]) sel.getFirstElement();
+//				AddressModel.getInstance().removeAddress(data);
+//				Job job = new Job("remove") {
+//
+//					@Override
+//					protected IStatus run(IProgressMonitor monitor) {
+//						Display.getDefault().asyncExec(new Runnable() {
+//							@Override
+//							public void run() {
+//								tableViewer_2.setInput(AddressModel
+//										.getInstance().getAllAddressArray());
+//							}
+//						});
+//						return Status.OK_STATUS;
+//					}
+//				};
+//				job.setPriority(Job.SHORT);
+//				job.schedule();
+			}
+		});		
+		
+		
+		menu.addListener(SWT.Show, new Listener() {
+			@Override
+			public void handleEvent(Event event) {
+				TableItem[] selected = table_4.getSelection();
+				if (selected.length == 0) {
+					menuItem.setEnabled(false);
+					menuItem_1.setEnabled(true);
+					mntmNewItem.setEnabled(false);
+				} else {
+					menuItem.setEnabled(true);
+					menuItem_1.setEnabled(true);
+					mntmNewItem.setEnabled(true);
+				}
+			}
+		});
+		
 		/** Фильтры **/
 		CTabItem tbtmNewItem = new CTabItem(tabFolder, SWT.NONE);
 		tbtmNewItem.setText("Фильтры");
@@ -1745,7 +1822,7 @@ public class DionisView extends ViewPart {
 			// Часовой пояс
 			if (timeserv.isSetZone()) {
 				TimeZone tz = timeserv.getZone();
-				String tzGMT = tz.getDisplayName();
+				String tzGMT = TimeZoneTimeFormatter.printTimeZoneTime(tz);
 				// находим индекс выборки GMT+
 				int i = 0;
 				for (; i < Constants.TIME_ZONES.length; ++i) {
