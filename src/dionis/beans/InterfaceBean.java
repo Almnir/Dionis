@@ -4,16 +4,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
-import javax.xml.bind.annotation.XmlElement;
-
-import dionis.xml.BooleanType;
-import dionis.xml.DisableDatagrams;
-import dionis.xml.InterfaceFilters;
-import dionis.xml.InterfaceIP;
 import dionis.xml.InterfaceModeType;
 import dionis.xml.InterfaceNatType;
-import dionis.xml.InterfaceParametrs;
-import dionis.xml.InterfaceRoutes;
 import dionis.xml.InterfaceType;
 
 public class InterfaceBean implements PropertyChangeListener {
@@ -28,8 +20,8 @@ public class InterfaceBean implements PropertyChangeListener {
 	protected String port;
 	protected int timer;
 	protected DisableDatagramsBean disableDatagrams;
-	protected InterfaceParametrs parametrs;
-	protected InterfaceRoutes routes;
+	protected InterfaceParametrsBean parametrs;
+	protected InterfaceRoutesBean routes;
 
 	private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(
 			this);
@@ -148,26 +140,52 @@ public class InterfaceBean implements PropertyChangeListener {
 						this.disableDatagrams = disableDatagrams);
 	}
 
-	public InterfaceParametrs getParametrs() {
+	public InterfaceParametrsBean getParametrs() {
 		return parametrs;
 	}
 
-	public void setParametrs(InterfaceParametrs parametrs) {
+	public void setParametrs(InterfaceParametrsBean parametrs) {
+		parametrs.addPropertyChangeListener("seq", this);
+		parametrs.addPropertyChangeListener("chksum", this);
+		parametrs.addPropertyChangeListener("tos", this);
+		parametrs.addPropertyChangeListener("df", this);
+		parametrs.addPropertyChangeListener("board", this);
+		parametrs.addPropertyChangeListener("frame", this);
+		parametrs.addPropertyChangeListener("buf", this);
+		parametrs.addPropertyChangeListener("delay", this);
+		parametrs.addPropertyChangeListener("interval", this);
+		parametrs.addPropertyChangeListener("wait", this);
+		parametrs.addPropertyChangeListener("type", this);
+		parametrs.addPropertyChangeListener("ports", this);
+		parametrs.addPropertyChangeListener("script", this);
+		parametrs.addPropertyChangeListener("send", this);
+		parametrs.addPropertyChangeListener("recv", this);
+		parametrs.addPropertyChangeListener("media", this);
+		parametrs.addPropertyChangeListener("mode", this);
+		parametrs.addPropertyChangeListener("authLocal", this);
+		parametrs.addPropertyChangeListener("authRemote", this);
+		parametrs.addPropertyChangeListener("vnid", this);
+		parametrs.addPropertyChangeListener("baseInterface", this);
+		parametrs.addPropertyChangeListener("bandwidth", this);
+		parametrs.addPropertyChangeListener("bandrecv", this);
+		parametrs.addPropertyChangeListener("mac", this);
+		parametrs.addPropertyChangeListener("vlaNs", this);
 		propertyChangeSupport.firePropertyChange("parametrs", this.parametrs,
 				this.parametrs = parametrs);
 	}
 
-	public InterfaceRoutes getRoutes() {
+	public InterfaceRoutesBean getRoutes() {
 		return routes;
 	}
 
-	public void setRoutes(InterfaceRoutes routes) {
+	public void setRoutes(InterfaceRoutesBean routes) {
+		routes.addPropertyChangeListener("route", this);
 		propertyChangeSupport.firePropertyChange("routes", this.routes,
 				this.routes = routes);
 	}
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		propertyChangeSupport.firePropertyChange("ip", null, ip);
+		// propertyChangeSupport.firePropertyChange("ip", null, ip);
 	}
 }

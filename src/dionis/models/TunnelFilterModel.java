@@ -12,4 +12,14 @@ public class TunnelFilterModel extends AbstractModel<TunnelFilter> {
 		}
 		return instance;
 	}
+
+	@Override
+	public String toString() {
+		String rv = "";
+		for (Object obj : this.getData()) {
+			rv += obj.toString();
+			rv += " ";
+		}
+		return rv;
+	}
 }

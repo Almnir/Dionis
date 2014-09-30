@@ -1,23 +1,21 @@
 package dionis.dialogs;
 
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
-import org.eclipse.core.databinding.DataBindingContext;
-import org.eclipse.core.databinding.UpdateValueStrategy;
-import org.eclipse.core.databinding.beans.BeanProperties;
-import org.eclipse.core.databinding.conversion.Converter;
-import org.eclipse.core.databinding.observable.value.IObservableValue;
-import org.eclipse.jface.databinding.swt.SWTObservables;
-import org.eclipse.jface.databinding.swt.WidgetProperties;
-import org.eclipse.jface.databinding.viewers.ViewersObservables;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -25,52 +23,58 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 
 import dionis.beans.DisableDatagramsBean;
 import dionis.beans.InterfaceBean;
 import dionis.beans.InterfaceFiltersBean;
 import dionis.beans.InterfaceIPBean;
-import dionis.models.InterfaceModel;
+import dionis.beans.InterfaceParametrsBean;
+import dionis.beans.InterfaceRouteBean;
+import dionis.beans.InterfaceRoutesBean;
+import dionis.models.InterfaceRouteModel;
+import dionis.providers.InterfaceRouteLabelProvider;
 import dionis.xml.BooleanType;
 import dionis.xml.InterfaceModeType;
 import dionis.xml.InterfaceNatType;
 import dionis.xml.InterfaceType;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 
 public class InterfaceDialog extends Dialog {
-	private Text text;
-	private Text text_1;
-	private Combo combo;
-	private Combo combo_1;
-	private Combo combo_3;
-	private Combo combo_4;
-	private Spinner spinner;
-	private Combo combo_5;
-	private Spinner spinner_1;
-	private Button button;
-	private Button btnCheckButton;
-	private Button btnCheckButton_1;
-	private Button btnCheckButton_2;
-	private Button btnCheckButton_3;
-	private Button btnCheckButton_4;
-	private Button btnIp;
-	private Button btnCheckButton_5;
-	private InterfaceBean ib;
+	private Text nameText;
+	private Text remoteIpText;
+	private Combo typeCombo;
+	private Combo modeCombo;
+	private Combo filterInputCombo;
+	private Combo filterOutputCombo;
+	private Spinner timerSpinner;
+	private Combo natCombo;
+	private Spinner mtuSpinner;
+	private Button tunnelButton;
+	private Button transitButton;
+	private Button dhcpButton;
+	private Button ripButton;
+	private Button multicastButton;
+	private Button clusterButton;
+	private Button ipButton;
+	private Button proxyButton;
+	private InterfaceBean interfaceBean;
 	private ComboViewer comboViewer;
-	private int index;
-	private ComboViewer comboViewer_1;
-	private ComboViewer comboViewer_2;
-	private Text text_2;
-	private ComboViewer comboViewer_3;
-	private ComboViewer comboViewer_4;
+	private ComboViewer modeComboViewer;
+	private ComboViewer filterInputComboViewer;
+	private Text localIpText;
+	private ComboViewer filterOutputComboViewer;
+	private ComboViewer natComboViewer;
 	private Table table;
 	private TableViewer tableViewer;
 	private TableColumn tblclmnNewColumn;
@@ -81,16 +85,15 @@ public class InterfaceDialog extends Dialog {
 	private TableViewerColumn tableViewerColumn_2;
 	private TableColumn tblclmnNewColumn_3;
 	private TableViewerColumn tableViewerColumn_3;
-	private Button btnNewButton;
+	private Button otherParamsButton;
 
 	/**
 	 * Create the dialog.
 	 * 
 	 * @param parentShell
 	 */
-	public InterfaceDialog(Shell parentShell, int index) {
+	public InterfaceDialog(Shell parentShell) {
 		super(parentShell);
-		this.index = index;
 	}
 
 	/**
@@ -101,8 +104,8 @@ public class InterfaceDialog extends Dialog {
 	@Override
 	protected Control createDialogArea(Composite parent) {
 
-		/** Создаём бины **/
-		createData();
+		/** Установка **/
+		setUp();
 
 		Composite container = (Composite) super.createDialogArea(parent);
 		container.setLayout(new GridLayout(7, false));
@@ -111,24 +114,24 @@ public class InterfaceDialog extends Dialog {
 		label.setText("Имя");
 		new Label(container, SWT.NONE);
 
-		text = new Text(container, SWT.BORDER);
+		nameText = new Text(container, SWT.BORDER);
 		GridData gd_text = new GridData(SWT.FILL, SWT.CENTER, false, false, 1,
 				1);
 		gd_text.widthHint = 103;
-		text.setLayoutData(gd_text);
-		text.setTextLimit(7);
+		nameText.setLayoutData(gd_text);
+		nameText.setTextLimit(7);
 
 		Label label_1 = new Label(container, SWT.NONE);
 		label_1.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false,
 				1, 1));
 		label_1.setText("Тип");
 
-		combo = new Combo(container, SWT.NONE);
+		typeCombo = new Combo(container, SWT.NONE);
 		GridData gd_combo = new GridData(SWT.FILL, SWT.CENTER, false, false, 1,
 				1);
 		gd_combo.widthHint = 201;
-		combo.setLayoutData(gd_combo);
-		comboViewer = new ComboViewer(combo);
+		typeCombo.setLayoutData(gd_combo);
+		comboViewer = new ComboViewer(typeCombo);
 		comboViewer.setContentProvider(new ArrayContentProvider());
 		comboViewer.setLabelProvider(new LabelProvider() {
 			@Override
@@ -152,14 +155,14 @@ public class InterfaceDialog extends Dialog {
 				1, 1));
 		label_2.setText("Режим активизации");
 
-		combo_1 = new Combo(container, SWT.NONE);
+		modeCombo = new Combo(container, SWT.NONE);
 		GridData gd_combo_1 = new GridData(SWT.LEFT, SWT.CENTER, false, false,
 				1, 1);
 		gd_combo_1.widthHint = 351;
-		combo_1.setLayoutData(gd_combo_1);
-		comboViewer_1 = new ComboViewer(combo_1);
-		comboViewer_1.setContentProvider(new ArrayContentProvider());
-		comboViewer_1.setLabelProvider(new LabelProvider() {
+		modeCombo.setLayoutData(gd_combo_1);
+		modeComboViewer = new ComboViewer(modeCombo);
+		modeComboViewer.setContentProvider(new ArrayContentProvider());
+		modeComboViewer.setLabelProvider(new LabelProvider() {
 			@Override
 			public String getText(Object element) {
 				if (element instanceof InterfaceModeType) {
@@ -169,30 +172,30 @@ public class InterfaceDialog extends Dialog {
 				return super.getText(element);
 			}
 		});
-		comboViewer_1.setInput(Arrays.asList(InterfaceModeType.values()));
+		modeComboViewer.setInput(Arrays.asList(InterfaceModeType.values()));
 
 		Label lblIp = new Label(container, SWT.NONE);
 		lblIp.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 3,
 				1));
 		lblIp.setText("Локальный ip адрес");
 
-		text_2 = new Text(container, SWT.NONE);
-		text_2.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false,
-				2, 1));
+		localIpText = new Text(container, SWT.NONE);
+		localIpText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false,
+				false, 2, 1));
 
 		Label label_4 = new Label(container, SWT.NONE);
 		label_4.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false,
 				1, 1));
 		label_4.setText("Фильтр входящих");
 
-		combo_3 = new Combo(container, SWT.NONE);
+		filterInputCombo = new Combo(container, SWT.NONE);
 		GridData gd_combo_3 = new GridData(SWT.LEFT, SWT.CENTER, false, false,
 				1, 1);
 		gd_combo_3.widthHint = 351;
-		combo_3.setLayoutData(gd_combo_3);
-		comboViewer_2 = new ComboViewer(combo_3);
-		comboViewer_2.setContentProvider(new ArrayContentProvider());
-		comboViewer_2.setLabelProvider(new LabelProvider());
+		filterInputCombo.setLayoutData(gd_combo_3);
+		filterInputComboViewer = new ComboViewer(filterInputCombo);
+		filterInputComboViewer.setContentProvider(new ArrayContentProvider());
+		filterInputComboViewer.setLabelProvider(new LabelProvider());
 		// TODO: доделать связь с таблицей фильтров
 		// ib
 		// comboViewer_2.setInput(new String[] { ib.getFilters().getInput() });
@@ -202,23 +205,23 @@ public class InterfaceDialog extends Dialog {
 				3, 1));
 		lblIp_1.setText("Удалённый ip адрес");
 
-		text_1 = new Text(container, SWT.BORDER);
-		text_1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false,
-				2, 1));
+		remoteIpText = new Text(container, SWT.BORDER);
+		remoteIpText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false,
+				false, 2, 1));
 
 		Label label_6 = new Label(container, SWT.NONE);
 		label_6.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false,
 				1, 1));
 		label_6.setText("Фильтр исходящих");
 
-		combo_4 = new Combo(container, SWT.NONE);
+		filterOutputCombo = new Combo(container, SWT.NONE);
 		GridData gd_combo_4 = new GridData(SWT.LEFT, SWT.CENTER, false, false,
 				1, 1);
 		gd_combo_4.widthHint = 351;
-		combo_4.setLayoutData(gd_combo_4);
-		comboViewer_3 = new ComboViewer(combo_4);
-		comboViewer_3.setContentProvider(new ArrayContentProvider());
-		comboViewer_3.setLabelProvider(new LabelProvider());
+		filterOutputCombo.setLayoutData(gd_combo_4);
+		filterOutputComboViewer = new ComboViewer(filterOutputCombo);
+		filterOutputComboViewer.setContentProvider(new ArrayContentProvider());
+		filterOutputComboViewer.setLabelProvider(new LabelProvider());
 		// TODO: доделать связь с таблицей фильтров
 
 		Label lblNewLabel = new Label(container, SWT.NONE);
@@ -226,27 +229,27 @@ public class InterfaceDialog extends Dialog {
 				false, 3, 1));
 		lblNewLabel.setText("Таймер неактивности");
 
-		spinner = new Spinner(container, SWT.BORDER);
+		timerSpinner = new Spinner(container, SWT.BORDER);
 		GridData gd_spinner = new GridData(SWT.LEFT, SWT.CENTER, false, false,
 				2, 1);
 		gd_spinner.widthHint = 124;
-		spinner.setLayoutData(gd_spinner);
-		spinner.setMinimum(0);
-		spinner.setMaximum(65535);
+		timerSpinner.setLayoutData(gd_spinner);
+		timerSpinner.setMinimum(0);
+		timerSpinner.setMaximum(65535);
 
 		Label lblNewLabel_1 = new Label(container, SWT.NONE);
 		lblNewLabel_1.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false,
 				false, 1, 1));
 		lblNewLabel_1.setText("NAT режим");
 
-		combo_5 = new Combo(container, SWT.NONE);
+		natCombo = new Combo(container, SWT.NONE);
 		GridData gd_combo_5 = new GridData(SWT.LEFT, SWT.CENTER, false, false,
 				1, 1);
 		gd_combo_5.widthHint = 351;
-		combo_5.setLayoutData(gd_combo_5);
-		comboViewer_4 = new ComboViewer(combo_5);
-		comboViewer_4.setContentProvider(new ArrayContentProvider());
-		comboViewer_4.setLabelProvider(new LabelProvider() {
+		natCombo.setLayoutData(gd_combo_5);
+		natComboViewer = new ComboViewer(natCombo);
+		natComboViewer.setContentProvider(new ArrayContentProvider());
+		natComboViewer.setLabelProvider(new LabelProvider() {
 			@Override
 			public String getText(Object element) {
 				if (element instanceof InterfaceNatType) {
@@ -256,20 +259,20 @@ public class InterfaceDialog extends Dialog {
 				return super.getText(element);
 			}
 		});
-		comboViewer_4.setInput(Arrays.asList(InterfaceNatType.values()));
+		natComboViewer.setInput(Arrays.asList(InterfaceNatType.values()));
 
 		Label lblMtu = new Label(container, SWT.NONE);
 		lblMtu.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false,
 				3, 1));
 		lblMtu.setText("MTU");
 
-		spinner_1 = new Spinner(container, SWT.BORDER);
+		mtuSpinner = new Spinner(container, SWT.BORDER);
 		GridData gd_spinner_1 = new GridData(SWT.LEFT, SWT.CENTER, false,
 				false, 2, 1);
 		gd_spinner_1.widthHint = 124;
-		spinner_1.setLayoutData(gd_spinner_1);
-		spinner_1.setMinimum(576);
-		spinner_1.setMaximum(1500);
+		mtuSpinner.setLayoutData(gd_spinner_1);
+		mtuSpinner.setMinimum(576);
+		mtuSpinner.setMaximum(1500);
 
 		Group group_2 = new Group(container, SWT.NONE);
 		group_2.setText("Таблица маршрутов");
@@ -301,16 +304,114 @@ public class InterfaceDialog extends Dialog {
 		tblclmnNewColumn.setWidth(100);
 		tblclmnNewColumn.setText("Метка");
 
+		/** Таблица **/
+		tableViewer.setContentProvider(ArrayContentProvider.getInstance());
+		tableViewer.setLabelProvider(new InterfaceRouteLabelProvider());
+		tableViewer.setInput(InterfaceRouteModel.getInstance().getDataArray());
+
+		Menu menu = new Menu(table);
+		table.setMenu(menu);
+
+		final MenuItem mntmNewItem = new MenuItem(menu, SWT.NONE);
+		mntmNewItem.setText("Изменить");
+
+		mntmNewItem.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				if (table.getSelection() != null
+						&& table.getSelection().length > 0) {
+					IStructuredSelection sel = (IStructuredSelection) tableViewer
+							.getSelection();
+					// выбранный элемент таблицы как бин
+					InterfaceRouteBean ibean = (InterfaceRouteBean) sel
+							.getFirstElement();
+					// индекс бина в списке
+					int indx = InterfaceRouteModel.getInstance().getData()
+							.indexOf(ibean);
+					// создание диалога
+					InterfaceRouteDialog dialog = new InterfaceRouteDialog(
+							getShell());
+					// передача бина диалогу
+					dialog.setInterfaceRouteBean(ibean);
+					if (dialog.open() == Window.OK) {
+						// замена бина в модели по выбранному индексу
+						InterfaceRouteModel.getInstance().getData()
+								.set(indx, dialog.getInterfaceRouteBean());
+						// обновление данных для таблицы
+						tableViewer.refresh();
+					}
+				}
+			}
+		});
+
+		final MenuItem mntmNewItem_1 = new MenuItem(menu, SWT.NONE);
+		mntmNewItem_1.setText("Добавить");
+
+		mntmNewItem_1.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				// создание диалога
+				InterfaceRouteDialog dialog = new InterfaceRouteDialog(
+						getShell());
+				dialog.setInterfaceRouteBean(null);
+				if (dialog.open() == Window.OK) {
+					// замена бина в модели по выбранному индексу
+					InterfaceRouteModel.getInstance().getData()
+							.add(dialog.getInterfaceRouteBean());
+					// обновление данных для таблицы
+					tableViewer.setInput(InterfaceRouteModel.getInstance()
+							.getDataArray());
+				}
+			}
+		});
+
+		final MenuItem mntmNewItem_2 = new MenuItem(menu, SWT.NONE);
+		mntmNewItem_2.setText("Удалить");
+
+		mntmNewItem_2.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				if (table.getSelection() != null
+						&& table.getSelection().length > 0) {
+					IStructuredSelection sel = (IStructuredSelection) tableViewer
+							.getSelection();
+					// выбранный элемент таблицы как бин
+					InterfaceRouteBean ibean = (InterfaceRouteBean) sel
+							.getFirstElement();
+					InterfaceRouteModel.getInstance().getData().remove(ibean);
+					// обновление данных для таблицы
+					tableViewer.setInput(InterfaceRouteModel.getInstance()
+							.getDataArray());
+				}
+			}
+		});
+
+		menu.addListener(SWT.Show, new Listener() {
+			@Override
+			public void handleEvent(Event event) {
+				TableItem[] selected = table.getSelection();
+				if (selected.length == 0) {
+					mntmNewItem.setEnabled(false);
+					mntmNewItem_1.setEnabled(true);
+					mntmNewItem_2.setEnabled(false);
+				} else {
+					mntmNewItem.setEnabled(true);
+					mntmNewItem_1.setEnabled(true);
+					mntmNewItem_2.setEnabled(true);
+				}
+			}
+		});
+
 		Group group = new Group(container, SWT.NONE);
 		group.setLayout(new GridLayout(1, false));
 		group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 5, 1));
-		
-		btnNewButton = new Button(group, SWT.NONE);
-		btnNewButton.setText("Дополнительные параметры");
-		btnNewButton.addSelectionListener(new SelectionAdapter() {
+
+		otherParamsButton = new Button(group, SWT.NONE);
+		otherParamsButton.setText("Дополнительные параметры");
+		otherParamsButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				
+
 			}
 		});
 
@@ -320,212 +421,328 @@ public class InterfaceDialog extends Dialog {
 		group_1.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 5,
 				1));
 
-		button = new Button(group_1, SWT.CHECK);
-		button.setText("Не туннелированных");
+		tunnelButton = new Button(group_1, SWT.CHECK);
+		tunnelButton.setText("Не туннелированных");
 
-		btnCheckButton = new Button(group_1, SWT.CHECK);
-		btnCheckButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false,
+		transitButton = new Button(group_1, SWT.CHECK);
+		transitButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false,
 				false, 1, 1));
-		btnCheckButton.setText("Транзитных");
+		transitButton.setText("Транзитных");
 
-		btnCheckButton_1 = new Button(group_1, SWT.CHECK);
-		btnCheckButton_1.setText("DHCP протокола");
+		dhcpButton = new Button(group_1, SWT.CHECK);
+		dhcpButton.setText("DHCP протокола");
 
-		btnCheckButton_2 = new Button(group_1, SWT.CHECK);
-		btnCheckButton_2.setText("RIP протокола");
+		ripButton = new Button(group_1, SWT.CHECK);
+		ripButton.setText("RIP протокола");
 
-		btnCheckButton_3 = new Button(group_1, SWT.CHECK);
-		btnCheckButton_3.setText("Multicast");
+		multicastButton = new Button(group_1, SWT.CHECK);
+		multicastButton.setText("Multicast");
 
-		btnCheckButton_4 = new Button(group_1, SWT.CHECK);
-		btnCheckButton_4.setText("Cluster");
+		clusterButton = new Button(group_1, SWT.CHECK);
+		clusterButton.setText("Cluster");
 
-		btnIp = new Button(container, SWT.CHECK);
-		btnIp.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false, 1, 1));
-		btnIp.setText("IP статистика");
+		ipButton = new Button(container, SWT.CHECK);
+		ipButton.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false, 1,
+				1));
+		ipButton.setText("IP статистика");
 		new Label(container, SWT.NONE);
 		new Label(container, SWT.NONE);
 
-		btnCheckButton_5 = new Button(container, SWT.CHECK);
-		btnCheckButton_5.setText("Прокси ARP");
-		btnCheckButton_5.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false,
-				false, 1, 1));
+		proxyButton = new Button(container, SWT.CHECK);
+		proxyButton.setText("Прокси ARP");
+		proxyButton.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false,
+				1, 1));
 		new Label(container, SWT.NONE);
 
-		bindData();
+		// bindData();
+
+		getAll();
 
 		return container;
 	}
 
-	private void createData() {
-		// если ничего не выбрано (добавление)
-		if (index == -1) {
+	// private void bindData() {
+	// // контекст датабиндинга
+	// DataBindingContext ctx = new DataBindingContext();
+	// // имя
+	// IObservableValue widgetValue = WidgetProperties.text(SWT.Modify)
+	// .observe(text);
+	// IObservableValue modelValue = BeanProperties.value(InterfaceBean.class,
+	// "name").observe(getInterfaceBean());
+	// ctx.bindValue(widgetValue, modelValue);
+	// // Тип
+	// widgetValue = ViewersObservables.observeSingleSelection(comboViewer);
+	// modelValue = BeanProperties.value("type").observe(getInterfaceBean());
+	// ctx.bindValue(widgetValue, modelValue);
+	// // режим активизации
+	// widgetValue = ViewersObservables.observeSingleSelection(comboViewer_1);
+	// modelValue = BeanProperties.value("mode").observe(getInterfaceBean());
+	// ctx.bindValue(widgetValue, modelValue);
+	// // локальный ip
+	// widgetValue = WidgetProperties.text(SWT.Modify).observe(text_2);
+	// modelValue = BeanProperties.value(InterfaceBean.class, "ip.local")
+	// .observe(getInterfaceBean());
+	// ctx.bindValue(widgetValue, modelValue);
+	// // фильтр входящих
+	// widgetValue = ViewersObservables.observeSingleSelection(comboViewer_2);
+	// modelValue =
+	// BeanProperties.value("filters.input").observe(getInterfaceBean());
+	// ctx.bindValue(widgetValue, modelValue);
+	// // удалённый ip
+	// widgetValue = WidgetProperties.text(SWT.Modify).observe(text_1);
+	// modelValue = BeanProperties.value(InterfaceBean.class, "ip.remote")
+	// .observe(getInterfaceBean());
+	// ctx.bindValue(widgetValue, modelValue);
+	// // фильтр исходящих
+	// widgetValue = ViewersObservables.observeSingleSelection(comboViewer_3);
+	// modelValue =
+	// BeanProperties.value("filters.input").observe(getInterfaceBean());
+	// ctx.bindValue(widgetValue, modelValue);
+	// // Таймер неактивности
+	// widgetValue = SWTObservables.observeSelection(spinner);
+	// modelValue = BeanProperties.value("timer").observe(getInterfaceBean());
+	// // NAT режим
+	// widgetValue = ViewersObservables.observeSingleSelection(comboViewer_4);
+	// modelValue = BeanProperties.value("nat").observe(getInterfaceBean());
+	// ctx.bindValue(widgetValue, modelValue);
+	// // MTU
+	// widgetValue = SWTObservables.observeSelection(spinner_1);
+	// modelValue = BeanProperties.value("mtu").observe(getInterfaceBean());
+	// ctx.bindValue(widgetValue, modelValue);
+	// /** **/
+	// // Не туннелированных
+	// widgetValue = SWTObservables.observeSelection(button);
+	// modelValue = BeanProperties.value(InterfaceBean.class,
+	// "disableDatagrams.notTunneled").observe(getInterfaceBean());
+	// // стратегия для конверсии boolean -> BooleanType
+	// UpdateValueStrategy updateValueStrategy = new UpdateValueStrategy()
+	// .setConverter(new Boolean2BooleanTypeConverter());
+	// // стратегия для обратной конверсии BooleanType -> boolean
+	// UpdateValueStrategy updateFromValueStrategy = new UpdateValueStrategy()
+	// .setConverter(new BooleanType2BooleanConverter());
+	// ctx.bindValue(widgetValue, modelValue, updateValueStrategy,
+	// updateFromValueStrategy);
+	// // Транзитных
+	// widgetValue = SWTObservables.observeSelection(btnCheckButton);
+	// modelValue = BeanProperties.value(InterfaceBean.class,
+	// "disableDatagrams.forward").observe(getInterfaceBean());
+	// ctx.bindValue(widgetValue, modelValue, updateValueStrategy,
+	// updateFromValueStrategy);
+	// // DHCP протокола
+	// widgetValue = SWTObservables.observeSelection(btnCheckButton_1);
+	// modelValue = BeanProperties.value(InterfaceBean.class,
+	// "disableDatagrams.dhcp").observe(getInterfaceBean());
+	// ctx.bindValue(widgetValue, modelValue, updateValueStrategy,
+	// updateFromValueStrategy);
+	// // RIP протокола
+	// widgetValue = SWTObservables.observeSelection(btnCheckButton_2);
+	// modelValue = BeanProperties.value(InterfaceBean.class,
+	// "disableDatagrams.rip").observe(getInterfaceBean());
+	// ctx.bindValue(widgetValue, modelValue, updateValueStrategy,
+	// updateFromValueStrategy);
+	// // Multicast
+	// widgetValue = SWTObservables.observeSelection(btnCheckButton_3);
+	// modelValue = BeanProperties.value(InterfaceBean.class,
+	// "disableDatagrams.multicast").observe(getInterfaceBean());
+	// ctx.bindValue(widgetValue, modelValue, updateValueStrategy,
+	// updateFromValueStrategy);
+	// // Cluster
+	// widgetValue = SWTObservables.observeSelection(btnCheckButton_4);
+	// modelValue = BeanProperties.value(InterfaceBean.class,
+	// "disableDatagrams.cluster").observe(getInterfaceBean());
+	// ctx.bindValue(widgetValue, modelValue, updateValueStrategy,
+	// updateFromValueStrategy);
+	// // IP статистика
+	// widgetValue = SWTObservables.observeSelection(btnIp);
+	// modelValue = BeanProperties.value(InterfaceBean.class,
+	// "disableDatagrams.ipStat").observe(getInterfaceBean());
+	// ctx.bindValue(widgetValue, modelValue, updateValueStrategy,
+	// updateFromValueStrategy);
+	// // Прокси ARP
+	// widgetValue = SWTObservables.observeSelection(btnCheckButton_5);
+	// modelValue = BeanProperties.value(InterfaceBean.class,
+	// "disableDatagrams.proxyARP").observe(getInterfaceBean());
+	// ctx.bindValue(widgetValue, modelValue, updateValueStrategy,
+	// updateFromValueStrategy);
+	// ObservableListContentProvider contentProvider = new
+	// ObservableListContentProvider();
+	// tableViewer.setContentProvider(contentProvider);
+	//
+	// List<InterfaceRouteBean> routesList = ib.getRoutes().getRoute();
+	// IObservableSet knownElements = contentProvider.getKnownElements();
+	// final IObservableMap ips = BeanProperties.value(
+	// InterfaceRouteBean.class, "ip").observeDetail(knownElements);
+	// final IObservableMap bitss = BeanProperties.value(
+	// InterfaceRouteBean.class, "bits").observeDetail(knownElements);
+	// final IObservableMap gateways = BeanProperties.value(
+	// InterfaceRouteBean.class, "gateway").observeDetail(
+	// knownElements);
+	// final IObservableMap metrics = BeanProperties.value(
+	// InterfaceRouteBean.class, "metric")
+	// .observeDetail(knownElements);
+	// final IObservableMap tags = BeanProperties.value(
+	// InterfaceRouteBean.class, "tag").observeDetail(knownElements);
+	//
+	// IObservableMap[] maps = { ips, bitss, gateways, metrics, tags };
+	//
+	// ILabelProvider labelProvider = new ObservableMapLabelProvider(maps) {
+	// @Override
+	// public String getColumnText(Object element, int columnIndex) {
+	// String rv = "";
+	// switch (columnIndex) {
+	// case 0:
+	// rv = ips.get(element).toString() + "/"
+	// + bitss.get(element).toString();
+	// break;
+	// case 1:
+	// rv = gateways.get(element).toString();
+	// break;
+	//
+	// case 2:
+	// rv = metrics.get(element).toString();
+	// break;
+	//
+	// case 3:
+	// rv = tags.get(element).toString();
+	// break;
+	//
+	// }
+	// return rv;
+	// }
+	// };
+	//
+	// IObservableList input = Properties.selfList(InterfaceRouteBean.class)
+	// .observe(routesList);
+	//
+	// tableViewer.setLabelProvider(labelProvider);
+	// tableViewer.setInput(input);
+	// }
+
+	private void setUp() {
+		if (interfaceBean == null) {
+			InterfaceRouteModel.getInstance().removeAll();
+			System.out.println("clean");
+		} else {
+			InterfaceRouteModel.getInstance().setData(
+					interfaceBean.getRoutes().getRoute());
+		}
+	}
+
+	private void getAll() {
+		if (interfaceBean == null) {
 			// новый экземпляр бина
-			ib = new InterfaceBean();
+			setInterfaceBean(new InterfaceBean());
 			InterfaceIPBean ipb = new InterfaceIPBean();
-			ib.setIp(ipb);
+			getInterfaceBean().setIp(ipb);
 			InterfaceFiltersBean filtersBean = new InterfaceFiltersBean();
-			ib.setFilters(filtersBean);
+			getInterfaceBean().setFilters(filtersBean);
 			DisableDatagramsBean datagramsBean = new DisableDatagramsBean();
 			datagramsBean.setNotTunneled(BooleanType.YES);
 			datagramsBean.setForward(BooleanType.YES);
-			ib.setDisableDatagrams(datagramsBean);
+			getInterfaceBean().setDisableDatagrams(datagramsBean);
+			InterfaceRoutesBean routes = new InterfaceRoutesBean();
+			LinkedList<InterfaceRouteBean> route = new LinkedList<InterfaceRouteBean>();
+			routes.setRoute(route);
+			getInterfaceBean().setRoutes(routes);
 		} else {
-			// ссылка на экземпляр бина из модели
-			ib = InterfaceModel.getInstance().getData().get(index);
+			nameText.setText(interfaceBean.getName());
+			typeCombo.select((interfaceBean.getType() != null) ? interfaceBean
+					.getType().ordinal() : 0);
+			modeCombo.select((interfaceBean.getMode() != null) ? interfaceBean
+					.getMode().ordinal() : 0);
+			localIpText.setText(interfaceBean.getIp().getLocal());
+			remoteIpText.setText(interfaceBean.getIp().getRemote());
+			// TODO: !!!
+			// filterInputCombo.select(index)
+			timerSpinner.setSelection(interfaceBean.getTimer());
+			natCombo.select((interfaceBean.getNat() != null) ? interfaceBean
+					.getNat().ordinal() : 0);
+			mtuSpinner.setSelection(interfaceBean.getMtu());
+			// TODO !!!
+			// params???
+			DisableDatagramsBean datagrams = interfaceBean
+					.getDisableDatagrams();
+			tunnelButton
+					.setSelection(datagrams.getNotTunneled() == BooleanType.YES ? true
+							: false);
+			transitButton
+					.setSelection(datagrams.getForward() == BooleanType.YES ? true
+							: false);
+			dhcpButton
+					.setSelection(datagrams.getDhcp() == BooleanType.YES ? true
+							: false);
+			ripButton.setSelection(datagrams.getRip() == BooleanType.YES ? true
+					: false);
+			multicastButton
+					.setSelection(datagrams.getMulticast() == BooleanType.YES ? true
+							: false);
+			clusterButton
+					.setSelection(datagrams.getCluster() == BooleanType.YES ? true
+							: false);
+			ipButton.setSelection(datagrams.getIpStat() == BooleanType.YES ? true
+					: false);
+			proxyButton
+					.setSelection(datagrams.getProxyARP() == BooleanType.YES ? true
+							: false);
 		}
-	}
-
-	private void bindData() {
-		// контекст датабиндинга
-		DataBindingContext ctx = new DataBindingContext();
-		// имя
-		IObservableValue widgetValue = WidgetProperties.text(SWT.Modify)
-				.observe(text);
-		IObservableValue modelValue = BeanProperties.value(InterfaceBean.class,
-				"name").observe(ib);
-		ctx.bindValue(widgetValue, modelValue);
-		// Тип
-		widgetValue = ViewersObservables.observeSingleSelection(comboViewer);
-		modelValue = BeanProperties.value("type").observe(ib);
-		ctx.bindValue(widgetValue, modelValue);
-		// режим активизации
-		widgetValue = ViewersObservables.observeSingleSelection(comboViewer_1);
-		modelValue = BeanProperties.value("mode").observe(ib);
-		ctx.bindValue(widgetValue, modelValue);
-		// локальный ip
-		widgetValue = WidgetProperties.text(SWT.Modify).observe(text_2);
-		modelValue = BeanProperties.value(InterfaceBean.class, "ip.local")
-				.observe(ib);
-		ctx.bindValue(widgetValue, modelValue);
-		// фильтр входящих
-		widgetValue = ViewersObservables.observeSingleSelection(comboViewer_2);
-		modelValue = BeanProperties.value("filters.input").observe(ib);
-		ctx.bindValue(widgetValue, modelValue);
-		// удалённый ip
-		widgetValue = WidgetProperties.text(SWT.Modify).observe(text_1);
-		modelValue = BeanProperties.value(InterfaceBean.class, "ip.remote")
-				.observe(ib);
-		ctx.bindValue(widgetValue, modelValue);
-		// фильтр исходящих
-		widgetValue = ViewersObservables.observeSingleSelection(comboViewer_3);
-		modelValue = BeanProperties.value("filters.input").observe(ib);
-		ctx.bindValue(widgetValue, modelValue);
-		// Таймер неактивности
-		widgetValue = SWTObservables.observeSelection(spinner);
-		modelValue = BeanProperties.value("timer").observe(ib);
-		// NAT режим
-		widgetValue = ViewersObservables.observeSingleSelection(comboViewer_4);
-		modelValue = BeanProperties.value("nat").observe(ib);
-		ctx.bindValue(widgetValue, modelValue);
-		// MTU
-		widgetValue = SWTObservables.observeSelection(spinner_1);
-		modelValue = BeanProperties.value("mtu").observe(ib);
-		ctx.bindValue(widgetValue, modelValue);
-		/** **/
-		// Не туннелированных
-		widgetValue = SWTObservables.observeSelection(button);
-		modelValue = BeanProperties.value(InterfaceBean.class,
-				"disableDatagrams.notTunneled").observe(ib);
-		// стратегия для конверсии boolean -> BooleanType
-		UpdateValueStrategy updateValueStrategy = new UpdateValueStrategy()
-		.setConverter(new Boolean2BooleanTypeConverter());
-		// стратегия для обратной конверсии BooleanType -> boolean 
-		UpdateValueStrategy updateFromValueStrategy = new UpdateValueStrategy()
-		.setConverter(new BooleanType2BooleanConverter());
-		ctx.bindValue(widgetValue, modelValue, updateValueStrategy, updateFromValueStrategy);
-		// Транзитных
-		widgetValue = SWTObservables.observeSelection(btnCheckButton);
-		modelValue = BeanProperties.value(InterfaceBean.class,
-				"disableDatagrams.forward").observe(ib);
-		ctx.bindValue(widgetValue, modelValue, updateValueStrategy, updateFromValueStrategy);
-		// DHCP протокола
-		widgetValue = SWTObservables.observeSelection(btnCheckButton_1);
-		modelValue = BeanProperties.value(InterfaceBean.class,
-				"disableDatagrams.dhcp").observe(ib);
-		ctx.bindValue(widgetValue, modelValue, updateValueStrategy, updateFromValueStrategy);
-		// RIP протокола
-		widgetValue = SWTObservables.observeSelection(btnCheckButton_2);
-		modelValue = BeanProperties.value(InterfaceBean.class,
-				"disableDatagrams.rip").observe(ib);
-		ctx.bindValue(widgetValue, modelValue, updateValueStrategy, updateFromValueStrategy);
-		// Multicast
-		widgetValue = SWTObservables.observeSelection(btnCheckButton_3);
-		modelValue = BeanProperties.value(InterfaceBean.class,
-				"disableDatagrams.multicast").observe(ib);
-		ctx.bindValue(widgetValue, modelValue, updateValueStrategy, updateFromValueStrategy);
-		// Cluster
-		widgetValue = SWTObservables.observeSelection(btnCheckButton_4);
-		modelValue = BeanProperties.value(InterfaceBean.class,
-				"disableDatagrams.cluster").observe(ib);
-		ctx.bindValue(widgetValue, modelValue, updateValueStrategy, updateFromValueStrategy);
-		// IP статистика
-		widgetValue = SWTObservables.observeSelection(btnIp);
-		modelValue = BeanProperties.value(InterfaceBean.class,
-				"disableDatagrams.ipStat").observe(ib);
-		ctx.bindValue(widgetValue, modelValue, updateValueStrategy, updateFromValueStrategy);
-		// Прокси ARP
-		widgetValue = SWTObservables.observeSelection(btnCheckButton_5);
-		modelValue = BeanProperties.value(InterfaceBean.class,
-				"disableDatagrams.proxyARP").observe(ib);
-		ctx.bindValue(widgetValue, modelValue, updateValueStrategy, updateFromValueStrategy);
-
-	}
-
-	/**
-	 * Класс конверсии значений из типа boolean в тип BooleanType
-	 * 
-	 * @author Ярных А.О.
-	 *
-	 */
-	private class Boolean2BooleanTypeConverter extends Converter {
-
-		public Boolean2BooleanTypeConverter() {
-			this(boolean.class, BooleanType.class);
-		}
-
-		public Boolean2BooleanTypeConverter(Object fromType, Object toType) {
-			super(fromType, toType);
-		}
-
-		@Override
-		public Object convert(Object fromObject) {
-			if ((boolean) fromObject == true)
-				return BooleanType.YES;
-			else
-				return BooleanType.NO;
-		}
-
-	}
-	/**
-	 * Класс конверсии значений из типа boolean в тип BooleanType
-	 * 
-	 * @author Ярных А.О.
-	 *
-	 */
-	private class BooleanType2BooleanConverter extends Converter {
-
-		public BooleanType2BooleanConverter() {
-			this(BooleanType.class, boolean.class);
-		}
-
-		public BooleanType2BooleanConverter(Object fromType, Object toType) {
-			super(fromType, toType);
-		}
-
-		@Override
-		public Object convert(Object fromObject) {
-			if ((BooleanType) fromObject == BooleanType.YES)
-				return true;
-			else
-				return false;
-		}
-
 	}
 
 	@Override
 	protected void okPressed() {
-		InterfaceModel.getInstance().addData(ib);
+		interfaceBean.setName(nameText.getText());
+		if (typeCombo.getSelectionIndex() != -1) {
+			interfaceBean.setType(Arrays.asList(InterfaceType.values()).get(
+					typeCombo.getSelectionIndex()));
+		}
+		if (modeCombo.getSelectionIndex() != -1) {
+			interfaceBean.setMode(Arrays.asList(InterfaceModeType.values())
+					.get(modeCombo.getSelectionIndex()));
+		}
+		InterfaceIPBean ipbean = new InterfaceIPBean();
+		ipbean.setLocal(localIpText.getText());
+		ipbean.setRemote(remoteIpText.getText());
+		interfaceBean.setIp(ipbean);
+		InterfaceFiltersBean filters = new InterfaceFiltersBean();
+		filters.setInput(filterInputCombo.getText());
+		filters.setOutput(filterOutputCombo.getText());
+		interfaceBean.setFilters(filters);
+		interfaceBean.setTimer(timerSpinner.getSelection());
+		if (natCombo.getSelectionIndex() != -1) {
+			interfaceBean.setNat(Arrays.asList(InterfaceNatType.values()).get(
+					natCombo.getSelectionIndex()));
+		}
+		interfaceBean.setMtu((short) mtuSpinner.getSelection());
+		InterfaceRoutesBean routes = new InterfaceRoutesBean();
+		routes.setRoute(InterfaceRouteModel.getInstance().getData());
+		interfaceBean.setRoutes(routes);
+		InterfaceParametrsBean params = new InterfaceParametrsBean();
+		interfaceBean.setParametrs(params);
+		DisableDatagramsBean disableDatagrams = new DisableDatagramsBean();
+		disableDatagrams
+				.setNotTunneled(tunnelButton.getSelection() == true ? BooleanType.YES
+						: BooleanType.NO);
+		disableDatagrams
+				.setForward(transitButton.getSelection() == true ? BooleanType.YES
+						: BooleanType.NO);
+		disableDatagrams
+				.setDhcp(dhcpButton.getSelection() == true ? BooleanType.YES
+						: BooleanType.NO);
+		disableDatagrams
+				.setRip(ripButton.getSelection() == true ? BooleanType.YES
+						: BooleanType.NO);
+		disableDatagrams
+				.setMulticast(multicastButton.getSelection() == true ? BooleanType.YES
+						: BooleanType.NO);
+		disableDatagrams
+				.setCluster(clusterButton.getSelection() == true ? BooleanType.YES
+						: BooleanType.NO);
+		disableDatagrams
+				.setIpStat(ipButton.getSelection() == true ? BooleanType.YES
+						: BooleanType.NO);
+		disableDatagrams
+				.setProxyARP(proxyButton.getSelection() == true ? BooleanType.YES
+						: BooleanType.NO);
+		interfaceBean.setDisableDatagrams(disableDatagrams);
 		super.okPressed();
 	}
 
@@ -550,4 +767,11 @@ public class InterfaceDialog extends Dialog {
 		return new Point(1114, 447);
 	}
 
+	public InterfaceBean getInterfaceBean() {
+		return interfaceBean;
+	}
+
+	public void setInterfaceBean(InterfaceBean interfaceBean) {
+		this.interfaceBean = interfaceBean;
+	}
 }

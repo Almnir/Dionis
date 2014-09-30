@@ -1,20 +1,14 @@
 package dionis.views;
 
-import java.util.ArrayList;
 import java.util.TimeZone;
 
-import org.eclipse.core.databinding.DataBindingContext;
-import org.eclipse.core.databinding.observable.value.IObservableValue;
-import org.eclipse.core.databinding.observable.value.WritableValue;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
-import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
@@ -29,13 +23,10 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Table;
@@ -47,22 +38,18 @@ import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.ui.part.ViewPart;
 
 import dionis.beans.InterfaceBean;
-import dionis.dialogs.ARPElementDialog;
-import dionis.dialogs.AddressTableDialog;
+import dionis.beans.InterfaceRouteBean;
 import dionis.dialogs.InterfaceDialog;
-import dionis.dialogs.NATAddressDialog;
-import dionis.dialogs.PortConfigurationDialog;
+import dionis.dialogs.InterfaceRouteDialog;
+import dionis.dialogs.TunnelDialog;
 import dionis.formatters.TimeZoneTimeFormatter;
-import dionis.models.ARPModel;
-import dionis.models.AddressModel;
 import dionis.models.DionisXAO;
 import dionis.models.InterfaceModel;
-import dionis.models.NATAddressModel;
-import dionis.models.PortsModel;
-import dionis.providers.ARPLabelProvider;
-import dionis.providers.AddressLabelProvider;
-import dionis.providers.NATLabelProvider;
-import dionis.providers.PortLabelProvider;
+import dionis.models.InterfaceRouteModel;
+import dionis.models.TunnelModel;
+import dionis.providers.InterfaceLableProvider;
+import dionis.providers.TunnelFilterLableProvider;
+import dionis.providers.TunnelLableProvider;
 import dionis.utils.Constants;
 import dionis.xml.ARP;
 import dionis.xml.ARPTableStatic;
@@ -78,9 +65,6 @@ import dionis.xml.NATTableStatic;
 import dionis.xml.Parametrs;
 import dionis.xml.Password;
 import dionis.xml.Ports;
-import dionis.xml.PortsSIOControlType;
-import dionis.xml.PortsSIODirectionType;
-import dionis.xml.PortsSIOParityType;
 import dionis.xml.RemoteControl;
 import dionis.xml.SIO;
 import dionis.xml.SYN;
@@ -88,6 +72,7 @@ import dionis.xml.TimeService;
 import dionis.xml.Tracing;
 import dionis.xml.TracingRoute;
 import dionis.xml.TracingServers;
+import dionis.xml.Tunnel;
 import dionis.xml.Type;
 
 /**
@@ -1325,91 +1310,124 @@ public class DionisView extends ViewPart {
 		tabItem.setControl(composite_4);
 		composite_4.setLayout(new GridLayout(1, false));
 
-		final TableViewer tableViewer_2 = new TableViewer(composite_4, SWT.BORDER | SWT.FULL_SELECTION);
-		final Table table_4 = tableViewer_2.getTable();
-		table_4.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-		table_4.setHeaderVisible(true);
-		table_4.setLinesVisible(true);
+		final TableViewer interfaceTableViewer = new TableViewer(composite_4, SWT.BORDER | SWT.FULL_SELECTION);
+		final Table interfaceTable = interfaceTableViewer.getTable();
+		interfaceTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		interfaceTable.setHeaderVisible(true);
+		interfaceTable.setLinesVisible(true);
 
-		TableColumn tblclmnNewColumn = new TableColumn(table_4, SWT.NONE);
+		TableColumn tblclmnNewColumn = new TableColumn(interfaceTable, SWT.NONE);
 		tblclmnNewColumn.setWidth(10);
 		tblclmnNewColumn.setText("№");
 
-		TableColumn tblclmnNewColumn_1 = new TableColumn(table_4, SWT.NONE);
+		TableColumn tblclmnNewColumn_1 = new TableColumn(interfaceTable, SWT.NONE);
 		tblclmnNewColumn_1.setWidth(100);
 		tblclmnNewColumn_1.setText("Имя");
 
-		TableColumn tblclmnNewColumn_2 = new TableColumn(table_4, SWT.NONE);
+		TableColumn tblclmnNewColumn_2 = new TableColumn(interfaceTable, SWT.NONE);
 		tblclmnNewColumn_2.setWidth(100);
 		tblclmnNewColumn_2.setText("Тип");
 
-		TableColumn tblclmnNewColumn_3 = new TableColumn(table_4, SWT.NONE);
+		TableColumn tblclmnNewColumn_3 = new TableColumn(interfaceTable, SWT.NONE);
 		tblclmnNewColumn_3.setWidth(100);
 		tblclmnNewColumn_3.setText("Активизация");
 
-		TableColumn tblclmnNewColumn_4 = new TableColumn(table_4, SWT.NONE);
+		TableColumn tblclmnNewColumn_4 = new TableColumn(interfaceTable, SWT.NONE);
 		tblclmnNewColumn_4.setWidth(100);
 		tblclmnNewColumn_4.setText("Локальный IP");
 
-		TableColumn tblclmnNewColumn_5 = new TableColumn(table_4, SWT.NONE);
+		TableColumn tblclmnNewColumn_5 = new TableColumn(interfaceTable, SWT.NONE);
 		tblclmnNewColumn_5.setWidth(100);
 		tblclmnNewColumn_5.setText("Удалённый IP");
 
-		TableColumn tblclmnNewColumn_6 = new TableColumn(table_4, SWT.NONE);
+		TableColumn tblclmnNewColumn_6 = new TableColumn(interfaceTable, SWT.NONE);
 		tblclmnNewColumn_6.setWidth(100);
 		tblclmnNewColumn_6.setText("NAT");
 
-		TableColumn tblclmnNewColumn_7 = new TableColumn(table_4, SWT.NONE);
+		TableColumn tblclmnNewColumn_7 = new TableColumn(interfaceTable, SWT.NONE);
 		tblclmnNewColumn_7.setWidth(100);
 		tblclmnNewColumn_7.setText("Фильтр входящих");
 
-		TableColumn tblclmnNewColumn_8 = new TableColumn(table_4, SWT.NONE);
+		TableColumn tblclmnNewColumn_8 = new TableColumn(interfaceTable, SWT.NONE);
 		tblclmnNewColumn_8.setWidth(100);
 		tblclmnNewColumn_8.setText("Фильтр исходящих");
 
-		TableColumn tblclmnNewColumn_9 = new TableColumn(table_4, SWT.NONE);
+		TableColumn tblclmnNewColumn_9 = new TableColumn(interfaceTable, SWT.NONE);
 		tblclmnNewColumn_9.setWidth(100);
 		tblclmnNewColumn_9.setText("MTU");
 
-		TableColumn tblclmnNewColumn_10 = new TableColumn(table_4, SWT.NONE);
+		TableColumn tblclmnNewColumn_10 = new TableColumn(interfaceTable, SWT.NONE);
 		tblclmnNewColumn_10.setWidth(100);
 		tblclmnNewColumn_10.setText("Порт");
 
-		TableColumn tblclmnNewColumn_11 = new TableColumn(table_4, SWT.NONE);
+		TableColumn tblclmnNewColumn_11 = new TableColumn(interfaceTable, SWT.NONE);
 		tblclmnNewColumn_11.setWidth(100);
 		tblclmnNewColumn_11.setText("Таймер");
 
-		TableColumn tblclmnNewColumn_12 = new TableColumn(table_4, SWT.NONE);
+		TableColumn tblclmnNewColumn_12 = new TableColumn(interfaceTable, SWT.NONE);
 		tblclmnNewColumn_12.setWidth(100);
 		tblclmnNewColumn_12.setText("Доп. параметры");
 
-		TableColumn tblclmnNewColumn_13 = new TableColumn(table_4, SWT.NONE);
+		TableColumn tblclmnNewColumn_13 = new TableColumn(interfaceTable, SWT.NONE);
 		tblclmnNewColumn_13.setWidth(100);
 		tblclmnNewColumn_13.setText("Таблица маршрутов");
 		
-		Menu menu = new Menu(table_4);
-		table_4.setMenu(menu);
+		interfaceTableViewer.setContentProvider(ArrayContentProvider.getInstance());
+		interfaceTableViewer.setLabelProvider(new InterfaceLableProvider());
+		interfaceTableViewer.setInput(InterfaceModel.getInstance().getDataArray());
+		
+		Menu menu = new Menu(interfaceTable);
+		interfaceTable.setMenu(menu);
 		
 		final MenuItem menuItem = new MenuItem(menu, SWT.NONE);
 		menuItem.setText("Изменить");
 
+		menuItem.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				if (interfaceTable.getSelection() != null
+						&& interfaceTable.getSelection().length > 0) {
+					IStructuredSelection sel = (IStructuredSelection) interfaceTableViewer
+							.getSelection();
+					// выбранный элемент таблицы как бин
+					InterfaceBean ibean = (InterfaceBean) sel
+							.getFirstElement();
+					// индекс бина в списке
+					int indx = InterfaceModel.getInstance().getData()
+							.indexOf(ibean);
+					// создание диалога
+					InterfaceDialog dialog = new InterfaceDialog(
+							shell);
+					// передача бина диалогу
+					dialog.setInterfaceBean(ibean);
+					if (dialog.open() == Window.OK) {
+						// замена бина в модели по выбранному индексу
+						InterfaceModel.getInstance().getData()
+								.set(indx, dialog.getInterfaceBean());
+						// обновление данных для таблицы
+						interfaceTableViewer.refresh();
+					}
+				}
+			}
+		});
+		
 		final MenuItem menuItem_1 = new MenuItem(menu, SWT.NONE);
 		menuItem_1.setText("Добавить");
 
 //		InterfaceModel.getInstance().addData(new InterfaceBean());
 		
 		menuItem_1.addSelectionListener(new SelectionAdapter() {
+			@Override
 			public void widgetSelected(SelectionEvent e) {
-				InterfaceDialog dialog = new InterfaceDialog(shell, table_4.getSelectionIndex());
+				// создание диалога
+				InterfaceDialog dialog = new InterfaceDialog(
+						shell);
+				dialog.setInterfaceBean(null);
 				if (dialog.open() == Window.OK) {
-					if (InterfaceModel.getInstance().getData() != null) {
-//						System.out.println(InterfaceModel.getInstance().getData().get(0).getName());
-//						System.out.println(InterfaceModel.getInstance().getData().get(0).getType().name());
-//						System.out.println(InterfaceModel.getInstance().getData().get(0).getMode().name());
-//						System.out.println(InterfaceModel.getInstance().getData().get(0).getIp().getLocal());
-//						System.out.println(InterfaceModel.getInstance().getData().get(0).getIp().getRemote());
-//						System.out.println(InterfaceModel.getInstance().getData().get(0).getDisableDatagrams().getNotTunneled());
-					}
+					// замена бина в модели по выбранному индексу
+					InterfaceModel.getInstance().getData().add(dialog.getInterfaceBean());
+					// обновление данных для таблицы
+					interfaceTableViewer.setInput(InterfaceModel.getInstance().getDataArray());
 				}
 			}
 		});
@@ -1418,35 +1436,27 @@ public class DionisView extends ViewPart {
 		mntmNewItem.setText("Удалить");
 
 		mntmNewItem.addSelectionListener(new SelectionAdapter() {
+			@Override
 			public void widgetSelected(SelectionEvent e) {
-//				IStructuredSelection sel = (IStructuredSelection) tableViewer_2
-//						.getSelection();
-//				String[] data = (String[]) sel.getFirstElement();
-//				AddressModel.getInstance().removeAddress(data);
-//				Job job = new Job("remove") {
-//
-//					@Override
-//					protected IStatus run(IProgressMonitor monitor) {
-//						Display.getDefault().asyncExec(new Runnable() {
-//							@Override
-//							public void run() {
-//								tableViewer_2.setInput(AddressModel
-//										.getInstance().getAllAddressArray());
-//							}
-//						});
-//						return Status.OK_STATUS;
-//					}
-//				};
-//				job.setPriority(Job.SHORT);
-//				job.schedule();
+				if (interfaceTable.getSelection() != null
+						&& interfaceTable.getSelection().length > 0) {
+					IStructuredSelection sel = (IStructuredSelection) interfaceTableViewer
+							.getSelection();
+					// выбранный элемент таблицы как бин
+					InterfaceBean ibean = (InterfaceBean) sel
+							.getFirstElement();
+					InterfaceModel.getInstance().getData().remove(ibean);
+					// обновление данных для таблицы
+					interfaceTableViewer.setInput(InterfaceModel.getInstance().getDataArray());
+				}
 			}
-		});		
+		});
 		
 		
 		menu.addListener(SWT.Show, new Listener() {
 			@Override
 			public void handleEvent(Event event) {
-				TableItem[] selected = table_4.getSelection();
+				TableItem[] selected = interfaceTable.getSelection();
 				if (selected.length == 0) {
 					menuItem.setEnabled(false);
 					menuItem_1.setEnabled(true);
@@ -1494,43 +1504,159 @@ public class DionisView extends ViewPart {
 		tbtmNewItem_1.setControl(composite_6);
 		composite_6.setLayout(new GridLayout(1, false));
 
-		TableViewer tableViewer_3 = new TableViewer(composite_6, SWT.BORDER | SWT.FULL_SELECTION);
-		Table table_5 = tableViewer_3.getTable();
-		table_5.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-		table_5.setHeaderVisible(true);
-		table_5.setLinesVisible(true);
+		final TableViewer tunnelTableViewer = new TableViewer(composite_6, SWT.BORDER | SWT.FULL_SELECTION);
+		final Table tunnelTable = tunnelTableViewer.getTable();
+		tunnelTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		tunnelTable.setHeaderVisible(true);
+		tunnelTable.setLinesVisible(true);
 
-		TableColumn tblclmnNewColumn_14 = new TableColumn(table_5, SWT.NONE);
+		tunnelTableViewer.setContentProvider(ArrayContentProvider.getInstance());
+		tunnelTableViewer.setLabelProvider(new TunnelLableProvider());
+		tunnelTableViewer.setInput(TunnelModel.getInstance().getDataArray());
+		
+		TableColumn tblclmnNewColumn_14 = new TableColumn(tunnelTable, SWT.NONE);
 		tblclmnNewColumn_14.setWidth(100);
 		tblclmnNewColumn_14.setText("№");
 
-		TableColumn tblclmnNewColumn_15 = new TableColumn(table_5, SWT.NONE);
+		TableColumn tblclmnNewColumn_15 = new TableColumn(tunnelTable, SWT.NONE);
 		tblclmnNewColumn_15.setWidth(100);
 		tblclmnNewColumn_15.setText("Идентификатор");
 
-		TableColumn tblclmnNewColumn_16 = new TableColumn(table_5, SWT.NONE);
+		TableColumn tblclmnNewColumn_16 = new TableColumn(tunnelTable, SWT.NONE);
 		tblclmnNewColumn_16.setWidth(100);
 		tblclmnNewColumn_16.setText("Заголовок");
 
-		TableColumn tblclmnNewColumn_17 = new TableColumn(table_5, SWT.NONE);
+		TableColumn tblclmnNewColumn_17 = new TableColumn(tunnelTable, SWT.NONE);
 		tblclmnNewColumn_17.setWidth(100);
 		tblclmnNewColumn_17.setText("Локальный IP");
 
-		TableColumn tblclmnNewColumn_18 = new TableColumn(table_5, SWT.NONE);
+		TableColumn tblclmnNewColumn_18 = new TableColumn(tunnelTable, SWT.NONE);
 		tblclmnNewColumn_18.setWidth(100);
 		tblclmnNewColumn_18.setText("Удалённый IP");
 
-		TableColumn tblclmnNewColumn_19 = new TableColumn(table_5, SWT.NONE);
+		TableColumn tblclmnNewColumn_19 = new TableColumn(tunnelTable, SWT.NONE);
 		tblclmnNewColumn_19.setWidth(100);
 		tblclmnNewColumn_19.setText("Шифрование");
 
-		TableColumn tblclmnNewColumn_20 = new TableColumn(table_5, SWT.NONE);
+		TableColumn tblclmnNewColumn_20 = new TableColumn(tunnelTable, SWT.NONE);
 		tblclmnNewColumn_20.setWidth(100);
 		tblclmnNewColumn_20.setText("Сжатие");
 
-		TableColumn tblclmnNewColumn_21 = new TableColumn(table_5, SWT.NONE);
+		TableColumn tblclmnNewColumn_21 = new TableColumn(tunnelTable, SWT.NONE);
 		tblclmnNewColumn_21.setWidth(100);
 		tblclmnNewColumn_21.setText("Правила отбора");
+		
+		Menu tunnelMenu = new Menu(tunnelTable);
+		tunnelTable.setMenu(tunnelMenu);
+		
+		final MenuItem changeMenuItem = new MenuItem(tunnelMenu, SWT.NONE);
+		changeMenuItem.setText("Изменить");
+		
+		changeMenuItem.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				if (tunnelTable.getSelection() != null
+						&& tunnelTable.getSelection().length > 0) {
+					IStructuredSelection sel = (IStructuredSelection) tunnelTableViewer
+							.getSelection();
+					TunnelDialog dialog = new TunnelDialog(
+							shell, sel);
+					if (dialog.open() == Window.OK) {
+						Job job = new Job("change") {
+
+							@Override
+							protected IStatus run(IProgressMonitor monitor) {
+								Display.getDefault().asyncExec(new Runnable() {
+									@Override
+									public void run() {
+										tunnelTableViewer.setInput(TunnelModel
+												.getInstance().getDataArray());
+									}
+								});
+								return Status.OK_STATUS;
+							}
+						};
+						job.setPriority(Job.SHORT);
+						job.schedule();
+
+					}
+				}
+			}
+		});
+		
+		final MenuItem addMenuItem = new MenuItem(tunnelMenu, SWT.NONE);
+		addMenuItem.setText("Добавить");
+		
+		addMenuItem.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				TunnelDialog dialog = new TunnelDialog(shell,
+						null);
+				if (dialog.open() == Window.OK) {
+					Job job = new Job("add") {
+
+						@Override
+						protected IStatus run(IProgressMonitor monitor) {
+							Display.getDefault().asyncExec(new Runnable() {
+								@Override
+								public void run() {
+									tunnelTableViewer.setInput(TunnelModel
+											.getInstance().getDataArray());
+								}
+							});
+							return Status.OK_STATUS;
+						}
+					};
+					job.setPriority(Job.SHORT);
+					job.schedule();
+				}
+			}
+		});
+
+		
+		final MenuItem removeMenuItem = new MenuItem(tunnelMenu, SWT.NONE);
+		removeMenuItem.setText("Удалить");
+		
+		removeMenuItem.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				IStructuredSelection sel = (IStructuredSelection) tunnelTableViewer
+						.getSelection();
+				Tunnel tunnel = (Tunnel) sel
+						.getFirstElement();
+				TunnelModel.getInstance().removeData(tunnel);
+				Job job = new Job("remove") {
+
+					@Override
+					protected IStatus run(IProgressMonitor monitor) {
+						Display.getDefault().asyncExec(new Runnable() {
+							@Override
+							public void run() {
+								tunnelTableViewer.setInput(TunnelModel
+										.getInstance().getDataArray());
+							}
+						});
+						return Status.OK_STATUS;
+					}
+				};
+				job.setPriority(Job.SHORT);
+				job.schedule();
+			}
+		});
+		
+		tunnelMenu.addListener(SWT.Show, new Listener() {
+			@Override
+			public void handleEvent(Event event) {
+				TableItem[] selected = tunnelTable.getSelection();
+				if (selected.length == 0) {
+					changeMenuItem.setEnabled(false);
+					addMenuItem.setEnabled(true);
+					removeMenuItem.setEnabled(false);
+				} else {
+					changeMenuItem.setEnabled(true);
+					addMenuItem.setEnabled(true);
+					removeMenuItem.setEnabled(true);
+				}
+			}
+		});
+
 	}
 
 	private void getAll() {

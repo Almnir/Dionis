@@ -19,7 +19,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import dionis.models.ARPModel;
 import dionis.models.AddressModel;
 
 public class AddressTableDialog extends Dialog {

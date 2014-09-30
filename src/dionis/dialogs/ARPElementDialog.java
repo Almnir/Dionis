@@ -17,8 +17,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 import dionis.models.ARPModel;
-import dionis.models.NATAddressModel;
-import dionis.xml.NATTableStatic;
 
 public class ARPElementDialog extends Dialog {
 	private String[] data;

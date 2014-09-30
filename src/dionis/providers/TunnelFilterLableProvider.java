@@ -27,7 +27,7 @@ public class TunnelFilterLableProvider extends LabelProvider implements
 	@Override
 	public String getColumnText(Object element, int columnIndex) {
 		String rv = "";
-		if (element instanceof Tunnel) {
+		if (element instanceof TunnelFilter) {
 			TunnelFilter data = (TunnelFilter) element;
 			switch (columnIndex) {
 			case 0:
