@@ -24,7 +24,7 @@ public class InterfaceLableProvider extends LabelProvider implements
 			case 0:
 				// номер по порядку
 				int index = InterfaceModel.getInstance().getData().indexOf(ib);
-				rv = String.valueOf(index);
+				rv = String.valueOf(index + 1);
 				break;
 			case 1:
 				rv = ib.getName();

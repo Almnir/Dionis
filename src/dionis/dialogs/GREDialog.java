@@ -53,7 +53,7 @@ public class GREDialog extends Dialog {
 		Label lblDf = new Label(container, SWT.NONE);
 		lblDf.setText("Флаг DF");
 
-		Combo combo = new Combo(container, SWT.NONE);
+		Combo combo = new Combo(container, SWT.READ_ONLY);
 		GridData gd_combo = new GridData(SWT.FILL, SWT.CENTER, false, false, 1,
 				1);
 		gd_combo.widthHint = 130;

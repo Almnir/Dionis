@@ -2,6 +2,7 @@
 package dionis.xml;
 
 import java.io.Serializable;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -85,7 +86,7 @@ import javax.xml.bind.annotation.XmlType;
     "ports"
 })
 public class TunnelFilter
-    implements Serializable
+    implements Serializable, Cloneable
 {
 
     private final static long serialVersionUID = 33554432L;
@@ -240,4 +241,8 @@ public class TunnelFilter
         return (this.ports!= null);
     }
 
+    @Override
+	public Object clone() throws CloneNotSupportedException {
+    	return super.clone();
+    }
 }

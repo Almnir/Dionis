@@ -17,7 +17,6 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -49,9 +48,14 @@ import dionis.xml.TunnelFilter;
 import dionis.xml.TunnelFilters;
 import dionis.xml.TunnelIP;
 import dionis.xml.TunnelUDPPorts;
-import dionis.xml.Tunnels;
 import dionis.xml.UDP;
 
+/**
+ * Диалог позволяющий редактировать настройки конкретного туннеля
+ * 
+ * @author Ярных А.О.
+ *
+ */
 public class TunnelDialog extends Dialog {
 	private Text localIpText;
 	private Text remoteIpText;
@@ -71,6 +75,8 @@ public class TunnelDialog extends Dialog {
 	private Spinner cryptochannelNumberSpinner;
 	private Spinner remoteCryptonumberSpinner;
 	private TableViewer tableViewer;
+	protected TunnelFilter copyPasteFilter;
+	private MenuItem pasteItem;
 
 	/**
 	 * Create the dialog.
@@ -139,6 +145,7 @@ public class TunnelDialog extends Dialog {
 				false, 1, 1);
 		gd_remoteIpText.widthHint = 191;
 		remoteIpText.setLayoutData(gd_remoteIpText);
+		new Label(container, SWT.NONE);
 
 		Group group = new Group(container, SWT.NONE);
 		group.setLayout(new GridLayout(3, false));
@@ -173,11 +180,11 @@ public class TunnelDialog extends Dialog {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				if (btnUdp.getSelection()) {
-					senderPortSpinner.setEnabled(false);
-					receiverPortSpinner.setEnabled(false);
-				} else {
 					senderPortSpinner.setEnabled(true);
 					receiverPortSpinner.setEnabled(true);
+				} else {
+					senderPortSpinner.setEnabled(false);
+					receiverPortSpinner.setEnabled(false);
 				}
 			}
 		});
@@ -344,6 +351,7 @@ public class TunnelDialog extends Dialog {
 		final MenuItem addItem = new MenuItem(menu, SWT.NONE);
 		addItem.setText("Добавить");
 
+		// обработчик добавления фильтров туннелей в таблицу
 		addItem.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				TunnelFilterDialog dialog = new TunnelFilterDialog(getShell(),
@@ -372,6 +380,7 @@ public class TunnelDialog extends Dialog {
 		final MenuItem removeItem = new MenuItem(menu, SWT.NONE);
 		removeItem.setText("Удалить");
 
+		// обработчик удаления строк в таблице фильтров туннелей
 		removeItem.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				IStructuredSelection sel = (IStructuredSelection) tableViewer
@@ -398,6 +407,64 @@ public class TunnelDialog extends Dialog {
 			}
 		});
 
+		final MenuItem copyItem = new MenuItem(menu, SWT.NONE);
+		copyItem.setText("Копировать");
+
+		copyItem.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				if (table.getSelection() != null
+						&& table.getSelection().length > 0) {
+					IStructuredSelection sel = (IStructuredSelection) tableViewer
+							.getSelection();
+					TunnelFilter tunnelFilter = (TunnelFilter) sel
+							.getFirstElement();
+					// скопировать ссылку на текущее выделение
+					try {
+						copyPasteFilter = (TunnelFilter) tunnelFilter.clone();
+					} catch (CloneNotSupportedException e1) {
+						e1.printStackTrace();
+					}
+					// сделать активной пункт "вставить"
+					pasteItem.setEnabled(true);
+				}
+			}
+		});
+
+		pasteItem = new MenuItem(menu, SWT.NONE);
+		pasteItem.setText("Вставить");
+		pasteItem.setEnabled(false);
+
+		pasteItem.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				TunnelFilter filterPaste = new TunnelFilter();
+				try {
+					filterPaste = (TunnelFilter) copyPasteFilter.clone();
+				} catch (CloneNotSupportedException e1) {
+					e1.printStackTrace();
+				}
+				TunnelFilterModel.getInstance().addData(filterPaste);
+				Job job = new Job("paste") {
+
+					@Override
+					protected IStatus run(IProgressMonitor monitor) {
+						Display.getDefault().asyncExec(new Runnable() {
+							@Override
+							public void run() {
+								tableViewer.setInput(TunnelFilterModel
+										.getInstance().getDataArray());
+							}
+						});
+						return Status.OK_STATUS;
+					}
+				};
+				job.setPriority(Job.SHORT);
+				job.schedule();
+			}
+		});
+
+		// обработчик меню, дающий возможность изменять, удалять, копировать,
+		// вставлять выбранные
+		// строки таблицы
 		menu.addListener(SWT.Show, new Listener() {
 			@Override
 			public void handleEvent(Event event) {
@@ -406,24 +473,31 @@ public class TunnelDialog extends Dialog {
 					changeItem.setEnabled(false);
 					addItem.setEnabled(true);
 					removeItem.setEnabled(false);
+					copyItem.setEnabled(false);
 				} else {
 					changeItem.setEnabled(true);
 					addItem.setEnabled(true);
 					removeItem.setEnabled(true);
+					copyItem.setEnabled(true);
 				}
 			}
 		});
 
+		// инициализация
 		getAll();
 
 		tableViewer.setContentProvider(ArrayContentProvider.getInstance());
 		tableViewer.setLabelProvider(new TunnelFilterLableProvider());
 		tableViewer.setInput(TunnelFilterModel.getInstance().getDataArray());
-		
+
 		return container;
 	}
 
+	/**
+	 * Метод инициализации диалога данными
+	 */
 	private void getAll() {
+		setFieldsToDefault();
 		if (data != null) {
 			if (newadd == false) {
 				/** изменение **/
@@ -480,37 +554,47 @@ public class TunnelDialog extends Dialog {
 					encryptButton.setEnabled(false);
 				}
 				// таблица
-				System.out.println("Before: " + TunnelFilterModel.getInstance().toString());
+				System.out.println("Before: "
+						+ TunnelFilterModel.getInstance().toString());
 				TunnelFilterModel.getInstance().removeAll();
-				System.out.println("After clean: " + TunnelFilterModel.getInstance().toString());
+				System.out.println("After clean: "
+						+ TunnelFilterModel.getInstance().toString());
 				TunnelFilterModel.getInstance().setData(
 						data.getFilters().getFilter());
-				System.out.println("New filters : " + data.getFilters().getFilter().toString());
-				System.out.println("After having set new values: " + TunnelFilterModel.getInstance().toString());
-			} else {
-				idSpinner.setSelection(0);
-				remoteIpText.setText("0.0.0.0");
-				localIpText.setText("0.0.0.0");
-				btnUdp.setSelection(true);
-				senderPortSpinner.setSelection(0);
-				receiverPortSpinner.setSelection(0);
-				compressStreamButton.setSelection(false);
-				doNotProcessButton.setSelection(false);
-				blockButton.setSelection(false);
-				encryptButton.setSelection(true);
-				keySeriesNumberSpinner.setSelection(0);
-				localCryptonumberSpinner.setSelection(0);
-				remoteCryptonumberSpinner.setSelection(0);
-				cryptochannelNumberSpinner.setSelection(0);
-				TunnelFilterModel.getInstance().removeAll();
+				System.out.println("New filters : "
+						+ data.getFilters().getFilter().toString());
+				System.out.println("After having set new values: "
+						+ TunnelFilterModel.getInstance().toString());
 			}
 		}
 	}
 
+	/**
+	 * Установка полей в начальные значения
+	 */
+	private void setFieldsToDefault() {
+		idSpinner.setSelection(0);
+		remoteIpText.setText("0.0.0.0");
+		localIpText.setText("0.0.0.0");
+		btnUdp.setSelection(true);
+		senderPortSpinner.setSelection(0);
+		receiverPortSpinner.setSelection(0);
+		compressStreamButton.setSelection(false);
+		doNotProcessButton.setSelection(false);
+		blockButton.setSelection(false);
+		encryptButton.setSelection(true);
+		keySeriesNumberSpinner.setSelection(0);
+		localCryptonumberSpinner.setSelection(0);
+		remoteCryptonumberSpinner.setSelection(0);
+		cryptochannelNumberSpinner.setSelection(0);
+	}
+
 	@Override
 	protected void okPressed() {
+		// идентификатор
 		data.setID(idSpinner.getSelection());
 		TunnelIP tip = new TunnelIP();
+		// локальный и удалённый IP
 		tip.setLocal(localIpText.getText());
 		tip.setRemote(remoteIpText.getText());
 		data.setIP(tip);
@@ -538,7 +622,9 @@ public class TunnelDialog extends Dialog {
 		data.setBlocked(blockButton.getSelection() ? BooleanType.YES
 				: BooleanType.NO);
 
+		// шифрование туннеля
 		TunnelEncryption tunnelEncryption = new TunnelEncryption();
+		// если блок шифрования включен
 		if (encryptButton.getSelection()) {
 			tunnelEncryption
 					.setSerNumber(keySeriesNumberSpinner.getSelection());
@@ -548,6 +634,7 @@ public class TunnelDialog extends Dialog {
 			tunnelEncryption.setCryptoNumber(cryptoNumber);
 			tunnelEncryption.setChannel((short) cryptochannelNumberSpinner
 					.getSelection());
+			// признак шифрования?
 			tunnelEncryption.setMethod(BooleanType.YES);
 		} else {
 			tunnelEncryption.setMethod(BooleanType.NO);
@@ -559,9 +646,8 @@ public class TunnelDialog extends Dialog {
 		// обходим отсутствие сеттера чтобы не править класс
 		filters.getFilter().addAll(TunnelFilterModel.getInstance().getData());
 		data.setFilters(filters);
+		// очищаем синглтон с состоянием модели фильтрации туннелей
 		TunnelFilterModel.getInstance().removeAll();
-		System.out.println("FILTERS! : " + data.getFilters().toString());
-		
 
 		List<Tunnel> tunnelList = TunnelModel.getInstance().getData();
 		// если список не пуст
@@ -583,6 +669,13 @@ public class TunnelDialog extends Dialog {
 		// меняем список в модели на изменённый
 		TunnelModel.getInstance().setData(tunnelList);
 		super.okPressed();
+	}
+
+	@Override
+	protected void cancelPressed() {
+		// очищаем синглтон с состоянием модели фильтрации туннелей
+		TunnelFilterModel.getInstance().removeAll();
+		super.cancelPressed();
 	}
 
 	/**

@@ -5,6 +5,7 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;
 
 import dionis.models.TunnelFilterModel;
+import dionis.utils.Constants;
 import dionis.xml.Tunnel;
 import dionis.xml.TunnelFilter;
 import dionis.xml.TunnelFilterSource;
@@ -31,15 +32,14 @@ public class TunnelFilterLableProvider extends LabelProvider implements
 			TunnelFilter data = (TunnelFilter) element;
 			switch (columnIndex) {
 			case 0:
-				// номер по порядку в модели
+				// номер по порядку в модели (начинать с 1)
 				rv = String.valueOf(TunnelFilterModel.getInstance().getData()
-						.indexOf(data));
+						.indexOf(data) + 1);
 				break;
 			case 1:
 				// статус
-				if (data.getStatus() != null) {
-					rv = (data.isSetStatus()) ? data.getStatus().name() : "";
-				}
+				rv = (data.isSetStatus()) ? Constants.TUNNEL_FILTER_STATUS[data
+						.getStatus().ordinal()] : "";
 				break;
 			case 2:
 				// отправитель
@@ -67,28 +67,23 @@ public class TunnelFilterLableProvider extends LabelProvider implements
 				break;
 			case 4:
 				// протокол
-				if (data.getProtocol() != null) {
-					rv = (data.isSetProtocol()) ? data.getProtocol().name()
-							: "";
-				}
+				rv = (data.isSetProtocol()) ? data.getProtocol().name() : "";
 				break;
 			case 5:
 				// порты
-				if (data.getPorts() != null) {
-					if (data.isSetPorts()) {
-						if (data.getPorts().isSetLow()) {
-							rv = data.getPorts().getLow() + "-"; 
-						} else {
-							rv = "";
-						}
-						if (data.getPorts().isSetHigh()) {
-							rv += data.getPorts().getHigh();
-						} else {
-							rv = rv.substring(0, rv.length()-1);
-						}
+				if (data.isSetPorts()) {
+					if (data.getPorts().isSetLow()) {
+						rv = data.getPorts().getLow() + "-";
 					} else {
 						rv = "";
 					}
+					if (data.getPorts().isSetHigh()) {
+						rv += data.getPorts().getHigh();
+					} else {
+						rv = rv.substring(0, rv.length() - 1);
+					}
+				} else {
+					rv = "";
 				}
 				break;
 

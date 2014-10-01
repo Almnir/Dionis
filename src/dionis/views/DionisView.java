@@ -148,6 +148,8 @@ public class DionisView extends ViewPart {
 	private Text text_8;
 	private Table table_2;
 	private Table table_3;
+	protected Tunnel copyPasteTunnel;
+	private MenuItem pasteItem;
 
 	public DionisView() {
 		super();
@@ -1641,6 +1643,62 @@ public class DionisView extends ViewPart {
 			}
 		});
 		
+		final MenuItem copyItem = new MenuItem(tunnelMenu, SWT.NONE);
+		copyItem.setText("Копировать");
+
+		copyItem.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				if (tunnelTable.getSelection() != null
+						&& tunnelTable.getSelection().length > 0) {
+					IStructuredSelection sel = (IStructuredSelection) tunnelTableViewer
+							.getSelection();
+					Tunnel tunnel = (Tunnel) sel
+							.getFirstElement();
+					// скопировать ссылку на текущее выделение
+					try {
+						copyPasteTunnel = (Tunnel) tunnel.clone();
+					} catch (CloneNotSupportedException e1) {
+						e1.printStackTrace();
+					}
+					// сделать активной пункт "вставить"
+					pasteItem.setEnabled(true);
+				}
+			}
+		});
+
+		pasteItem = new MenuItem(tunnelMenu, SWT.NONE);
+		pasteItem.setText("Вставить");
+		pasteItem.setEnabled(false);
+
+		pasteItem.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				Tunnel tunnelPaste = new Tunnel();
+				try {
+					tunnelPaste = (Tunnel) copyPasteTunnel.clone();
+				} catch (CloneNotSupportedException e1) {
+					e1.printStackTrace();
+				}
+				TunnelModel.getInstance().addData(tunnelPaste);
+				Job job = new Job("paste") {
+
+					@Override
+					protected IStatus run(IProgressMonitor monitor) {
+						Display.getDefault().asyncExec(new Runnable() {
+							@Override
+							public void run() {
+								tunnelTableViewer.setInput(TunnelModel
+										.getInstance().getDataArray());
+							}
+						});
+						return Status.OK_STATUS;
+					}
+				};
+				job.setPriority(Job.SHORT);
+				job.schedule();
+			}
+		});
+		
+		
 		tunnelMenu.addListener(SWT.Show, new Listener() {
 			@Override
 			public void handleEvent(Event event) {
@@ -1649,10 +1707,12 @@ public class DionisView extends ViewPart {
 					changeMenuItem.setEnabled(false);
 					addMenuItem.setEnabled(true);
 					removeMenuItem.setEnabled(false);
+					copyItem.setEnabled(false);
 				} else {
 					changeMenuItem.setEnabled(true);
 					addMenuItem.setEnabled(true);
 					removeMenuItem.setEnabled(true);
+					copyItem.setEnabled(true);
 				}
 			}
 		});

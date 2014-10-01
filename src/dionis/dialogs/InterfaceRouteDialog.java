@@ -108,7 +108,7 @@ public class InterfaceRouteDialog extends Dialog {
 	 */
 	@Override
 	protected Point getInitialSize() {
-		return new Point(450, 235);
+		return new Point(450, 258);
 	}
 
 	private void getAll() {

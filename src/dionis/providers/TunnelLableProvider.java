@@ -28,9 +28,9 @@ public class TunnelLableProvider extends LabelProvider implements
 			Tunnel data = (Tunnel) element;
 			switch (columnIndex) {
 			case 0:
-				// номер по порядку в модели
+				// номер по порядку в модели (начинать с 1)
 				rv = String.valueOf(TunnelModel.getInstance().getData()
-						.indexOf(data));
+						.indexOf(data) + 1);
 				break;
 			case 1:
 				// идентификатор
@@ -38,7 +38,7 @@ public class TunnelLableProvider extends LabelProvider implements
 				break;
 			case 2:
 				// заголовок
-				if (data.getUDP() != null && data.isSetUDP()) {
+				if (data.isSetUDP()) {
 					if (data.getUDP().getTitle() == BooleanType.YES) {
 						rv = "UDP["
 								+ String.valueOf(data.getUDP().getPorts()
@@ -53,21 +53,21 @@ public class TunnelLableProvider extends LabelProvider implements
 				break;
 			case 3:
 				// локальный IP
-				if (data.getIP() != null && data.isSetIP()) {
+				if (data.isSetIP()) {
 					rv = data.getIP().isSetLocal() ? data.getIP().getLocal()
 							: "";
 				}
 				break;
 			case 4:
 				// удалённый IP
-				if (data.getIP() != null && data.isSetIP()) {
+				if (data.isSetIP()) {
 					rv = data.getIP().isSetRemote() ? data.getIP().getRemote()
 							: "";
 				}
 				break;
 			case 5:
 				// шифрование
-				if (data.getEncryption() != null && data.isSetEncryption()) {
+				if (data.isSetEncryption()) {
 					if (data.getEncryption().isSetMethod()
 							&& data.getEncryption().getMethod() == BooleanType.YES) {
 						StringBuilder sb = new StringBuilder();
@@ -95,7 +95,7 @@ public class TunnelLableProvider extends LabelProvider implements
 				break;
 			case 6:
 				// сжатие
-				if (data.getLZW() != null && data.isSetLZW()) {
+				if (data.isSetLZW()) {
 					if (data.getLZW() == BooleanType.YES) {
 						rv = "Да";
 					} else {
@@ -105,8 +105,7 @@ public class TunnelLableProvider extends LabelProvider implements
 				break;
 			case 7:
 				// правила отбора
-				if (data.getFilters() != null && data.isSetFilters()) {
-					System.out.println("yes");
+				if (data.isSetFilters()) {
 					StringBuilder sb = new StringBuilder();
 					for (TunnelFilter filter : data.getFilters().getFilter()) {
 						sb.append("[");

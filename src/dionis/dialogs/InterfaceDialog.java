@@ -126,7 +126,7 @@ public class InterfaceDialog extends Dialog {
 				1, 1));
 		label_1.setText("Тип");
 
-		typeCombo = new Combo(container, SWT.NONE);
+		typeCombo = new Combo(container, SWT.READ_ONLY);
 		GridData gd_combo = new GridData(SWT.FILL, SWT.CENTER, false, false, 1,
 				1);
 		gd_combo.widthHint = 201;
@@ -155,7 +155,7 @@ public class InterfaceDialog extends Dialog {
 				1, 1));
 		label_2.setText("Режим активизации");
 
-		modeCombo = new Combo(container, SWT.NONE);
+		modeCombo = new Combo(container, SWT.READ_ONLY);
 		GridData gd_combo_1 = new GridData(SWT.LEFT, SWT.CENTER, false, false,
 				1, 1);
 		gd_combo_1.widthHint = 351;
@@ -188,7 +188,7 @@ public class InterfaceDialog extends Dialog {
 				1, 1));
 		label_4.setText("Фильтр входящих");
 
-		filterInputCombo = new Combo(container, SWT.NONE);
+		filterInputCombo = new Combo(container, SWT.READ_ONLY);
 		GridData gd_combo_3 = new GridData(SWT.LEFT, SWT.CENTER, false, false,
 				1, 1);
 		gd_combo_3.widthHint = 351;
@@ -214,7 +214,7 @@ public class InterfaceDialog extends Dialog {
 				1, 1));
 		label_6.setText("Фильтр исходящих");
 
-		filterOutputCombo = new Combo(container, SWT.NONE);
+		filterOutputCombo = new Combo(container, SWT.READ_ONLY);
 		GridData gd_combo_4 = new GridData(SWT.LEFT, SWT.CENTER, false, false,
 				1, 1);
 		gd_combo_4.widthHint = 351;
@@ -242,7 +242,7 @@ public class InterfaceDialog extends Dialog {
 				false, 1, 1));
 		lblNewLabel_1.setText("NAT режим");
 
-		natCombo = new Combo(container, SWT.NONE);
+		natCombo = new Combo(container, SWT.READ_ONLY);
 		GridData gd_combo_5 = new GridData(SWT.LEFT, SWT.CENTER, false, false,
 				1, 1);
 		gd_combo_5.widthHint = 351;
@@ -303,11 +303,6 @@ public class InterfaceDialog extends Dialog {
 		tblclmnNewColumn = tableViewerColumn.getColumn();
 		tblclmnNewColumn.setWidth(100);
 		tblclmnNewColumn.setText("Метка");
-
-		/** Таблица **/
-		tableViewer.setContentProvider(ArrayContentProvider.getInstance());
-		tableViewer.setLabelProvider(new InterfaceRouteLabelProvider());
-		tableViewer.setInput(InterfaceRouteModel.getInstance().getDataArray());
 
 		Menu menu = new Menu(table);
 		table.setMenu(menu);
@@ -458,6 +453,11 @@ public class InterfaceDialog extends Dialog {
 
 		getAll();
 
+		/** Таблица **/
+		tableViewer.setContentProvider(ArrayContentProvider.getInstance());
+		tableViewer.setLabelProvider(new InterfaceRouteLabelProvider());
+		tableViewer.setInput(InterfaceRouteModel.getInstance().getDataArray());
+		
 		return container;
 	}
 
@@ -684,9 +684,21 @@ public class InterfaceDialog extends Dialog {
 			proxyButton
 					.setSelection(datagrams.getProxyARP() == BooleanType.YES ? true
 							: false);
+			System.out.println("Before: "
+					+ InterfaceRouteModel.getInstance().toString());
+			InterfaceRouteModel.getInstance().removeAll();
+			System.out.println("After clean: "
+					+ InterfaceRouteModel.getInstance().toString());
+			InterfaceRouteModel.getInstance().setData(
+					interfaceBean.getRoutes().getRoute());
+			System.out.println("New routes : "
+					+ interfaceBean.getRoutes().getRoute().toString());
+			System.out.println("After having set new values: "
+					+ InterfaceRouteModel.getInstance().toString());			
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	protected void okPressed() {
 		interfaceBean.setName(nameText.getText());
@@ -713,7 +725,7 @@ public class InterfaceDialog extends Dialog {
 		}
 		interfaceBean.setMtu((short) mtuSpinner.getSelection());
 		InterfaceRoutesBean routes = new InterfaceRoutesBean();
-		routes.setRoute(InterfaceRouteModel.getInstance().getData());
+		routes.setRoute((List<InterfaceRouteBean>) InterfaceRouteModel.getInstance().getClone());
 		interfaceBean.setRoutes(routes);
 		InterfaceParametrsBean params = new InterfaceParametrsBean();
 		interfaceBean.setParametrs(params);

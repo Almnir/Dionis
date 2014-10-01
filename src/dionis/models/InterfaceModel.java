@@ -1,14 +1,8 @@
 package dionis.models;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import dionis.beans.InterfaceBean;
 
-public class InterfaceModel {
-
-	private List<InterfaceBean> data;
+public class InterfaceModel extends AbstractModel<InterfaceBean>{
 
 	private static InterfaceModel instance = null;
 
@@ -19,28 +13,4 @@ public class InterfaceModel {
 		return instance;
 	}
 
-	private InterfaceModel() {
-		this.data = Collections
-				.synchronizedList(new ArrayList<InterfaceBean>());
-	}
-
-	public synchronized Object[] getDataArray() {
-		return data.toArray();
-	}
-
-	public synchronized List<InterfaceBean> getData() {
-		return data;
-	}
-
-	public synchronized void setData(List<InterfaceBean> data) {
-		this.data = data;
-	}
-
-	public synchronized void addData(InterfaceBean bean) {
-		this.data.add(bean);
-	}
-
-	public synchronized void removeData(InterfaceBean data) {
-		this.data.remove(data);
-	}
 }

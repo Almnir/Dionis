@@ -54,6 +54,9 @@ public class TunnelFilterDialog extends Dialog {
 		super(parentShell);
 	}
 
+	/**
+	 * @wbp.parser.constructor
+	 */
 	public TunnelFilterDialog(Shell parentShell, IStructuredSelection sel) {
 		super(parentShell);
 		parentShell.setText("Правило отбора в туннель");
@@ -83,7 +86,7 @@ public class TunnelFilterDialog extends Dialog {
 		lblNewLabel_2.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false,
 				false, 1, 1));
 
-		modeCombo = new Combo(container, SWT.NONE);
+		modeCombo = new Combo(container, SWT.READ_ONLY);
 		GridData gd_modeCombo = new GridData(SWT.FILL, SWT.CENTER, false,
 				false, 1, 1);
 		gd_modeCombo.widthHint = 162;
@@ -93,7 +96,7 @@ public class TunnelFilterDialog extends Dialog {
 		Label lblNewLabel_1 = new Label(container, SWT.NONE);
 		lblNewLabel_1.setText("Протокол");
 
-		protocolCombo = new Combo(container, SWT.NONE);
+		protocolCombo = new Combo(container, SWT.READ_ONLY);
 		GridData gd_protocolCombo = new GridData(SWT.FILL, SWT.CENTER, false,
 				false, 1, 1);
 		gd_protocolCombo.widthHint = 102;
@@ -188,19 +191,16 @@ public class TunnelFilterDialog extends Dialog {
 	}
 
 	private void getAll() {
+		setFieldsToDefault();
 		if (data != null) {
 			if (newadd == false) {
 				/** изменение **/
 				// статус
-				if (data.getStatus() != null && data.isSetStatus()) {
-					modeCombo.select(data.getStatus().ordinal());
-				}
+				modeCombo.select(data.getStatus().ordinal());
 				// протокол
-				if (data.getProtocol() != null && data.isSetProtocol()) {
-					protocolCombo.select(data.getProtocol().ordinal());
-				}
+				protocolCombo.select(data.getProtocol().ordinal());
 				// порты
-				if (data.getPorts() != null && data.isSetPorts()) {
+				if (data.isSetPorts()) {
 					if (data.getPorts().isSetLow()) {
 						portStartSpinner.setSelection(data.getPorts().getLow());
 					}
@@ -209,7 +209,7 @@ public class TunnelFilterDialog extends Dialog {
 					}
 				}
 				// отправитель
-				if (data.getSource() != null && data.isSetSource()) {
+				if (data.isSetSource()) {
 					if (data.getSource().isSetIP()) {
 						senderAddressText.setText(data.getSource().getIP());
 					}
@@ -219,7 +219,7 @@ public class TunnelFilterDialog extends Dialog {
 					}
 				}
 				// получатель
-				if (data.getTarget() != null && data.isSetTarget()) {
+				if (data.isSetTarget()) {
 					if (data.getTarget().isSetIP()) {
 						receiverAddressText.setText(data.getTarget().getIP());
 					}
@@ -228,18 +228,19 @@ public class TunnelFilterDialog extends Dialog {
 								.getBits());
 					}
 				}
-			} else {
-				/** новое(добавление) **/
-				modeCombo.select(0);
-				protocolCombo.select(0);
-				portStartSpinner.setSelection(0);
-				portEndSpinner.setSelection(0);
-				senderAddressText.setText("0.0.0.0");
-				senderBitsSpinner.setSelection(0);
-				receiverAddressText.setText("0.0.0.0");
-				receiverBitsSpinner.setSelection(0);
-			}
+			} 
 		}
+	}
+
+	private void setFieldsToDefault() {
+		modeCombo.select(0);
+		protocolCombo.select(0);
+		portStartSpinner.setSelection(0);
+		portEndSpinner.setSelection(0);
+		senderAddressText.setText("0.0.0.0");
+		senderBitsSpinner.setSelection(0);
+		receiverAddressText.setText("0.0.0.0");
+		receiverBitsSpinner.setSelection(0);
 	}
 
 	@Override

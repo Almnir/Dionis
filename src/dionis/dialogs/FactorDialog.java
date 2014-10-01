@@ -62,14 +62,14 @@ public class FactorDialog extends Dialog {
 		Label lblNewLabel_2 = new Label(container, SWT.NONE);
 		lblNewLabel_2.setText("Интерфейс");
 
-		Combo combo = new Combo(container, SWT.NONE);
+		Combo combo = new Combo(container, SWT.READ_ONLY);
 		combo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2,
 				1));
 
 		Label lblNewLabel_3 = new Label(container, SWT.NONE);
 		lblNewLabel_3.setText("Режим работы");
 
-		Combo combo_1 = new Combo(container, SWT.NONE);
+		Combo combo_1 = new Combo(container, SWT.READ_ONLY);
 		combo_1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false,
 				2, 1));
 

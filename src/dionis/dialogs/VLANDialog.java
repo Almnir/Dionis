@@ -36,7 +36,7 @@ public class VLANDialog extends Dialog {
 		label.setText("Базовый интерфейс");
 		label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
 		
-		Combo combo = new Combo(container, SWT.NONE);
+		Combo combo = new Combo(container, SWT.READ_ONLY);
 		GridData gd_combo = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
 		gd_combo.widthHint = 119;
 		combo.setLayoutData(gd_combo);
