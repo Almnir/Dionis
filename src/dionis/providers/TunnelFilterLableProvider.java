@@ -6,7 +6,6 @@ import org.eclipse.swt.graphics.Image;
 
 import dionis.models.TunnelFilterModel;
 import dionis.utils.Constants;
-import dionis.xml.Tunnel;
 import dionis.xml.TunnelFilter;
 import dionis.xml.TunnelFilterSource;
 import dionis.xml.TunnelFilterTarget;
@@ -32,7 +31,7 @@ public class TunnelFilterLableProvider extends LabelProvider implements
 			TunnelFilter data = (TunnelFilter) element;
 			switch (columnIndex) {
 			case 0:
-				// номер по порядку в модели (начинать с 1)
+				// номер по порядку в модели (начиная с 1)
 				rv = String.valueOf(TunnelFilterModel.getInstance().getData()
 						.indexOf(data) + 1);
 				break;

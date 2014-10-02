@@ -4,14 +4,10 @@ import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;
 
-import dionis.models.TunnelFilterModel;
 import dionis.models.TunnelModel;
 import dionis.xml.BooleanType;
 import dionis.xml.Tunnel;
 import dionis.xml.TunnelFilter;
-import dionis.xml.TunnelFilterSource;
-import dionis.xml.TunnelFilterTarget;
-import dionis.xml.TunnelFilters;
 
 public class TunnelLableProvider extends LabelProvider implements
 		ITableLabelProvider {

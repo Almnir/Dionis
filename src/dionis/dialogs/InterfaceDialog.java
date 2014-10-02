@@ -48,6 +48,7 @@ import dionis.providers.InterfaceRouteLabelProvider;
 import dionis.xml.BooleanType;
 import dionis.xml.InterfaceModeType;
 import dionis.xml.InterfaceNatType;
+import dionis.xml.InterfaceParametrs;
 import dionis.xml.InterfaceType;
 
 public class InterfaceDialog extends Dialog {
@@ -104,9 +105,8 @@ public class InterfaceDialog extends Dialog {
 	@Override
 	protected Control createDialogArea(Composite parent) {
 
-		/** Установка **/
-		setUp();
-
+		parent.getShell().setText("Интерфейс");
+		
 		Composite container = (Composite) super.createDialogArea(parent);
 		container.setLayout(new GridLayout(7, false));
 
@@ -406,7 +406,18 @@ public class InterfaceDialog extends Dialog {
 		otherParamsButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
+				InterfaceType itype = InterfaceType.valueOf(typeCombo.getText());
+				InterfaceParametrs parametrs = new InterfaceParametrs();
+				switch (itype) {
+				case GRE:
+					GREDialog dialog = new GREDialog(getShell());
+					dialog.setParametrs(parametrs);
+					dialog.open();
+					break;
 
+				default:
+					break;
+				}
 			}
 		});
 
@@ -457,7 +468,7 @@ public class InterfaceDialog extends Dialog {
 		tableViewer.setContentProvider(ArrayContentProvider.getInstance());
 		tableViewer.setLabelProvider(new InterfaceRouteLabelProvider());
 		tableViewer.setInput(InterfaceRouteModel.getInstance().getDataArray());
-		
+
 		return container;
 	}
 
@@ -618,16 +629,6 @@ public class InterfaceDialog extends Dialog {
 	// tableViewer.setInput(input);
 	// }
 
-	private void setUp() {
-		if (interfaceBean == null) {
-			InterfaceRouteModel.getInstance().removeAll();
-			System.out.println("clean");
-		} else {
-			InterfaceRouteModel.getInstance().setData(
-					interfaceBean.getRoutes().getRoute());
-		}
-	}
-
 	private void getAll() {
 		if (interfaceBean == null) {
 			// новый экземпляр бина
@@ -644,6 +645,8 @@ public class InterfaceDialog extends Dialog {
 			LinkedList<InterfaceRouteBean> route = new LinkedList<InterfaceRouteBean>();
 			routes.setRoute(route);
 			getInterfaceBean().setRoutes(routes);
+			InterfaceRouteModel.getInstance().removeAll();
+			System.out.println("clean");
 		} else {
 			nameText.setText(interfaceBean.getName());
 			typeCombo.select((interfaceBean.getType() != null) ? interfaceBean
@@ -694,11 +697,10 @@ public class InterfaceDialog extends Dialog {
 			System.out.println("New routes : "
 					+ interfaceBean.getRoutes().getRoute().toString());
 			System.out.println("After having set new values: "
-					+ InterfaceRouteModel.getInstance().toString());			
+					+ InterfaceRouteModel.getInstance().toString());
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	protected void okPressed() {
 		interfaceBean.setName(nameText.getText());
@@ -725,7 +727,12 @@ public class InterfaceDialog extends Dialog {
 		}
 		interfaceBean.setMtu((short) mtuSpinner.getSelection());
 		InterfaceRoutesBean routes = new InterfaceRoutesBean();
-		routes.setRoute((List<InterfaceRouteBean>) InterfaceRouteModel.getInstance().getClone());
+		routes.setRoute(InterfaceRouteModel.getInstance().getData());
+		// routes.setRoute(InterfaceRouteModel.getInstance().getData());
+		System.out.println("instance: "
+				+ InterfaceRouteModel.getInstance().toString());
+		System.out.println("routes: " + routes.getRoute().toString());
+
 		interfaceBean.setRoutes(routes);
 		InterfaceParametrsBean params = new InterfaceParametrsBean();
 		interfaceBean.setParametrs(params);

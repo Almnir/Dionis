@@ -59,7 +59,6 @@ public class TunnelFilterDialog extends Dialog {
 	 */
 	public TunnelFilterDialog(Shell parentShell, IStructuredSelection sel) {
 		super(parentShell);
-		parentShell.setText("Правило отбора в туннель");
 		if (sel != null) {
 			this.data = (TunnelFilter) sel.getFirstElement();
 			this.newadd = false;
@@ -76,6 +75,9 @@ public class TunnelFilterDialog extends Dialog {
 	 */
 	@Override
 	protected Control createDialogArea(Composite parent) {
+
+		parent.getShell().setText("Правило отбора в туннель");
+
 		Composite container = (Composite) super.createDialogArea(parent);
 		container.setLayout(new GridLayout(5, false));
 
@@ -228,7 +230,7 @@ public class TunnelFilterDialog extends Dialog {
 								.getBits());
 					}
 				}
-			} 
+			}
 		}
 	}
 

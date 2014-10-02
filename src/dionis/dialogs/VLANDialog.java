@@ -2,6 +2,9 @@ package dionis.dialogs;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.ComboViewer;
+import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -13,8 +16,15 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Spinner;
 
+import dionis.beans.InterfaceBean;
+import dionis.models.InterfaceModel;
+import dionis.xml.InterfaceParametrs;
+
 public class VLANDialog extends Dialog {
 
+	private Spinner vlanSpinner;
+	private InterfaceParametrs parametrs;
+	
 	/**
 	 * Create the dialog.
 	 * @param parentShell
@@ -29,6 +39,9 @@ public class VLANDialog extends Dialog {
 	 */
 	@Override
 	protected Control createDialogArea(Composite parent) {
+		
+		parent.getShell().setText("Дополнительные параметры");
+		
 		Composite container = (Composite) super.createDialogArea(parent);
 		container.setLayout(new GridLayout(2, false));
 		
@@ -36,31 +49,51 @@ public class VLANDialog extends Dialog {
 		label.setText("Базовый интерфейс");
 		label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
 		
-		Combo combo = new Combo(container, SWT.READ_ONLY);
-		GridData gd_combo = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
-		gd_combo.widthHint = 119;
-		combo.setLayoutData(gd_combo);
+		Combo interfaceCombo = new Combo(container, SWT.READ_ONLY);
+		ComboViewer interfaceComboViewer = new ComboViewer(interfaceCombo);
+		GridData gd_interfaceCombo = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+		gd_interfaceCombo.widthHint = 119;
+		interfaceCombo.setLayoutData(gd_interfaceCombo);
+		interfaceComboViewer.setContentProvider(ArrayContentProvider.getInstance());
+		interfaceComboViewer.setLabelProvider(new LabelProvider() {
+			@Override
+			public String getText(Object element) {
+				String rv = "";
+				if (element instanceof InterfaceBean) {
+					InterfaceBean ibean = (InterfaceBean) element;
+					rv = ibean.getName();
+				}
+				return rv;
+			}
+		});
+		// если нет интерфейсов, то отключаем комбо
+		if (InterfaceModel.getInstance().getData() != null && !InterfaceModel.getInstance().getData().isEmpty()) {
+			interfaceComboViewer.setInput(InterfaceModel.getInstance().getData());
+			interfaceCombo.setEnabled(true);
+		} else {
+			interfaceCombo.setEnabled(false);
+		}
 		
 		Label lblNewLabel = new Label(container, SWT.NONE);
 		lblNewLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
 		lblNewLabel.setText("VLAN идентификатор");
 		
-		Spinner spinner = new Spinner(container, SWT.BORDER);
-		GridData gd_spinner = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-		gd_spinner.widthHint = 119;
-		spinner.setLayoutData(gd_spinner);
-		spinner.setMinimum(1);
-		spinner.setMaximum(4095);
+		vlanSpinner = new Spinner(container, SWT.BORDER);
+		GridData gd_vlanSpinner = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+		gd_vlanSpinner.widthHint = 119;
+		vlanSpinner.setLayoutData(gd_vlanSpinner);
+		vlanSpinner.setMinimum(1);
+		vlanSpinner.setMaximum(4095);
 		
 		Label lblNewLabel_1 = new Label(container, SWT.NONE);
 		lblNewLabel_1.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
 		lblNewLabel_1.setText("Скорость передачи");
 		
-		Spinner spinner_1 = new Spinner(container, SWT.BORDER);
-		GridData gd_spinner_1 = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-		gd_spinner_1.widthHint = 119;
-		spinner_1.setLayoutData(gd_spinner_1);
-		spinner_1.setMinimum(0);
+		Spinner spinner = new Spinner(container, SWT.BORDER);
+		GridData gd_spinner = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+		gd_spinner.widthHint = 119;
+		spinner.setLayoutData(gd_spinner);
+		spinner.setMinimum(0);
 		
 		Label lblNewLabel_2 = new Label(container, SWT.NONE);
 		lblNewLabel_2.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
@@ -72,7 +105,13 @@ public class VLANDialog extends Dialog {
 		spinner_2.setLayoutData(gd_spinner_2);
 		spinner_2.setMinimum(0);
 
+		init();
+		
 		return container;
+	}
+
+	private void init() {
+//		parametrs.getVLANs().getVLAN().getVNID()
 	}
 
 	/**
@@ -99,5 +138,13 @@ public class VLANDialog extends Dialog {
 	protected void okPressed() {
 		// TODO Auto-generated method stub
 		super.okPressed();
+	}
+
+	public InterfaceParametrs getParametrs() {
+		return parametrs;
+	}
+
+	public void setParametrs(InterfaceParametrs parametrs) {
+		this.parametrs = parametrs;
 	}
 }

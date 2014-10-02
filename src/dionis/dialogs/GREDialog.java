@@ -14,7 +14,25 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Spinner;
 
+import dionis.beans.InterfaceParametrsBean;
+import dionis.utils.Constants;
+import dionis.xml.BooleanType;
+import dionis.xml.InterfaceDFType;
+import dionis.xml.InterfaceParametrs;
+import dionis.xml.TOS;
+
 public class GREDialog extends Dialog {
+
+	private InterfaceParametrs parametrs;
+	private Button numerationCheck;
+	private Button controlSumCheck;
+	private Button copyTOSCheck;
+	private Combo flagCombo;
+	private Spinner tosSpinner;
+	private Spinner bufferSpinner;
+	private Spinner latencySpinner;
+	private Spinner intervalSpinner;
+	private Spinner timeoutSpinner;
 
 	/**
 	 * Create the dialog.
@@ -32,32 +50,36 @@ public class GREDialog extends Dialog {
 	 */
 	@Override
 	protected Control createDialogArea(Composite parent) {
+
+		parent.getShell().setText("Дополнительные параметры");
+
 		Composite container = (Composite) super.createDialogArea(parent);
 		container.setLayout(new GridLayout(4, false));
 
-		Button btnCheckButton = new Button(container, SWT.CHECK);
-		btnCheckButton.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false,
+		numerationCheck = new Button(container, SWT.CHECK);
+		numerationCheck.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false,
 				false, 1, 2));
-		btnCheckButton.setText("Нумерация пакетов");
+		numerationCheck.setText("Нумерация пакетов");
 		new Label(container, SWT.NONE);
 
-		Button btnCheckButton_1 = new Button(container, SWT.CHECK);
-		btnCheckButton_1.setText("Контрольная сумма");
+		controlSumCheck = new Button(container, SWT.CHECK);
+		controlSumCheck.setText("Контрольная сумма");
 		new Label(container, SWT.NONE);
 		new Label(container, SWT.NONE);
 
-		Button btnCheckButton_2 = new Button(container, SWT.CHECK);
-		btnCheckButton_2.setText("Копировать поле TOS");
+		copyTOSCheck = new Button(container, SWT.CHECK);
+		copyTOSCheck.setText("Копировать поле TOS");
 		new Label(container, SWT.NONE);
 
 		Label lblDf = new Label(container, SWT.NONE);
 		lblDf.setText("Флаг DF");
 
-		Combo combo = new Combo(container, SWT.READ_ONLY);
-		GridData gd_combo = new GridData(SWT.FILL, SWT.CENTER, false, false, 1,
-				1);
-		gd_combo.widthHint = 130;
-		combo.setLayoutData(gd_combo);
+		flagCombo = new Combo(container, SWT.READ_ONLY);
+		GridData gd_flagCombo = new GridData(SWT.FILL, SWT.CENTER, false,
+				false, 1, 1);
+		gd_flagCombo.widthHint = 130;
+		flagCombo.setLayoutData(gd_flagCombo);
+		flagCombo.setItems(Constants.DF_FLAG);
 
 		Label lblNewLabel_4 = new Label(container, SWT.NONE);
 		GridData gd_lblNewLabel_4 = new GridData(SWT.LEFT, SWT.CENTER, false,
@@ -66,26 +88,26 @@ public class GREDialog extends Dialog {
 		lblNewLabel_4.setLayoutData(gd_lblNewLabel_4);
 		lblNewLabel_4.setText("Установить значение TOS");
 
-		Spinner spinner_4 = new Spinner(container, SWT.BORDER);
-		GridData gd_spinner_4 = new GridData(SWT.LEFT, SWT.CENTER, false,
+		tosSpinner = new Spinner(container, SWT.BORDER);
+		GridData gd_tosSpinner = new GridData(SWT.LEFT, SWT.CENTER, false,
 				false, 1, 1);
-		gd_spinner_4.widthHint = 48;
-		spinner_4.setLayoutData(gd_spinner_4);
-		spinner_4.setMinimum(0);
-		spinner_4.setMaximum(255);
+		gd_tosSpinner.widthHint = 48;
+		tosSpinner.setLayoutData(gd_tosSpinner);
+		tosSpinner.setMinimum(0);
+		tosSpinner.setMaximum(255);
 
 		Label lblNewLabel = new Label(container, SWT.NONE);
 		lblNewLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false,
 				false, 2, 1));
 		lblNewLabel.setText("Размер буфера");
 
-		Spinner spinner = new Spinner(container, SWT.BORDER);
-		GridData gd_spinner = new GridData(SWT.LEFT, SWT.CENTER, false, false,
-				1, 1);
-		gd_spinner.widthHint = 78;
-		spinner.setLayoutData(gd_spinner);
-		spinner.setMinimum(0);
-		spinner.setMaximum(65535);
+		bufferSpinner = new Spinner(container, SWT.BORDER);
+		GridData gd_bufferSpinner = new GridData(SWT.LEFT, SWT.CENTER, false,
+				false, 1, 1);
+		gd_bufferSpinner.widthHint = 78;
+		bufferSpinner.setLayoutData(gd_bufferSpinner);
+		bufferSpinner.setMinimum(0);
+		bufferSpinner.setMaximum(65535);
 
 		new Label(container, SWT.NONE);
 
@@ -94,27 +116,27 @@ public class GREDialog extends Dialog {
 				false, 2, 1));
 		lblNewLabel_1.setText("Максимальная задержка пакетов");
 
-		Spinner spinner_1 = new Spinner(container, SWT.BORDER);
-		GridData gd_spinner_1 = new GridData(SWT.LEFT, SWT.CENTER, false,
+		latencySpinner = new Spinner(container, SWT.BORDER);
+		GridData gd_latencySpinner = new GridData(SWT.LEFT, SWT.CENTER, false,
 				false, 1, 1);
-		gd_spinner_1.widthHint = 78;
-		spinner_1.setLayoutData(gd_spinner_1);
-		spinner_1.setMinimum(0);
-		spinner_1.setMaximum(65535);
+		gd_latencySpinner.widthHint = 78;
+		latencySpinner.setLayoutData(gd_latencySpinner);
+		latencySpinner.setMinimum(0);
+		latencySpinner.setMaximum(65535);
 		new Label(container, SWT.NONE);
 
 		Label lblNewLabel_2 = new Label(container, SWT.NONE);
 		lblNewLabel_2.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false,
 				false, 2, 1));
-		lblNewLabel_2.setText("Интервал отрпавки запросов");
+		lblNewLabel_2.setText("Интервал отправки запросов");
 
-		Spinner spinner_2 = new Spinner(container, SWT.BORDER);
-		GridData gd_spinner_2 = new GridData(SWT.LEFT, SWT.CENTER, false,
+		intervalSpinner = new Spinner(container, SWT.BORDER);
+		GridData gd_intervalSpinner = new GridData(SWT.LEFT, SWT.CENTER, false,
 				false, 1, 1);
-		gd_spinner_2.widthHint = 78;
-		spinner_2.setLayoutData(gd_spinner_2);
-		spinner_2.setMinimum(0);
-		spinner_2.setMaximum(65535);
+		gd_intervalSpinner.widthHint = 78;
+		intervalSpinner.setLayoutData(gd_intervalSpinner);
+		intervalSpinner.setMinimum(0);
+		intervalSpinner.setMaximum(65535);
 		new Label(container, SWT.NONE);
 
 		Label lblNewLabel_3 = new Label(container, SWT.NONE);
@@ -122,16 +144,86 @@ public class GREDialog extends Dialog {
 				false, 2, 1));
 		lblNewLabel_3.setText("Максимальный интервал ожидания ответов");
 
-		Spinner spinner_3 = new Spinner(container, SWT.BORDER);
-		GridData gd_spinner_3 = new GridData(SWT.LEFT, SWT.CENTER, false,
+		timeoutSpinner = new Spinner(container, SWT.BORDER);
+		GridData gd_timeoutSpinner = new GridData(SWT.LEFT, SWT.CENTER, false,
 				false, 1, 1);
-		gd_spinner_3.widthHint = 78;
-		spinner_3.setLayoutData(gd_spinner_3);
-		spinner_3.setMinimum(0);
-		spinner_3.setMaximum(65535);
+		gd_timeoutSpinner.widthHint = 78;
+		timeoutSpinner.setLayoutData(gd_timeoutSpinner);
+		timeoutSpinner.setMinimum(0);
+		timeoutSpinner.setMaximum(65535);
 		new Label(container, SWT.NONE);
 
+		init();
+
 		return container;
+	}
+
+	private void init() {
+		if (parametrs.isSetSeq()) {
+			numerationCheck
+					.setSelection(parametrs.getSeq() == BooleanType.YES ? true
+							: false);
+		} else {
+			numerationCheck.setSelection(false);
+		}
+		if (parametrs.isSetTOS()) {
+			copyTOSCheck
+					.setSelection(parametrs.getTOS().getCopy() == BooleanType.YES ? true
+							: false);
+			tosSpinner.setSelection(parametrs.getTOS().getValue());
+		} else {
+			copyTOSCheck.setSelection(false);
+			tosSpinner.setSelection(0);
+		}
+		controlSumCheck
+				.setSelection(parametrs.getChksum() == BooleanType.YES ? true
+						: false);
+		if (parametrs.isSetDF()) {
+			flagCombo.select(parametrs.getDF().ordinal());
+		} else {
+			flagCombo.select(0);
+		}
+		if (parametrs.isSetBuf()) {
+			bufferSpinner.setSelection(parametrs.getBuf());
+		} else {
+			bufferSpinner.setSelection(0);
+		}
+		if (parametrs.isSetDelay()) {
+			latencySpinner.setSelection(parametrs.getDelay());
+		} else {
+			latencySpinner.setSelection(0);
+		}
+		if (parametrs.isSetInterval()) {
+			intervalSpinner.setSelection(parametrs.getInterval());
+		} else {
+			intervalSpinner.setSelection(0);
+		}
+		if (parametrs.isSetWait()) {
+			timeoutSpinner.setSelection(parametrs.getWait());
+		} else {
+			timeoutSpinner.setSelection(0);
+		}
+	}
+
+	@Override
+	protected void okPressed() {
+		parametrs
+				.setSeq(numerationCheck.getSelection() == true ? BooleanType.YES
+						: BooleanType.NO);
+		TOS tos = new TOS();
+		tos.setCopy(copyTOSCheck.getSelection() == true ? BooleanType.YES
+				: BooleanType.NO);
+		tos.setValue((short) tosSpinner.getSelection());
+		parametrs.setTOS(tos);
+		parametrs
+				.setChksum(controlSumCheck.getSelection() == true ? BooleanType.YES
+						: BooleanType.NO);
+		parametrs.setDF(InterfaceDFType.fromValue(flagCombo.getText()));
+		parametrs.setBuf(bufferSpinner.getSelection());
+		parametrs.setDelay(latencySpinner.getSelection());
+		parametrs.setInterval(intervalSpinner.getSelection());
+		parametrs.setBuf(timeoutSpinner.getSelection());
+		super.okPressed();
 	}
 
 	/**
@@ -155,10 +247,12 @@ public class GREDialog extends Dialog {
 		return new Point(660, 315);
 	}
 
-	@Override
-	protected void okPressed() {
-		// TODO Auto-generated method stub
-		super.okPressed();
+	public InterfaceParametrs getParametrs() {
+		return parametrs;
 	}
-	
+
+	public void setParametrs(InterfaceParametrs parametrs) {
+		this.parametrs = parametrs;
+	}
+
 }

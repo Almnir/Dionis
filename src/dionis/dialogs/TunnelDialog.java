@@ -92,7 +92,6 @@ public class TunnelDialog extends Dialog {
 	 */
 	public TunnelDialog(Shell parentShell, IStructuredSelection sel) {
 		super(parentShell);
-		parentShell.setText("Туннель");
 		if (sel != null) {
 			this.data = (Tunnel) sel.getFirstElement();
 			this.newadd = false;
@@ -109,6 +108,9 @@ public class TunnelDialog extends Dialog {
 	 */
 	@Override
 	protected Control createDialogArea(Composite parent) {
+
+		parent.getShell().setText("Туннель");
+
 		Composite container = (Composite) super.createDialogArea(parent);
 		container.setLayout(new GridLayout(5, false));
 

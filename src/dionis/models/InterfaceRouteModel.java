@@ -1,6 +1,5 @@
 package dionis.models;
 
-import java.util.Collections;
 import java.util.LinkedList;
 
 import dionis.beans.InterfaceRouteBean;
@@ -17,8 +16,8 @@ public class InterfaceRouteModel extends AbstractModel<InterfaceRouteBean> {
 	}
 
 	public Object getClone() {
-		LinkedList<InterfaceRouteBean> linkedData = new LinkedList<InterfaceRouteBean>();
-		Collections.copy(linkedData, getData());
+		LinkedList<InterfaceRouteBean> linkedData = new LinkedList<InterfaceRouteBean>(
+				getData());
 		return linkedData.clone();
 	}
 }

@@ -43,10 +43,13 @@ public class InterfaceRouteDialog extends Dialog {
 	 */
 	@Override
 	protected Control createDialogArea(Composite parent) {
+		
+		parent.getShell().setText("IP маршрут");
+		
 		Composite container = (Composite) super.createDialogArea(parent);
 		container.setLayout(new GridLayout(2, false));
 
-		new Label(container, SWT.NONE).setText("Количество бит");
+		new Label(container, SWT.NONE).setText("Значащих бит");
 
 		bitsSpinner = new Spinner(container, SWT.BORDER);
 		bitsSpinner.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,
@@ -55,7 +58,7 @@ public class InterfaceRouteDialog extends Dialog {
 		bitsSpinner.setMinimum(0);
 		bitsSpinner.setMaximum(255);
 
-		new Label(container, SWT.NONE).setText("Шлюз");
+		new Label(container, SWT.NONE).setText("Адрес шлюза");
 
 		gatewayText = new Text(container, SWT.BORDER | SWT.SINGLE);
 		gatewayText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,

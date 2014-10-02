@@ -31,7 +31,7 @@ public abstract class AbstractModel<T> {
 	public synchronized void removeData(T element) {
 		this.data.remove(element);
 	}
-	
+
 	public synchronized void removeAll() {
 		this.data.clear();
 	}

@@ -72,4 +72,7 @@ public interface Constants {
 	
 	/** Режим фильтра **/
 	String[] TUNNEL_FILTER_STATUS = { "Разрешить", "Запретить", "Перезапуск" };
+	/** Флаг DF **/
+	String[] DF_FLAG = { "Копировать", "Установить", "Сбросить" };
+	
 }
