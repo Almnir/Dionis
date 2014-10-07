@@ -1,38 +1,21 @@
 package dionis.beans;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-
 import dionis.xml.BooleanType;
 
-public class TOSBean {
+public class TOSBean extends ModelObject {
 
 	protected BooleanType copy;
 	protected short value;
 
-	private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(
-			this);
-
 	public TOSBean() {
 	}
 
-	public void addPropertyChangeListener(String propertyName,
-			PropertyChangeListener listener) {
-		propertyChangeSupport.addPropertyChangeListener(propertyName, listener);
-	}
-
-	public void removePropertyChangeListener(PropertyChangeListener listener) {
-		propertyChangeSupport.removePropertyChangeListener(listener);
-	}
-
 	public void setCopy(BooleanType value) {
-		propertyChangeSupport.firePropertyChange("copy", this.copy,
-				this.copy = value);
+		firePropertyChange("copy", this.copy, this.copy = value);
 	}
 
 	public void setValue(short value) {
-		propertyChangeSupport.firePropertyChange("value", this.value,
-				this.value = value);
+		firePropertyChange("value", this.value, this.value = value);
 	}
 
 	public BooleanType getCopy() {
@@ -41,6 +24,21 @@ public class TOSBean {
 
 	public short getValue() {
 		return value;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("TOSBean [");
+		if (copy != null) {
+			builder.append("copy=");
+			builder.append(copy);
+			builder.append(", ");
+		}
+		builder.append("value=");
+		builder.append(value);
+		builder.append("]");
+		return builder.toString();
 	}
 
 }

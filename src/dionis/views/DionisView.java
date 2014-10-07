@@ -39,6 +39,7 @@ import org.eclipse.ui.part.ViewPart;
 
 import dionis.beans.InterfaceBean;
 import dionis.beans.InterfaceRouteBean;
+import dionis.beans.TunnelBean;
 import dionis.dialogs.InterfaceDialog;
 import dionis.dialogs.InterfaceRouteDialog;
 import dionis.dialogs.TunnelDialog;
@@ -148,7 +149,7 @@ public class DionisView extends ViewPart {
 	private Text text_8;
 	private Table table_2;
 	private Table table_3;
-	protected Tunnel copyPasteTunnel;
+	protected TunnelBean copyPasteTunnel;
 	private MenuItem pasteItem;
 
 	public DionisView() {
@@ -1621,7 +1622,7 @@ public class DionisView extends ViewPart {
 			public void widgetSelected(SelectionEvent e) {
 				IStructuredSelection sel = (IStructuredSelection) tunnelTableViewer
 						.getSelection();
-				Tunnel tunnel = (Tunnel) sel
+				TunnelBean tunnel = (TunnelBean) sel
 						.getFirstElement();
 				TunnelModel.getInstance().removeData(tunnel);
 				Job job = new Job("remove") {
@@ -1652,11 +1653,11 @@ public class DionisView extends ViewPart {
 						&& tunnelTable.getSelection().length > 0) {
 					IStructuredSelection sel = (IStructuredSelection) tunnelTableViewer
 							.getSelection();
-					Tunnel tunnel = (Tunnel) sel
+					TunnelBean tunnel = (TunnelBean) sel
 							.getFirstElement();
 					// скопировать ссылку на текущее выделение
 					try {
-						copyPasteTunnel = (Tunnel) tunnel.clone();
+						copyPasteTunnel = (TunnelBean) tunnel.clone();
 					} catch (CloneNotSupportedException e1) {
 						e1.printStackTrace();
 					}
@@ -1672,9 +1673,9 @@ public class DionisView extends ViewPart {
 
 		pasteItem.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				Tunnel tunnelPaste = new Tunnel();
+				TunnelBean tunnelPaste = new TunnelBean();
 				try {
-					tunnelPaste = (Tunnel) copyPasteTunnel.clone();
+					tunnelPaste = (TunnelBean) copyPasteTunnel.clone();
 				} catch (CloneNotSupportedException e1) {
 					e1.printStackTrace();
 				}

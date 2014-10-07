@@ -2,7 +2,6 @@ package dionis.dialogs;
 
 import java.util.Arrays;
 import java.util.LinkedList;
-import java.util.List;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -48,7 +47,6 @@ import dionis.providers.InterfaceRouteLabelProvider;
 import dionis.xml.BooleanType;
 import dionis.xml.InterfaceModeType;
 import dionis.xml.InterfaceNatType;
-import dionis.xml.InterfaceParametrs;
 import dionis.xml.InterfaceType;
 
 public class InterfaceDialog extends Dialog {
@@ -106,7 +104,7 @@ public class InterfaceDialog extends Dialog {
 	protected Control createDialogArea(Composite parent) {
 
 		parent.getShell().setText("Интерфейс");
-		
+
 		Composite container = (Composite) super.createDialogArea(parent);
 		container.setLayout(new GridLayout(7, false));
 
@@ -149,6 +147,7 @@ public class InterfaceDialog extends Dialog {
 		// }
 		// comboViewer.setInput(list.toArray(new String[list.size()]));
 		comboViewer.setInput(Arrays.asList(InterfaceType.values()));
+		typeCombo.select(0);
 
 		Label label_2 = new Label(container, SWT.NONE);
 		label_2.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false,
@@ -173,6 +172,7 @@ public class InterfaceDialog extends Dialog {
 			}
 		});
 		modeComboViewer.setInput(Arrays.asList(InterfaceModeType.values()));
+		modeCombo.select(0);
 
 		Label lblIp = new Label(container, SWT.NONE);
 		lblIp.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 3,
@@ -260,6 +260,7 @@ public class InterfaceDialog extends Dialog {
 			}
 		});
 		natComboViewer.setInput(Arrays.asList(InterfaceNatType.values()));
+		natCombo.select(0);
 
 		Label lblMtu = new Label(container, SWT.NONE);
 		lblMtu.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false,
@@ -406,17 +407,38 @@ public class InterfaceDialog extends Dialog {
 		otherParamsButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				InterfaceType itype = InterfaceType.valueOf(typeCombo.getText());
-				InterfaceParametrs parametrs = new InterfaceParametrs();
-				switch (itype) {
-				case GRE:
-					GREDialog dialog = new GREDialog(getShell());
-					dialog.setParametrs(parametrs);
-					dialog.open();
-					break;
+				String tctext = typeCombo.getText();
+				if (!tctext.isEmpty()) {
+					InterfaceType itype = InterfaceType.valueOf(typeCombo
+							.getText());
+					InterfaceParametrsBean params = interfaceBean
+							.getParametrs();
+					if (params == null) {
+						params = new InterfaceParametrsBean();
+					} else {
+						// устанавливаем родительский бин
+						params.setInterfaceBean(interfaceBean);
+					}
+					switch (itype) {
+					case GRE:
+						GREDialog greDialog = new GREDialog(getShell());
+						greDialog.setParametrs(params);
+						if (greDialog.open() == Window.OK) {
+							interfaceBean.setParametrs(greDialog.getParametrs());
+						}
+						break;
+					case VLAN:
+						VLANDialog vlanDialog = new VLANDialog(getShell());
+						vlanDialog.setParametrs(params);
+						if (vlanDialog.open() == Window.OK) {
+							interfaceBean.setParametrs(vlanDialog
+									.getParametrs());
+						}
+						break;
 
-				default:
-					break;
+					default:
+						break;
+					}
 				}
 			}
 		});
@@ -646,7 +668,7 @@ public class InterfaceDialog extends Dialog {
 			routes.setRoute(route);
 			getInterfaceBean().setRoutes(routes);
 			InterfaceRouteModel.getInstance().removeAll();
-			System.out.println("clean");
+//			System.out.println("clean");
 		} else {
 			nameText.setText(interfaceBean.getName());
 			typeCombo.select((interfaceBean.getType() != null) ? interfaceBean
@@ -663,6 +685,7 @@ public class InterfaceDialog extends Dialog {
 			mtuSpinner.setSelection(interfaceBean.getMtu());
 			// TODO !!!
 			// params???
+			
 			DisableDatagramsBean datagrams = interfaceBean
 					.getDisableDatagrams();
 			tunnelButton
@@ -734,8 +757,6 @@ public class InterfaceDialog extends Dialog {
 		System.out.println("routes: " + routes.getRoute().toString());
 
 		interfaceBean.setRoutes(routes);
-		InterfaceParametrsBean params = new InterfaceParametrsBean();
-		interfaceBean.setParametrs(params);
 		DisableDatagramsBean disableDatagrams = new DisableDatagramsBean();
 		disableDatagrams
 				.setNotTunneled(tunnelButton.getSelection() == true ? BooleanType.YES

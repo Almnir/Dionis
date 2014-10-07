@@ -1,8 +1,8 @@
 package dionis.models;
 
-import dionis.xml.TunnelFilter;
+import dionis.beans.TunnelFilterBean;
 
-public class TunnelFilterModel extends AbstractModel<TunnelFilter> {
+public class TunnelFilterModel extends AbstractModel<TunnelFilterBean> {
 
 	private static TunnelFilterModel instance = null;
 

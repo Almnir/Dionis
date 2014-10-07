@@ -47,7 +47,7 @@ import javax.xml.bind.annotation.XmlType;
     "bits",
     "vnid"
 })
-public class VLAN
+public class InterfaceVLAN
     implements Serializable
 {
 

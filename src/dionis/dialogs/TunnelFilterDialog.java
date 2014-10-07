@@ -23,19 +23,19 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 
+import dionis.beans.TunnelFilterBean;
+import dionis.beans.TunnelFilterPortsBean;
+import dionis.beans.TunnelFilterSourceBean;
+import dionis.beans.TunnelFilterTargetBean;
 import dionis.models.TunnelFilterModel;
 import dionis.utils.Constants;
 import dionis.xml.FilterStatusType;
-import dionis.xml.TunnelFilter;
-import dionis.xml.TunnelFilterPorts;
-import dionis.xml.TunnelFilterSource;
-import dionis.xml.TunnelFilterTarget;
 import dionis.xml.TunnelProtocolType;
 
 public class TunnelFilterDialog extends Dialog {
 	private Text senderAddressText;
 	private Text receiverAddressText;
-	private TunnelFilter data;
+	private TunnelFilterBean data;
 	private boolean newadd;
 	private Combo protocolCombo;
 	private Spinner portStartSpinner;
@@ -60,10 +60,10 @@ public class TunnelFilterDialog extends Dialog {
 	public TunnelFilterDialog(Shell parentShell, IStructuredSelection sel) {
 		super(parentShell);
 		if (sel != null) {
-			this.data = (TunnelFilter) sel.getFirstElement();
+			this.data = (TunnelFilterBean) sel.getFirstElement();
 			this.newadd = false;
 		} else {
-			this.data = new TunnelFilter();
+			this.data = new TunnelFilterBean();
 			this.newadd = true;
 		}
 	}
@@ -202,33 +202,20 @@ public class TunnelFilterDialog extends Dialog {
 				// протокол
 				protocolCombo.select(data.getProtocol().ordinal());
 				// порты
-				if (data.isSetPorts()) {
-					if (data.getPorts().isSetLow()) {
-						portStartSpinner.setSelection(data.getPorts().getLow());
-					}
-					if (data.getPorts().isSetHigh()) {
-						portEndSpinner.setSelection(data.getPorts().getHigh());
-					}
+				if (data.getPorts() != null) {
+					portStartSpinner.setSelection(data.getPorts().getLow());
+					portEndSpinner.setSelection(data.getPorts().getHigh());
 				}
 				// отправитель
-				if (data.isSetSource()) {
-					if (data.getSource().isSetIP()) {
-						senderAddressText.setText(data.getSource().getIP());
-					}
-					if (data.getSource().isSetBits()) {
-						senderBitsSpinner.setSelection(data.getSource()
-								.getBits());
-					}
+				if (data.getSource() != null) {
+					senderAddressText.setText(data.getSource().getIp());
+					senderBitsSpinner.setSelection(data.getSource().getBits());
 				}
 				// получатель
-				if (data.isSetTarget()) {
-					if (data.getTarget().isSetIP()) {
-						receiverAddressText.setText(data.getTarget().getIP());
-					}
-					if (data.getTarget().isSetBits()) {
-						receiverBitsSpinner.setSelection(data.getTarget()
-								.getBits());
-					}
+				if (data.getTarget() != null) {
+					receiverAddressText.setText(data.getTarget().getIp());
+					receiverBitsSpinner
+							.setSelection(data.getTarget().getBits());
 				}
 			}
 		}
@@ -276,20 +263,20 @@ public class TunnelFilterDialog extends Dialog {
 			data.setProtocol(TunnelProtocolType.UDP);
 			break;
 		}
-		TunnelFilterPorts tunnelFilterPorts = new TunnelFilterPorts();
+		TunnelFilterPortsBean tunnelFilterPorts = new TunnelFilterPortsBean();
 		tunnelFilterPorts.setLow(portStartSpinner.getSelection());
 		tunnelFilterPorts.setHigh(portEndSpinner.getSelection());
 		data.setPorts(tunnelFilterPorts);
-		TunnelFilterSource filterSource = new TunnelFilterSource();
-		filterSource.setIP(senderAddressText.getText());
+		TunnelFilterSourceBean filterSource = new TunnelFilterSourceBean();
+		filterSource.setIp(senderAddressText.getText());
 		filterSource.setBits((short) senderBitsSpinner.getSelection());
 		data.setSource(filterSource);
-		TunnelFilterTarget filterTarget = new TunnelFilterTarget();
-		filterTarget.setIP(receiverAddressText.getText());
+		TunnelFilterTargetBean filterTarget = new TunnelFilterTargetBean();
+		filterTarget.setIp(receiverAddressText.getText());
 		filterTarget.setBits((short) receiverBitsSpinner.getSelection());
 		data.setTarget(filterTarget);
 
-		List<TunnelFilter> filtersList = TunnelFilterModel.getInstance()
+		List<TunnelFilterBean> filtersList = TunnelFilterModel.getInstance()
 				.getData();
 		// если список не пуст
 		if (filtersList != null) {
@@ -304,7 +291,7 @@ public class TunnelFilterDialog extends Dialog {
 			}
 		} else {
 			// новый список
-			filtersList = new ArrayList<TunnelFilter>();
+			filtersList = new ArrayList<TunnelFilterBean>();
 			filtersList.add(data);
 		}
 		// меняем список в модели на изменённый

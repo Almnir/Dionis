@@ -1,41 +1,31 @@
 package dionis.beans;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
+import java.util.List;
 
-public class VLANsBean implements PropertyChangeListener {
+public class VLANsBean extends ModelObject {
 
-	protected VLANBean vlan;
-
-	private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(
-			this);
+	protected List<VLANBean> vlan;
 
 	public VLANsBean() {
 	}
 
-	public void addPropertyChangeListener(String propertyName,
-			PropertyChangeListener listener) {
-		propertyChangeSupport.addPropertyChangeListener(propertyName, listener);
-	}
-
-	public void removePropertyChangeListener(PropertyChangeListener listener) {
-		propertyChangeSupport.removePropertyChangeListener(listener);
-	}
-
-	@Override
-	public void propertyChange(PropertyChangeEvent evt) {
-	}
-
-	public VLANBean getVlan() {
+	public List<VLANBean> getVlan() {
 		return vlan;
 	}
 
-	public void setVlan(VLANBean vlan) {
-		vlan.addPropertyChangeListener("ip", this);
-		vlan.addPropertyChangeListener("bits", this);
-		vlan.addPropertyChangeListener("vnid", this);
-		propertyChangeSupport.firePropertyChange("vlan", this.vlan,
-				this.vlan = vlan);
+	public void setVlan(List<VLANBean> vlan) {
+		firePropertyChange("vlan", this.vlan, this.vlan = vlan);
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("VLANsBean [");
+		if (vlan != null) {
+			builder.append("vlan=");
+			builder.append(vlan);
+		}
+		builder.append("]");
+		return builder.toString();
 	}
 }

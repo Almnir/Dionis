@@ -4,11 +4,11 @@ import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;
 
+import dionis.beans.TunnelFilterBean;
+import dionis.beans.TunnelFilterSourceBean;
+import dionis.beans.TunnelFilterTargetBean;
 import dionis.models.TunnelFilterModel;
 import dionis.utils.Constants;
-import dionis.xml.TunnelFilter;
-import dionis.xml.TunnelFilterSource;
-import dionis.xml.TunnelFilterTarget;
 
 /**
  * Класс-провайдер для отображения таблицы
@@ -27,8 +27,8 @@ public class TunnelFilterLableProvider extends LabelProvider implements
 	@Override
 	public String getColumnText(Object element, int columnIndex) {
 		String rv = "";
-		if (element instanceof TunnelFilter) {
-			TunnelFilter data = (TunnelFilter) element;
+		if (element instanceof TunnelFilterBean) {
+			TunnelFilterBean data = (TunnelFilterBean) element;
 			switch (columnIndex) {
 			case 0:
 				// номер по порядку в модели (начиная с 1)
@@ -37,16 +37,15 @@ public class TunnelFilterLableProvider extends LabelProvider implements
 				break;
 			case 1:
 				// статус
-				rv = (data.isSetStatus()) ? Constants.TUNNEL_FILTER_STATUS[data
-						.getStatus().ordinal()] : "";
+				rv = Constants.TUNNEL_FILTER_STATUS[data.getStatus().ordinal()];
 				break;
 			case 2:
 				// отправитель
-				TunnelFilterSource source = data.getSource();
+				TunnelFilterSourceBean source = data.getSource();
 				if (source != null) {
-					if (data.isSetSource() && source.isSetIP()
-							&& source.isSetBits()) {
-						rv = source.getIP() + "/" + source.getBits();
+					if (data.getSource() != null && source.getIp() != null
+							&& source.getBits() != 0) {
+						rv = source.getIp() + "/" + source.getBits();
 					} else {
 						rv = "";
 					}
@@ -54,11 +53,11 @@ public class TunnelFilterLableProvider extends LabelProvider implements
 				break;
 			case 3:
 				// получатель
-				TunnelFilterTarget target = data.getTarget();
+				TunnelFilterTargetBean target = data.getTarget();
 				if (target != null) {
-					if (data.isSetTarget() && target.isSetIP()
-							&& target.isSetBits()) {
-						rv = target.getIP() + "/" + target.getBits();
+					if (data.getTarget() != null && target.getIp() != null
+							&& target.getBits() != 0) {
+						rv = target.getIp() + "/" + target.getBits();
 					} else {
 						rv = "";
 					}
@@ -66,20 +65,21 @@ public class TunnelFilterLableProvider extends LabelProvider implements
 				break;
 			case 4:
 				// протокол
-				rv = (data.isSetProtocol()) ? data.getProtocol().name() : "";
+				rv = (data.getProtocol()) != null ? data.getProtocol().name()
+						: "";
 				break;
 			case 5:
 				// порты
-				if (data.isSetPorts()) {
-					if (data.getPorts().isSetLow()) {
+				if (data.getPorts() != null) {
+					if (data.getPorts().getLow() != 0) {
 						rv = data.getPorts().getLow() + "-";
 					} else {
 						rv = "";
 					}
-					if (data.getPorts().isSetHigh()) {
+					if (data.getPorts().getHigh() != 0) {
 						rv += data.getPorts().getHigh();
 					} else {
-						rv = rv.substring(0, rv.length() - 1);
+						rv = !rv.equals("") ? rv.substring(0, rv.length() - 1) : "";
 					}
 				} else {
 					rv = "";

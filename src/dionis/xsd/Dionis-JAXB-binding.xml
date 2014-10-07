@@ -18,8 +18,8 @@
             <jaxb:property>
                 <jaxb:baseType name="FloatAdapter">
                     <jaxb:javaType name="java.lang.Float"
-                                   parseMethod="ru.cniieisu.stc.bisszi.impl.module.dionisfw.xml.formatters.FloatFormatter.parseFloat"
-                                   printMethod="ru.cniieisu.stc.bisszi.impl.module.dionisfw.xml.formatters.FloatFormatter.printFloat"/>
+                                   parseMethod="dionis.formatters.FloatFormatter.parseFloat"
+                                   printMethod="dionis.formatters.FloatFormatter.printFloat"/>
                 </jaxb:baseType>
             </jaxb:property>
         </jaxb:bindings>
@@ -30,8 +30,8 @@
             <jaxb:property>
                 <jaxb:baseType>
                     <jaxb:javaType name="java.lang.Boolean"
-                                   parseMethod="ru.cniieisu.stc.bisszi.impl.module.dionisfw.xml.formatters.BooleanFormatter.parseBoolean"
-                                   printMethod="ru.cniieisu.stc.bisszi.impl.module.dionisfw.xml.formatters.BooleanFormatter.printBoolean"/>
+                                   parseMethod="dionis.formatters.BooleanFormatter.parseBoolean"
+                                   printMethod="dionis.formatters.BooleanFormatter.printBoolean"/>
                 </jaxb:baseType>
             </jaxb:property>
         </jaxb:bindings>
@@ -40,8 +40,8 @@
             <jaxb:property>
                 <jaxb:baseType>
                     <jaxb:javaType name="java.util.TimeZone"
-                                   parseMethod="ru.cniieisu.stc.bisszi.impl.module.dionisfw.xml.formatters.TimeZoneTimeFormatter.parseTimeZoneTime"
-                                   printMethod="ru.cniieisu.stc.bisszi.impl.module.dionisfw.xml.formatters.TimeZoneTimeFormatter.printTimeZoneTime"/>
+                                   parseMethod="dionis.formatters.TimeZoneTimeFormatter.parseTimeZoneTime"
+                                   printMethod="dionis.formatters.TimeZoneTimeFormatter.printTimeZoneTime"/>
                 </jaxb:baseType>
             </jaxb:property>
         </jaxb:bindings>

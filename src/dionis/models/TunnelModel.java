@@ -1,8 +1,8 @@
 package dionis.models;
 
-import dionis.xml.Tunnel;
+import dionis.beans.TunnelBean;
 
-public class TunnelModel extends AbstractModel<Tunnel> {
+public class TunnelModel extends AbstractModel<TunnelBean> {
 	
 	private static TunnelModel instance = null;
 

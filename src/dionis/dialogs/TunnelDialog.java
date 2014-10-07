@@ -37,18 +37,18 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 
+import dionis.beans.CryptoNumberBean;
+import dionis.beans.TunnelBean;
+import dionis.beans.TunnelEncryptionBean;
+import dionis.beans.TunnelFilterBean;
+import dionis.beans.TunnelFiltersBean;
+import dionis.beans.TunnelIPBean;
+import dionis.beans.TunnelUDPPortsBean;
+import dionis.beans.UDPBean;
 import dionis.models.TunnelFilterModel;
 import dionis.models.TunnelModel;
 import dionis.providers.TunnelFilterLableProvider;
 import dionis.xml.BooleanType;
-import dionis.xml.CryptoNumber;
-import dionis.xml.Tunnel;
-import dionis.xml.TunnelEncryption;
-import dionis.xml.TunnelFilter;
-import dionis.xml.TunnelFilters;
-import dionis.xml.TunnelIP;
-import dionis.xml.TunnelUDPPorts;
-import dionis.xml.UDP;
 
 /**
  * Диалог позволяющий редактировать настройки конкретного туннеля
@@ -60,7 +60,7 @@ public class TunnelDialog extends Dialog {
 	private Text localIpText;
 	private Text remoteIpText;
 	private Table table;
-	private Tunnel data;
+	private TunnelBean data;
 	private boolean newadd;
 	private Spinner idSpinner;
 	private Button btnUdp;
@@ -75,7 +75,7 @@ public class TunnelDialog extends Dialog {
 	private Spinner cryptochannelNumberSpinner;
 	private Spinner remoteCryptonumberSpinner;
 	private TableViewer tableViewer;
-	protected TunnelFilter copyPasteFilter;
+	protected TunnelFilterBean copyPasteFilter;
 	private MenuItem pasteItem;
 
 	/**
@@ -93,10 +93,10 @@ public class TunnelDialog extends Dialog {
 	public TunnelDialog(Shell parentShell, IStructuredSelection sel) {
 		super(parentShell);
 		if (sel != null) {
-			this.data = (Tunnel) sel.getFirstElement();
+			this.data = (TunnelBean) sel.getFirstElement();
 			this.newadd = false;
 		} else {
-			this.data = new Tunnel();
+			this.data = new TunnelBean();
 			this.newadd = true;
 		}
 	}
@@ -387,7 +387,7 @@ public class TunnelDialog extends Dialog {
 			public void widgetSelected(SelectionEvent e) {
 				IStructuredSelection sel = (IStructuredSelection) tableViewer
 						.getSelection();
-				TunnelFilter tunnelFilter = (TunnelFilter) sel
+				TunnelFilterBean tunnelFilter = (TunnelFilterBean) sel
 						.getFirstElement();
 				TunnelFilterModel.getInstance().removeData(tunnelFilter);
 				Job job = new Job("remove") {
@@ -418,11 +418,12 @@ public class TunnelDialog extends Dialog {
 						&& table.getSelection().length > 0) {
 					IStructuredSelection sel = (IStructuredSelection) tableViewer
 							.getSelection();
-					TunnelFilter tunnelFilter = (TunnelFilter) sel
+					TunnelFilterBean tunnelFilter = (TunnelFilterBean) sel
 							.getFirstElement();
 					// скопировать ссылку на текущее выделение
 					try {
-						copyPasteFilter = (TunnelFilter) tunnelFilter.clone();
+						copyPasteFilter = (TunnelFilterBean) tunnelFilter
+								.clone();
 					} catch (CloneNotSupportedException e1) {
 						e1.printStackTrace();
 					}
@@ -438,9 +439,9 @@ public class TunnelDialog extends Dialog {
 
 		pasteItem.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				TunnelFilter filterPaste = new TunnelFilter();
+				TunnelFilterBean filterPaste = new TunnelFilterBean();
 				try {
-					filterPaste = (TunnelFilter) copyPasteFilter.clone();
+					filterPaste = (TunnelFilterBean) copyPasteFilter.clone();
 				} catch (CloneNotSupportedException e1) {
 					e1.printStackTrace();
 				}
@@ -504,21 +505,22 @@ public class TunnelDialog extends Dialog {
 			if (newadd == false) {
 				/** изменение **/
 				// идентификатор
-				idSpinner.setSelection(data.isSetID() ? data.getID() : 0);
-				if (data.getIP() != null) {
-					localIpText.setText(data.getIP().isSetLocal() ? data
-							.getIP().getLocal() : "0.0.0.0");
-					remoteIpText.setText(data.getIP().isSetRemote() ? data
-							.getIP().getRemote() : "0.0.0.0");
+				idSpinner.setSelection(data.getId());
+				if (data.getIp() != null) {
+					localIpText.setText(data.getIp().getLocal() != null ? data
+							.getIp().getLocal() : "0.0.0.0");
+					remoteIpText
+							.setText(data.getIp().getRemote() != null ? data
+									.getIp().getRemote() : "0.0.0.0");
 				}
 				// UDP секция
-				if (data.isSetUDP()
-						&& data.getUDP().getTitle() == BooleanType.YES) {
+				if (data.getUdp() != null
+						&& data.getUdp().getTitle() == BooleanType.YES) {
 					// UDP порт отправления
-					senderPortSpinner.setSelection(data.getUDP().getPorts()
+					senderPortSpinner.setSelection(data.getUdp().getPorts()
 							.getSender());
 					// порт получения
-					receiverPortSpinner.setSelection(data.getUDP().getPorts()
+					receiverPortSpinner.setSelection(data.getUdp().getPorts()
 							.getReceiver());
 					btnUdp.setSelection(true);
 				} else {
@@ -526,7 +528,7 @@ public class TunnelDialog extends Dialog {
 				}
 				// компрессия
 				compressStreamButton
-						.setSelection(data.getLZW() == BooleanType.YES ? true
+						.setSelection(data.getLzw() == BooleanType.YES ? true
 								: false);
 				// не использовать
 				doNotProcessButton
@@ -537,7 +539,7 @@ public class TunnelDialog extends Dialog {
 						.setSelection(data.getBlocked() == BooleanType.YES ? true
 								: false);
 				// шифрование
-				if (data.getEncryption() != null && data.isSetEncryption()) {
+				if (data.getEncryption() != null) {
 					keySeriesNumberSpinner.setSelection((int) data
 							.getEncryption().getSerNumber());
 					if (data.getEncryption().getCryptoNumber() != null) {
@@ -594,28 +596,28 @@ public class TunnelDialog extends Dialog {
 	@Override
 	protected void okPressed() {
 		// идентификатор
-		data.setID(idSpinner.getSelection());
-		TunnelIP tip = new TunnelIP();
+		data.setId(idSpinner.getSelection());
+		TunnelIPBean tip = new TunnelIPBean();
 		// локальный и удалённый IP
 		tip.setLocal(localIpText.getText());
 		tip.setRemote(remoteIpText.getText());
-		data.setIP(tip);
+		data.setIp(tip);
 
-		UDP udp = new UDP();
+		UDPBean udp = new UDPBean();
 		// выбран
 		if (btnUdp.getSelection()) {
 			// UDP заголовок
 			udp.setTitle(BooleanType.YES);
-			TunnelUDPPorts udpPorts = new TunnelUDPPorts();
+			TunnelUDPPortsBean udpPorts = new TunnelUDPPortsBean();
 			udpPorts.setSender(senderPortSpinner.getSelection());
 			udpPorts.setReceiver(receiverPortSpinner.getSelection());
 			udp.setPorts(udpPorts);
 		} else {
 			udp.setTitle(BooleanType.NO);
 		}
-		data.setUDP(udp);
+		data.setUdp(udp);
 		// сжатие потока
-		data.setLZW(compressStreamButton.getSelection() ? BooleanType.YES
+		data.setLzw(compressStreamButton.getSelection() ? BooleanType.YES
 				: BooleanType.NO);
 		// обрабатывать
 		data.setUnused(doNotProcessButton.getSelection() ? BooleanType.YES
@@ -625,12 +627,12 @@ public class TunnelDialog extends Dialog {
 				: BooleanType.NO);
 
 		// шифрование туннеля
-		TunnelEncryption tunnelEncryption = new TunnelEncryption();
+		TunnelEncryptionBean tunnelEncryption = new TunnelEncryptionBean();
 		// если блок шифрования включен
 		if (encryptButton.getSelection()) {
 			tunnelEncryption
 					.setSerNumber(keySeriesNumberSpinner.getSelection());
-			CryptoNumber cryptoNumber = new CryptoNumber();
+			CryptoNumberBean cryptoNumber = new CryptoNumberBean();
 			cryptoNumber.setLocal(localCryptonumberSpinner.getSelection());
 			cryptoNumber.setRemote(remoteCryptonumberSpinner.getSelection());
 			tunnelEncryption.setCryptoNumber(cryptoNumber);
@@ -644,14 +646,15 @@ public class TunnelDialog extends Dialog {
 		data.setEncryption(tunnelEncryption);
 
 		// добавляем ссылку на модель фильтров
-		TunnelFilters filters = new TunnelFilters();
-		// обходим отсутствие сеттера чтобы не править класс
-		filters.getFilter().addAll(TunnelFilterModel.getInstance().getData());
+		TunnelFiltersBean filters = new TunnelFiltersBean();
+		List<TunnelFilterBean> filter = new LinkedList<TunnelFilterBean>();
+		filter.addAll(TunnelFilterModel.getInstance().getData());
+		filters.setFilter(filter);
 		data.setFilters(filters);
 		// очищаем синглтон с состоянием модели фильтрации туннелей
 		TunnelFilterModel.getInstance().removeAll();
 
-		List<Tunnel> tunnelList = TunnelModel.getInstance().getData();
+		List<TunnelBean> tunnelList = TunnelModel.getInstance().getData();
 		// если список не пуст
 		if (tunnelList != null) {
 			// изменяем элемент в списке
@@ -665,7 +668,7 @@ public class TunnelDialog extends Dialog {
 			}
 		} else {
 			// новый список
-			tunnelList = new LinkedList<Tunnel>();
+			tunnelList = new LinkedList<TunnelBean>();
 			tunnelList.add(data);
 		}
 		// меняем список в модели на изменённый

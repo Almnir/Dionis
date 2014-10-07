@@ -11,7 +11,8 @@ import dionis.xml.InterfaceParametrsMediaType;
 import dionis.xml.InterfaceParametrsModeType;
 import dionis.xml.Script;
 
-public class InterfaceParametrsBean implements PropertyChangeListener {
+public class InterfaceParametrsBean extends ModelObject implements
+		PropertyChangeListener {
 
 	protected BooleanType seq;
 	protected BooleanType chksum;
@@ -38,154 +39,124 @@ public class InterfaceParametrsBean implements PropertyChangeListener {
 	protected Integer bandrecv;
 	protected String mac;
 	protected VLANsBean vlaNs;
-
-	private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(
-			this);
+	private InterfaceBean interfaceBean;
 
 	public InterfaceParametrsBean() {
 	}
 
-	public void addPropertyChangeListener(String propertyName,
-			PropertyChangeListener listener) {
-		propertyChangeSupport.addPropertyChangeListener(propertyName, listener);
-	}
-
-	public void removePropertyChangeListener(PropertyChangeListener listener) {
-		propertyChangeSupport.removePropertyChangeListener(listener);
-	}
-
 	public void setSeq(BooleanType value) {
-		propertyChangeSupport.firePropertyChange("seq", this.seq,
-				this.seq = value);
+		firePropertyChange("seq", this.seq, this.seq = value);
 	}
 
 	public void setChksum(BooleanType value) {
-		propertyChangeSupport.firePropertyChange("chksum", this.chksum,
-				this.chksum = value);
+		firePropertyChange("chksum", this.chksum, this.chksum = value);
 	}
 
 	public void setTos(TOSBean tos) {
 		tos.addPropertyChangeListener("copy", this);
 		tos.addPropertyChangeListener("value", this);
-		propertyChangeSupport.firePropertyChange("tos", this.tos,
-				this.tos = tos);
+		firePropertyChange("tos", this.tos, this.tos = tos);
 	}
 
 	public void setDf(InterfaceDFType value) {
-		propertyChangeSupport
-				.firePropertyChange("df", this.df, this.df = value);
+		firePropertyChange("df", this.df, this.df = value);
 	}
 
 	public void setBoard(Short value) {
-		propertyChangeSupport.firePropertyChange("board", this.board,
-				this.board = value);
+		firePropertyChange("board", this.board, this.board = value);
 	}
 
 	public void setFrame(Short value) {
-		propertyChangeSupport.firePropertyChange("frame", this.frame,
-				this.frame = value);
+		firePropertyChange("frame", this.frame, this.frame = value);
 	}
 
 	public void setBuf(Integer value) {
-		propertyChangeSupport.firePropertyChange("buf", this.buf,
-				this.buf = value);
+		firePropertyChange("buf", this.buf, this.buf = value);
 	}
 
 	public void setDelay(Integer value) {
-		propertyChangeSupport.firePropertyChange("delay", this.delay,
-				this.delay = value);
+		firePropertyChange("delay", this.delay, this.delay = value);
 	}
 
 	public void setInterval(Integer value) {
-		propertyChangeSupport.firePropertyChange("interval", this.interval,
-				this.interval = value);
+		firePropertyChange("interval", this.interval, this.interval = value);
 	}
 
 	public void setWait(Integer value) {
-		propertyChangeSupport.firePropertyChange("wait", this.wait,
-				this.wait = value);
+		firePropertyChange("wait", this.wait, this.wait = value);
 	}
 
 	public void setType(InterfaceParametrType value) {
-		propertyChangeSupport.firePropertyChange("type", this.type,
-				this.type = value);
+		firePropertyChange("type", this.type, this.type = value);
 	}
 
 	public void setPorts(String value) {
-		propertyChangeSupport.firePropertyChange("ports", this.ports,
-				this.ports = value);
+		firePropertyChange("ports", this.ports, this.ports = value);
 	}
 
 	public void setScript(Script value) {
-		propertyChangeSupport.firePropertyChange("script", this.script,
-				this.script = value);
+		firePropertyChange("script", this.script, this.script = value);
 	}
 
 	public void setSend(Integer value) {
-		propertyChangeSupport.firePropertyChange("send", this.send,
-				this.send = value);
+		firePropertyChange("send", this.send, this.send = value);
 	}
 
 	public void setRecv(Integer value) {
-		propertyChangeSupport.firePropertyChange("recv", this.recv,
-				this.recv = value);
+		firePropertyChange("recv", this.recv, this.recv = value);
 	}
 
 	public void setMedia(InterfaceParametrsMediaType value) {
-		propertyChangeSupport.firePropertyChange("media", this.media,
-				this.media = value);
+		firePropertyChange("media", this.media, this.media = value);
 	}
 
 	public void setMode(InterfaceParametrsModeType value) {
-		propertyChangeSupport.firePropertyChange("mode", this.mode,
-				this.mode = value);
+		firePropertyChange("mode", this.mode, this.mode = value);
 	}
 
 	public void setAuthLocal(AuthLocalBean value) {
 		value.addPropertyChangeListener("auth", this);
 		value.addPropertyChangeListener("name", this);
 		value.addPropertyChangeListener("password", this);
-		propertyChangeSupport.firePropertyChange("authLocal", this.authLocal,
-				this.authLocal = value);
+		firePropertyChange("authLocal", this.authLocal, this.authLocal = value);
 	}
 
 	public void setAuthRemote(AuthRemoteBean value) {
 		value.addPropertyChangeListener("auth", this);
 		value.addPropertyChangeListener("name", this);
 		value.addPropertyChangeListener("password", this);
-		propertyChangeSupport.firePropertyChange("authRemote", this.authRemote,
+		firePropertyChange("authRemote", this.authRemote,
 				this.authRemote = value);
 	}
 
 	public void setVnid(Integer value) {
-		propertyChangeSupport.firePropertyChange("vnid", this.vnid,
-				this.vnid = value);
+		firePropertyChange("vnid", this.vnid, this.vnid = value);
 	}
 
 	public void setBaseInterface(String value) {
-		propertyChangeSupport.firePropertyChange("baseInterface",
-				this.baseInterface, this.baseInterface = value);
+		firePropertyChange("baseInterface", this.baseInterface,
+				this.baseInterface = value);
 	}
 
 	public void setBandwidth(Integer value) {
-		propertyChangeSupport.firePropertyChange("bandwidth", this.bandwidth,
-				this.bandwidth = value);
+		firePropertyChange("bandwidth", this.bandwidth, this.bandwidth = value);
 	}
 
 	public void setBandrecv(Integer value) {
-		propertyChangeSupport.firePropertyChange("bandrecv", this.bandrecv,
-				this.bandrecv = value);
+		firePropertyChange("bandrecv", this.bandrecv, this.bandrecv = value);
 	}
 
 	public void setMac(String value) {
-		propertyChangeSupport.firePropertyChange("mac", this.mac,
-				this.mac = value);
+		firePropertyChange("mac", this.mac, this.mac = value);
 	}
 
 	public void setVlaNs(VLANsBean value) {
 		value.addPropertyChangeListener("vlan", this);
-		propertyChangeSupport.firePropertyChange("vlaNs", this.vlaNs,
-				this.vlaNs = value);
+		firePropertyChange("vlaNs", this.vlaNs, this.vlaNs = value);
+	}
+
+	public void setInterfaceBean(InterfaceBean interfaceBean) {
+		this.interfaceBean = interfaceBean;
 	}
 
 	public TOSBean getTos() {
@@ -288,6 +259,10 @@ public class InterfaceParametrsBean implements PropertyChangeListener {
 		return mac;
 	}
 
+	public InterfaceBean getInterfaceBean() {
+		return interfaceBean;
+	}
+
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
 	}
@@ -347,5 +322,4 @@ public class InterfaceParametrsBean implements PropertyChangeListener {
 			builder.append(vlaNs);
 		return builder.toString();
 	}
-
 }

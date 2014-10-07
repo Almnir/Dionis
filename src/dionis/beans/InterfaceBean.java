@@ -2,13 +2,13 @@ package dionis.beans;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 
 import dionis.xml.InterfaceModeType;
 import dionis.xml.InterfaceNatType;
 import dionis.xml.InterfaceType;
 
-public class InterfaceBean implements PropertyChangeListener {
+public class InterfaceBean extends ModelObject implements
+		PropertyChangeListener {
 
 	protected String name;
 	protected InterfaceType type;
@@ -23,19 +23,7 @@ public class InterfaceBean implements PropertyChangeListener {
 	protected InterfaceParametrsBean parametrs;
 	protected InterfaceRoutesBean routes;
 
-	private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(
-			this);
-
 	public InterfaceBean() {
-	}
-
-	public void addPropertyChangeListener(String propertyName,
-			PropertyChangeListener listener) {
-		propertyChangeSupport.addPropertyChangeListener(propertyName, listener);
-	}
-
-	public void removePropertyChangeListener(PropertyChangeListener listener) {
-		propertyChangeSupport.removePropertyChangeListener(listener);
 	}
 
 	public String getName() {
@@ -43,8 +31,7 @@ public class InterfaceBean implements PropertyChangeListener {
 	}
 
 	public void setName(String name) {
-		propertyChangeSupport.firePropertyChange("name", this.name,
-				this.name = name);
+		firePropertyChange("name", this.name, this.name = name);
 	}
 
 	public InterfaceType getType() {
@@ -52,8 +39,7 @@ public class InterfaceBean implements PropertyChangeListener {
 	}
 
 	public void setType(InterfaceType type) {
-		propertyChangeSupport.firePropertyChange("type", this.type,
-				this.type = type);
+		firePropertyChange("type", this.type, this.type = type);
 	}
 
 	public InterfaceModeType getMode() {
@@ -61,8 +47,7 @@ public class InterfaceBean implements PropertyChangeListener {
 	}
 
 	public void setMode(InterfaceModeType mode) {
-		propertyChangeSupport.firePropertyChange("mode", this.mode,
-				this.mode = mode);
+		firePropertyChange("mode", this.mode, this.mode = mode);
 	}
 
 	public InterfaceIPBean getIp() {
@@ -72,7 +57,7 @@ public class InterfaceBean implements PropertyChangeListener {
 	public void setIp(InterfaceIPBean ip) {
 		ip.addPropertyChangeListener("local", this);
 		ip.addPropertyChangeListener("remote", this);
-		propertyChangeSupport.firePropertyChange("ip", this.ip, this.ip = ip);
+		firePropertyChange("ip", this.ip, this.ip = ip);
 	}
 
 	public InterfaceNatType getNat() {
@@ -80,8 +65,7 @@ public class InterfaceBean implements PropertyChangeListener {
 	}
 
 	public void setNat(InterfaceNatType nat) {
-		propertyChangeSupport.firePropertyChange("nat", this.nat,
-				this.nat = nat);
+		firePropertyChange("nat", this.nat, this.nat = nat);
 	}
 
 	public InterfaceFiltersBean getFilters() {
@@ -91,8 +75,7 @@ public class InterfaceBean implements PropertyChangeListener {
 	public void setFilters(InterfaceFiltersBean filters) {
 		filters.addPropertyChangeListener("input", this);
 		filters.addPropertyChangeListener("output", this);
-		propertyChangeSupport.firePropertyChange("filters", this.filters,
-				this.filters = filters);
+		firePropertyChange("filters", this.filters, this.filters = filters);
 	}
 
 	public short getMtu() {
@@ -100,8 +83,7 @@ public class InterfaceBean implements PropertyChangeListener {
 	}
 
 	public void setMtu(short mtu) {
-		propertyChangeSupport.firePropertyChange("mtu", this.mtu,
-				this.mtu = mtu);
+		firePropertyChange("mtu", this.mtu, this.mtu = mtu);
 	}
 
 	public String getPort() {
@@ -109,8 +91,7 @@ public class InterfaceBean implements PropertyChangeListener {
 	}
 
 	public void setPort(String port) {
-		propertyChangeSupport.firePropertyChange("port", this.port,
-				this.port = port);
+		firePropertyChange("port", this.port, this.port = port);
 	}
 
 	public int getTimer() {
@@ -118,8 +99,7 @@ public class InterfaceBean implements PropertyChangeListener {
 	}
 
 	public void setTimer(int timer) {
-		propertyChangeSupport.firePropertyChange("timer", this.timer,
-				this.timer = timer);
+		firePropertyChange("timer", this.timer, this.timer = timer);
 	}
 
 	public DisableDatagramsBean getDisableDatagrams() {
@@ -135,9 +115,8 @@ public class InterfaceBean implements PropertyChangeListener {
 		disableDatagrams.addPropertyChangeListener("cluster", this);
 		disableDatagrams.addPropertyChangeListener("ipStat", this);
 		disableDatagrams.addPropertyChangeListener("proxyARP", this);
-		propertyChangeSupport
-				.firePropertyChange("disableDatagrams", this.disableDatagrams,
-						this.disableDatagrams = disableDatagrams);
+		firePropertyChange("disableDatagrams", this.disableDatagrams,
+				this.disableDatagrams = disableDatagrams);
 	}
 
 	public InterfaceParametrsBean getParametrs() {
@@ -170,7 +149,7 @@ public class InterfaceBean implements PropertyChangeListener {
 		parametrs.addPropertyChangeListener("bandrecv", this);
 		parametrs.addPropertyChangeListener("mac", this);
 		parametrs.addPropertyChangeListener("vlaNs", this);
-		propertyChangeSupport.firePropertyChange("parametrs", this.parametrs,
+		firePropertyChange("parametrs", this.parametrs,
 				this.parametrs = parametrs);
 	}
 
@@ -180,12 +159,11 @@ public class InterfaceBean implements PropertyChangeListener {
 
 	public void setRoutes(InterfaceRoutesBean routes) {
 		routes.addPropertyChangeListener("route", this);
-		propertyChangeSupport.firePropertyChange("routes", this.routes,
-				this.routes = routes);
+		firePropertyChange("routes", this.routes, this.routes = routes);
 	}
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		// propertyChangeSupport.firePropertyChange("ip", null, ip);
+		// firePropertyChange("ip", null, ip);
 	}
 }

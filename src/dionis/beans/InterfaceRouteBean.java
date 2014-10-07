@@ -1,9 +1,6 @@
 package dionis.beans;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-
-public class InterfaceRouteBean {
+public class InterfaceRouteBean extends ModelObject {
 
 	protected String ip;
 	protected short bits;
@@ -11,19 +8,7 @@ public class InterfaceRouteBean {
 	protected short metric;
 	protected short tag;
 
-	private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(
-			this);
-
 	public InterfaceRouteBean() {
-	}
-
-	public void addPropertyChangeListener(String propertyName,
-			PropertyChangeListener listener) {
-		propertyChangeSupport.addPropertyChangeListener(propertyName, listener);
-	}
-
-	public void removePropertyChangeListener(PropertyChangeListener listener) {
-		propertyChangeSupport.removePropertyChangeListener(listener);
 	}
 
 	public String getIp() {
@@ -31,7 +16,7 @@ public class InterfaceRouteBean {
 	}
 
 	public void setIp(String ip) {
-		propertyChangeSupport.firePropertyChange("ip", this.ip, this.ip = ip);
+		firePropertyChange("ip", this.ip, this.ip = ip);
 	}
 
 	public short getBits() {
@@ -39,8 +24,7 @@ public class InterfaceRouteBean {
 	}
 
 	public void setBits(short bits) {
-		propertyChangeSupport.firePropertyChange("bits", this.bits,
-				this.bits = bits);
+		firePropertyChange("bits", this.bits, this.bits = bits);
 	}
 
 	public String getGateway() {
@@ -48,8 +32,7 @@ public class InterfaceRouteBean {
 	}
 
 	public void setGateway(String gateway) {
-		propertyChangeSupport.firePropertyChange("gateway", this.gateway,
-				this.gateway = gateway);
+		firePropertyChange("gateway", this.gateway, this.gateway = gateway);
 	}
 
 	public short getMetric() {
@@ -57,8 +40,7 @@ public class InterfaceRouteBean {
 	}
 
 	public void setMetric(short metric) {
-		propertyChangeSupport.firePropertyChange("metric", this.metric,
-				this.metric = metric);
+		firePropertyChange("metric", this.metric, this.metric = metric);
 	}
 
 	public short getTag() {
@@ -66,8 +48,7 @@ public class InterfaceRouteBean {
 	}
 
 	public void setTag(short tag) {
-		propertyChangeSupport.firePropertyChange("tag", this.tag,
-				this.tag = tag);
+		firePropertyChange("tag", this.tag, this.tag = tag);
 	}
 
 	@Override

@@ -2,28 +2,27 @@ package dionis.dialogs;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
 
 import dionis.beans.InterfaceParametrsBean;
+import dionis.beans.TOSBean;
 import dionis.utils.Constants;
 import dionis.xml.BooleanType;
 import dionis.xml.InterfaceDFType;
-import dionis.xml.InterfaceParametrs;
-import dionis.xml.TOS;
 
 public class GREDialog extends Dialog {
 
-	private InterfaceParametrs parametrs;
+	private InterfaceParametrsBean parametrs;
 	private Button numerationCheck;
 	private Button controlSumCheck;
 	private Button copyTOSCheck;
@@ -159,46 +158,39 @@ public class GREDialog extends Dialog {
 	}
 
 	private void init() {
-		if (parametrs.isSetSeq()) {
-			numerationCheck
-					.setSelection(parametrs.getSeq() == BooleanType.YES ? true
-							: false);
-		} else {
-			numerationCheck.setSelection(false);
-		}
-		if (parametrs.isSetTOS()) {
+		numerationCheck
+				.setSelection(parametrs.getSeq() == BooleanType.YES ? true
+						: false);
+		if (parametrs.getTos() != null) {
 			copyTOSCheck
-					.setSelection(parametrs.getTOS().getCopy() == BooleanType.YES ? true
+					.setSelection(parametrs.getTos().getCopy() == BooleanType.YES ? true
 							: false);
-			tosSpinner.setSelection(parametrs.getTOS().getValue());
-		} else {
-			copyTOSCheck.setSelection(false);
-			tosSpinner.setSelection(0);
+			tosSpinner.setSelection(parametrs.getTos().getValue());
 		}
 		controlSumCheck
 				.setSelection(parametrs.getChksum() == BooleanType.YES ? true
 						: false);
-		if (parametrs.isSetDF()) {
-			flagCombo.select(parametrs.getDF().ordinal());
+		if (parametrs.getDf() != null) {
+			flagCombo.select(parametrs.getDf().ordinal());
 		} else {
 			flagCombo.select(0);
 		}
-		if (parametrs.isSetBuf()) {
+		if (parametrs.getBuf() != null) {
 			bufferSpinner.setSelection(parametrs.getBuf());
 		} else {
 			bufferSpinner.setSelection(0);
 		}
-		if (parametrs.isSetDelay()) {
+		if (parametrs.getDelay() != null) {
 			latencySpinner.setSelection(parametrs.getDelay());
 		} else {
 			latencySpinner.setSelection(0);
 		}
-		if (parametrs.isSetInterval()) {
+		if (parametrs.getInterval() != null) {
 			intervalSpinner.setSelection(parametrs.getInterval());
 		} else {
 			intervalSpinner.setSelection(0);
 		}
-		if (parametrs.isSetWait()) {
+		if (parametrs.getWait() != null) {
 			timeoutSpinner.setSelection(parametrs.getWait());
 		} else {
 			timeoutSpinner.setSelection(0);
@@ -210,19 +202,20 @@ public class GREDialog extends Dialog {
 		parametrs
 				.setSeq(numerationCheck.getSelection() == true ? BooleanType.YES
 						: BooleanType.NO);
-		TOS tos = new TOS();
+		TOSBean tos = new TOSBean();
 		tos.setCopy(copyTOSCheck.getSelection() == true ? BooleanType.YES
 				: BooleanType.NO);
 		tos.setValue((short) tosSpinner.getSelection());
-		parametrs.setTOS(tos);
+		parametrs.setTos(tos);
 		parametrs
 				.setChksum(controlSumCheck.getSelection() == true ? BooleanType.YES
 						: BooleanType.NO);
-		parametrs.setDF(InterfaceDFType.fromValue(flagCombo.getText()));
+		parametrs
+				.setDf(InterfaceDFType.values()[flagCombo.getSelectionIndex()]);
 		parametrs.setBuf(bufferSpinner.getSelection());
 		parametrs.setDelay(latencySpinner.getSelection());
 		parametrs.setInterval(intervalSpinner.getSelection());
-		parametrs.setBuf(timeoutSpinner.getSelection());
+		parametrs.setWait(timeoutSpinner.getSelection());
 		super.okPressed();
 	}
 
@@ -247,11 +240,11 @@ public class GREDialog extends Dialog {
 		return new Point(660, 315);
 	}
 
-	public InterfaceParametrs getParametrs() {
+	public InterfaceParametrsBean getParametrs() {
 		return parametrs;
 	}
 
-	public void setParametrs(InterfaceParametrs parametrs) {
+	public void setParametrs(InterfaceParametrsBean parametrs) {
 		this.parametrs = parametrs;
 	}
 

@@ -4,10 +4,10 @@ import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;
 
+import dionis.beans.TunnelBean;
+import dionis.beans.TunnelFilterBean;
 import dionis.models.TunnelModel;
 import dionis.xml.BooleanType;
-import dionis.xml.Tunnel;
-import dionis.xml.TunnelFilter;
 
 public class TunnelLableProvider extends LabelProvider implements
 		ITableLabelProvider {
@@ -20,8 +20,8 @@ public class TunnelLableProvider extends LabelProvider implements
 	@Override
 	public String getColumnText(Object element, int columnIndex) {
 		String rv = "";
-		if (element instanceof Tunnel) {
-			Tunnel data = (Tunnel) element;
+		if (element instanceof TunnelBean) {
+			TunnelBean data = (TunnelBean) element;
 			switch (columnIndex) {
 			case 0:
 				// номер по порядку в модели (начинать с 1)
@@ -30,17 +30,17 @@ public class TunnelLableProvider extends LabelProvider implements
 				break;
 			case 1:
 				// идентификатор
-				rv = String.valueOf(data.getID());
+				rv = String.valueOf(data.getId());
 				break;
 			case 2:
 				// заголовок
-				if (data.isSetUDP()) {
-					if (data.getUDP().getTitle() == BooleanType.YES) {
-						rv = "UDP["
-								+ String.valueOf(data.getUDP().getPorts()
+				if (data.getUdp() != null) {
+					if (data.getUdp().getTitle() == BooleanType.YES) {
+						rv = "Udp["
+								+ String.valueOf(data.getUdp().getPorts()
 										.getSender())
 								+ ", "
-								+ String.valueOf(data.getUDP().getPorts()
+								+ String.valueOf(data.getUdp().getPorts()
 										.getReceiver()) + "]";
 					} else {
 						rv = "TNL";
@@ -49,40 +49,33 @@ public class TunnelLableProvider extends LabelProvider implements
 				break;
 			case 3:
 				// локальный IP
-				if (data.isSetIP()) {
-					rv = data.getIP().isSetLocal() ? data.getIP().getLocal()
-							: "";
+				if (data.getIp() != null) {
+					rv = data.getIp().getLocal().isEmpty() ? data.getIp()
+							.getLocal() : "";
 				}
 				break;
 			case 4:
 				// удалённый IP
-				if (data.isSetIP()) {
-					rv = data.getIP().isSetRemote() ? data.getIP().getRemote()
-							: "";
+				if (data.getIp() != null) {
+					rv = data.getIp().getRemote();
 				}
 				break;
 			case 5:
 				// шифрование
-				if (data.isSetEncryption()) {
-					if (data.getEncryption().isSetMethod()
+				if (data.getEncryption() != null) {
+					if (data.getEncryption().getMethod() != null
 							&& data.getEncryption().getMethod() == BooleanType.YES) {
 						StringBuilder sb = new StringBuilder();
 						sb.append("(")
-								.append(data.getEncryption().isSetSerNumber() ? data
-										.getEncryption().getSerNumber() : 0)
+								.append(data.getEncryption().getSerNumber())
 								.append(")");
 						sb.append(" ")
 								.append(data.getEncryption().getCryptoNumber()
-										.isSetLocal() ? data.getEncryption()
-										.getCryptoNumber().getLocal() : 0)
-								.append(".");
-						sb.append(
-								data.getEncryption().isSetChannel() ? data
-										.getEncryption().getChannel() : 0)
-								.append("->");
+										.getLocal()).append(".");
+						sb.append(data.getEncryption().getChannel()).append(
+								"->");
 						sb.append(data.getEncryption().getCryptoNumber()
-								.isSetRemote() ? data.getEncryption()
-								.getCryptoNumber().getRemote() : 0);
+								.getRemote());
 						rv = sb.toString();
 					} else {
 						rv = "Нет";
@@ -91,8 +84,8 @@ public class TunnelLableProvider extends LabelProvider implements
 				break;
 			case 6:
 				// сжатие
-				if (data.isSetLZW()) {
-					if (data.getLZW() == BooleanType.YES) {
+				if (data.getLzw() != null) {
+					if (data.getLzw() == BooleanType.YES) {
 						rv = "Да";
 					} else {
 						rv = "Нет";
@@ -101,9 +94,10 @@ public class TunnelLableProvider extends LabelProvider implements
 				break;
 			case 7:
 				// правила отбора
-				if (data.isSetFilters()) {
+				if (data.getFilters() != null) {
 					StringBuilder sb = new StringBuilder();
-					for (TunnelFilter filter : data.getFilters().getFilter()) {
+					for (TunnelFilterBean filter : data.getFilters()
+							.getFilter()) {
 						sb.append("[");
 						switch (filter.getStatus()) {
 						case SOLVE:
@@ -117,10 +111,10 @@ public class TunnelLableProvider extends LabelProvider implements
 							break;
 						}
 						sb.append(" ");
-						sb.append(filter.getSource().getIP()).append("/")
+						sb.append(filter.getSource().getIp()).append("/")
 								.append(filter.getSource().getBits());
 						sb.append(" ");
-						sb.append(filter.getTarget().getIP()).append("/")
+						sb.append(filter.getTarget().getIp()).append("/")
 								.append(filter.getTarget().getBits());
 						sb.append(" ");
 						sb.append(filter.getProtocol().name());

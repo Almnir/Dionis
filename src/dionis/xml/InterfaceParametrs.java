@@ -236,7 +236,7 @@ import javax.xml.bind.annotation.XmlType;
  *             &lt;complexContent>
  *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *                 &lt;sequence>
- *                   &lt;element name="VLAN" minOccurs="0">
+ *                   &lt;element name="VLAN" maxOccurs="unbounded" minOccurs="0">
  *                     &lt;complexType>
  *                       &lt;complexContent>
  *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
@@ -361,7 +361,7 @@ public class InterfaceParametrs
     @XmlElement(name = "Mac")
     protected String mac;
     @XmlElement(name = "VLANs")
-    protected VLANs vlaNs;
+    protected InterfaceVLANs vlaNs;
 
     /**
      * Gets the value of the seq property.
@@ -1040,10 +1040,10 @@ public class InterfaceParametrs
      * 
      * @return
      *     possible object is
-     *     {@link VLANs }
+     *     {@link InterfaceVLANs }
      *     
      */
-    public VLANs getVLANs() {
+    public InterfaceVLANs getVLANs() {
         return vlaNs;
     }
 
@@ -1052,10 +1052,10 @@ public class InterfaceParametrs
      * 
      * @param value
      *     allowed object is
-     *     {@link VLANs }
+     *     {@link InterfaceVLANs }
      *     
      */
-    public void setVLANs(VLANs value) {
+    public void setVLANs(InterfaceVLANs value) {
         this.vlaNs = value;
     }
 

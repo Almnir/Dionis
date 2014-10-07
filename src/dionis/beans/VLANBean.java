@@ -1,27 +1,12 @@
 package dionis.beans;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-
-public class VLANBean {
+public class VLANBean extends ModelObject implements Cloneable {
 
 	protected String ip;
 	protected short bits;
 	protected int vnid;
 
-	private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(
-			this);
-
 	public VLANBean() {
-	}
-
-	public void addPropertyChangeListener(String propertyName,
-			PropertyChangeListener listener) {
-		propertyChangeSupport.addPropertyChangeListener(propertyName, listener);
-	}
-
-	public void removePropertyChangeListener(PropertyChangeListener listener) {
-		propertyChangeSupport.removePropertyChangeListener(listener);
 	}
 
 	public String getIp() {
@@ -29,7 +14,7 @@ public class VLANBean {
 	}
 
 	public void setIp(String ip) {
-		propertyChangeSupport.firePropertyChange("ip", this.ip, this.ip = ip);
+		firePropertyChange("ip", this.ip, this.ip = ip);
 	}
 
 	public short getBits() {
@@ -37,8 +22,7 @@ public class VLANBean {
 	}
 
 	public void setBits(short bits) {
-		propertyChangeSupport.firePropertyChange("bits", this.bits,
-				this.bits = bits);
+		firePropertyChange("bits", this.bits, this.bits = bits);
 	}
 
 	public int getVnid() {
@@ -46,7 +30,28 @@ public class VLANBean {
 	}
 
 	public void setVnid(int vnid) {
-		propertyChangeSupport.firePropertyChange("vnid", this.vnid,
-				this.vnid = vnid);
+		firePropertyChange("vnid", this.vnid, this.vnid = vnid);
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("VLANBean [");
+		if (ip != null) {
+			builder.append("ip=");
+			builder.append(ip);
+			builder.append(", ");
+		}
+		builder.append("bits=");
+		builder.append(bits);
+		builder.append(", vnid=");
+		builder.append(vnid);
+		builder.append("]");
+		return builder.toString();
+	}
+	
+	@Override
+	public Object clone() throws CloneNotSupportedException {
+		return super.clone();
 	}
 }

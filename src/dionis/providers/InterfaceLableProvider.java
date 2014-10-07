@@ -38,34 +38,34 @@ public class InterfaceLableProvider extends LabelProvider implements
 				rv = (ib.getMode() != null) ? ib.getMode().name() : "";
 				break;
 			case 4:
-				rv = ib.getIp().getLocal();
+				rv = ib.getIp() != null ? ib.getIp().getLocal() : "";
 				break;
 			case 5:
-				rv = ib.getIp().getRemote();
+				rv = ib.getIp() != null ? ib.getIp().getRemote() : "";
 				break;
 			case 6:
 				rv = (ib.getNat() != null) ? ib.getNat().name() : "";
 				break;
 			case 7:
-				rv = ib.getFilters().getInput();
+				rv = ib.getFilters() != null ? ib.getFilters().getInput() : "";
 				break;
 			case 8:
-				rv = ib.getFilters().getOutput();
+				rv = ib.getFilters() != null ? ib.getFilters().getOutput() : "";
 				break;
 			case 9:
 				rv = String.valueOf(ib.getMtu());
 				break;
 			case 10:
-				rv = ib.getPort();
+				rv = ib.getPort() != null ? ib.getPort() : "";
 				break;
 			case 11:
 				rv = String.valueOf(ib.getTimer());
 				break;
 			case 12:
-				rv = ib.getParametrs().toString();
+				rv = ib.getParametrs() != null ? ib.getParametrs().toString() : "";
 				break;
 			case 13:
-				rv = ib.getRoutes().toString();
+				rv = ib.getRoutes() != null ? ib.getRoutes().toString() : "";
 				break;
 			}
 		}
