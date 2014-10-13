@@ -9,7 +9,7 @@ public class ARPModel {
 
 	private static ARPModel instance = null;
 
-	public static ARPModel getInstance() {
+	public static synchronized ARPModel getInstance() {
 		if (instance == null) {
 			instance = new ARPModel();
 		}

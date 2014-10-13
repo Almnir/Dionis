@@ -8,7 +8,7 @@ public class InterfaceRouteModel extends AbstractModel<InterfaceRouteBean> {
 
 	private static InterfaceRouteModel instance = null;
 
-	public static InterfaceRouteModel getInstance() {
+	public static synchronized InterfaceRouteModel getInstance() {
 		if (instance == null) {
 			instance = new InterfaceRouteModel();
 		}

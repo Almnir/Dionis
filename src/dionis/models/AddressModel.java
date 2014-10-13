@@ -6,10 +6,11 @@ import java.util.List;
 
 public class AddressModel {
 	private List<String[]> allAddress;
-
+	
+	/** Так называемый "draconian pattern" для синглтона в многопоточном приложении **/
 	private static AddressModel instance = null;
 
-	public static AddressModel getInstance() {
+	public static synchronized AddressModel getInstance() {
 		if (instance == null) {
 			instance = new AddressModel();
 		}

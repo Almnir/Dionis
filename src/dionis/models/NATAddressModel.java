@@ -12,7 +12,7 @@ public class NATAddressModel {
 	
 	private static NATAddressModel instance = null;
 
-	public static NATAddressModel getInstance() {
+	public static synchronized NATAddressModel getInstance() {
 		if (instance == null) {
 			instance = new NATAddressModel();
 		}

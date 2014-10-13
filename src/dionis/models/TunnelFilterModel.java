@@ -6,7 +6,7 @@ public class TunnelFilterModel extends AbstractModel<TunnelFilterBean> {
 
 	private static TunnelFilterModel instance = null;
 
-	public static TunnelFilterModel getInstance() {
+	public static synchronized TunnelFilterModel getInstance() {
 		if (instance == null) {
 			instance = new TunnelFilterModel();
 		}

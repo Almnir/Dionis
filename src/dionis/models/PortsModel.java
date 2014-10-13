@@ -21,7 +21,7 @@ public class PortsModel {
 
 	private static PortsModel instance = null;
 
-	public static PortsModel getInstance() {
+	public static synchronized PortsModel getInstance() {
 		if (instance == null) {
 			instance = new PortsModel();
 		}

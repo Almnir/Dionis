@@ -45,9 +45,12 @@ import dionis.dialogs.InterfaceRouteDialog;
 import dionis.dialogs.TunnelDialog;
 import dionis.formatters.TimeZoneTimeFormatter;
 import dionis.models.DionisXAO;
+import dionis.models.FiltersModel;
 import dionis.models.InterfaceModel;
 import dionis.models.InterfaceRouteModel;
 import dionis.models.TunnelModel;
+import dionis.providers.FiltersTreeContentProvider;
+import dionis.providers.FiltersTreeLabelProvider;
 import dionis.providers.InterfaceLableProvider;
 import dionis.providers.TunnelFilterLableProvider;
 import dionis.providers.TunnelLableProvider;
@@ -75,6 +78,10 @@ import dionis.xml.TracingRoute;
 import dionis.xml.TracingServers;
 import dionis.xml.Tunnel;
 import dionis.xml.Type;
+
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.jface.layout.TreeColumnLayout;
+import org.eclipse.jface.viewers.TreeViewerColumn;
 
 /**
  * Класс отображения плагина управления Dionis
@@ -151,6 +158,8 @@ public class DionisView extends ViewPart {
 	private Table table_3;
 	protected TunnelBean copyPasteTunnel;
 	private MenuItem pasteItem;
+	private TreeViewer filterTreeViewer;
+	private Tree filterTree;
 
 	public DionisView() {
 		super();
@@ -1479,27 +1488,66 @@ public class DionisView extends ViewPart {
 		Composite composite_5 = new Composite(tabFolder, SWT.NONE);
 		tbtmNewItem.setControl(composite_5);
 		composite_5.setLayout(new GridLayout(1, false));
+		
+		filterTreeViewer = new TreeViewer(composite_5, SWT.BORDER);
+		filterTree = filterTreeViewer.getTree();
+		filterTree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
+		TreeViewerColumn treeViewerColumn = new TreeViewerColumn(filterTreeViewer, SWT.NONE);
+		TreeColumn nameColumn = treeViewerColumn.getColumn();
+		nameColumn.setWidth(100);
+		nameColumn.setText("Имя");
+		
+		TreeViewerColumn treeViewerColumn_3 = new TreeViewerColumn(filterTreeViewer, SWT.NONE);
+		TreeColumn numberColumn = treeViewerColumn_3.getColumn();
+		numberColumn.setWidth(100);
+		numberColumn.setText("#");
+		
+		TreeViewerColumn treeViewerColumn_2 = new TreeViewerColumn(filterTreeViewer, SWT.NONE);
+		TreeColumn dataColumn = treeViewerColumn_2.getColumn();
+		dataColumn.setWidth(100);
+		dataColumn.setText("Значение");
+		
+		TreeViewerColumn treeViewerColumn_1 = new TreeViewerColumn(filterTreeViewer, SWT.NONE);
+		TreeColumn extendedDataColumn = treeViewerColumn_1.getColumn();
+		extendedDataColumn.setWidth(100);
+		extendedDataColumn.setText("Расширенное значение");
+		
+		Menu filterMenu = new Menu(filterTree);
+		filterTree.setMenu(filterMenu);
+		
+		MenuItem changeNameItem = new MenuItem(filterMenu, SWT.NONE);
+		changeNameItem.setText("Изменить имя фильтра");
+		
+		MenuItem addNewItem = new MenuItem(filterMenu, SWT.NONE);
+		addNewItem.setText("Добавить новый фильтр");
+		
+		MenuItem deleteItem = new MenuItem(filterMenu, SWT.NONE);
+		deleteItem.setText("Удалить фильтр");
+		
+		new MenuItem(filterMenu, SWT.SEPARATOR);
+		
+		MenuItem makeTemplateItem = new MenuItem(filterMenu, SWT.NONE);
+		makeTemplateItem.setText("Создать шаблон фильтра");
+		
+		MenuItem addTemplateItem = new MenuItem(filterMenu, SWT.NONE);
+		addTemplateItem.setText("Добавить фильтр по шаблону");
+		
+		new MenuItem(filterMenu, SWT.SEPARATOR);
+		
+		MenuItem addStandardItem = new MenuItem(filterMenu, SWT.NONE);
+		addStandardItem.setText("Добавить правило");
+		
+		MenuItem addExtendedItem = new MenuItem(filterMenu, SWT.NONE);
+		addExtendedItem.setText("Добавить расширенное правило");
+		
+		MenuItem addSheduleItem = new MenuItem(filterMenu, SWT.NONE);
+		addSheduleItem.setText("Добавить элемент расписания");
 
-		TreeViewer treeViewer = new TreeViewer(composite_5, SWT.BORDER);
-		Tree tree = treeViewer.getTree();
-		tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-
-		TreeColumn treeColumn = new TreeColumn(tree, SWT.NONE);
-		treeColumn.setWidth(10);
-		treeColumn.setText("№");
-
-		TreeColumn trclmnNewColumn = new TreeColumn(tree, SWT.NONE);
-		trclmnNewColumn.setWidth(100);
-		trclmnNewColumn.setText("Имя");
-
-		TreeColumn trclmnNewColumn_1 = new TreeColumn(tree, SWT.NONE);
-		trclmnNewColumn_1.setWidth(100);
-		trclmnNewColumn_1.setText("Значение");
-
-		TreeColumn trclmnNewColumn_2 = new TreeColumn(tree, SWT.NONE);
-		trclmnNewColumn_2.setWidth(100);
-		trclmnNewColumn_2.setText("Расширенное значение");
-
+		filterTreeViewer.setContentProvider(new FiltersTreeContentProvider());
+		filterTreeViewer.setLabelProvider(new FiltersTreeLabelProvider());
+		filterTreeViewer.setInput(FiltersModel.getInstance().getData());
+		
 		CTabItem tbtmNewItem_1 = new CTabItem(tabFolder, SWT.NONE);
 		tbtmNewItem_1.setText("Туннели");
 

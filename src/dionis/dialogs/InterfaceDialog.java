@@ -435,6 +435,14 @@ public class InterfaceDialog extends Dialog {
 									.getParametrs());
 						}
 						break;
+					case ODI:
+						ODIDialog odiDialog = new ODIDialog(getShell());
+						odiDialog.setParametrsBean(params);
+						if (odiDialog.open() == Window.OK) {
+							interfaceBean.setParametrs(odiDialog
+									.getParametrsBean());
+						}
+						break;
 
 					default:
 						break;
@@ -668,7 +676,7 @@ public class InterfaceDialog extends Dialog {
 			routes.setRoute(route);
 			getInterfaceBean().setRoutes(routes);
 			InterfaceRouteModel.getInstance().removeAll();
-//			System.out.println("clean");
+			// System.out.println("clean");
 		} else {
 			nameText.setText(interfaceBean.getName());
 			typeCombo.select((interfaceBean.getType() != null) ? interfaceBean
@@ -685,7 +693,7 @@ public class InterfaceDialog extends Dialog {
 			mtuSpinner.setSelection(interfaceBean.getMtu());
 			// TODO !!!
 			// params???
-			
+
 			DisableDatagramsBean datagrams = interfaceBean
 					.getDisableDatagrams();
 			tunnelButton
