@@ -37,9 +37,12 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.ui.part.ViewPart;
 
+import dionis.beans.FilterBean;
+import dionis.beans.FiltersBean;
 import dionis.beans.InterfaceBean;
 import dionis.beans.InterfaceRouteBean;
 import dionis.beans.TunnelBean;
+import dionis.dialogs.FilterDialog;
 import dionis.dialogs.InterfaceDialog;
 import dionis.dialogs.InterfaceRouteDialog;
 import dionis.dialogs.TunnelDialog;
@@ -80,6 +83,7 @@ import dionis.xml.Tunnel;
 import dionis.xml.Type;
 
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.layout.TreeColumnLayout;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 
@@ -1518,9 +1522,72 @@ public class DionisView extends ViewPart {
 		
 		MenuItem changeNameItem = new MenuItem(filterMenu, SWT.NONE);
 		changeNameItem.setText("Изменить имя фильтра");
+
+		changeNameItem.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				if (filterTree.getSelection() != null
+						&& filterTree.getSelection().length > 0) {
+					InputDialog dialog = new InputDialog(shell, "Ввод имени", "Новое название фильтра: ", null, null);
+					IStructuredSelection sel = (IStructuredSelection) filterTreeViewer
+							.getSelection();
+					if (sel.getFirstElement() instanceof FilterBean) {
+						if (dialog.open() == Window.OK) {
+							FilterBean fbean = (FilterBean) sel.getFirstElement();
+							fbean.setName(dialog.getValue());
+							Job job = new Job("change") {
+
+								@Override
+								protected IStatus run(IProgressMonitor monitor) {
+									Display.getDefault().asyncExec(new Runnable() {
+										@Override
+										public void run() {
+											filterTreeViewer.refresh();;
+										}
+									});
+									return Status.OK_STATUS;
+								}
+							};
+							job.setPriority(Job.SHORT);
+							job.schedule();
+						}
+					}
+				}
+			}
+		});
+		
 		
 		MenuItem addNewItem = new MenuItem(filterMenu, SWT.NONE);
 		addNewItem.setText("Добавить новый фильтр");
+		
+		addNewItem.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				FilterDialog dialog = new FilterDialog(shell);
+				if (dialog.open() == Window.OK) {
+					FilterBean filterBean = new FilterBean();
+					filterBean.setName(dialog.getName());
+					FiltersBean fsbean = new FiltersBean(); 
+					fsbean.setFilter(filterBean);
+					FiltersModel.getInstance().getData().add(fsbean);					
+					Job job = new Job("add") {
+
+						@Override
+						protected IStatus run(IProgressMonitor monitor) {
+							Display.getDefault().asyncExec(new Runnable() {
+								@Override
+								public void run() {
+									filterTreeViewer.setInput(FiltersModel
+											.getInstance().getDataArray());
+								}
+							});
+							return Status.OK_STATUS;
+						}
+					};
+					job.setPriority(Job.SHORT);
+					job.schedule();
+				}
+			}
+		});
+		
 		
 		MenuItem deleteItem = new MenuItem(filterMenu, SWT.NONE);
 		deleteItem.setText("Удалить фильтр");
@@ -1644,24 +1711,24 @@ public class DionisView extends ViewPart {
 				if (dialog.open() == Window.OK) {
 					Job job = new Job("add") {
 
-						@Override
-						protected IStatus run(IProgressMonitor monitor) {
-							Display.getDefault().asyncExec(new Runnable() {
-								@Override
-								public void run() {
-									tunnelTableViewer.setInput(TunnelModel
-											.getInstance().getDataArray());
-								}
-							});
-							return Status.OK_STATUS;
-						}
-					};
-					job.setPriority(Job.SHORT);
-					job.schedule();
+										@Override
+										protected IStatus run(IProgressMonitor monitor) {
+											Display.getDefault().asyncExec(new Runnable() {
+												@Override
+												public void run() {
+													tunnelTableViewer.setInput(TunnelModel
+															.getInstance().getDataArray());
+												}
+											});
+											return Status.OK_STATUS;
+										}
+									};
+									job.setPriority(Job.SHORT);
+									job.schedule();
 				}
 			}
 		});
-
+			
 		
 		final MenuItem removeMenuItem = new MenuItem(tunnelMenu, SWT.NONE);
 		removeMenuItem.setText("Удалить");

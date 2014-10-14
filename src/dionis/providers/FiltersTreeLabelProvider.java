@@ -34,12 +34,9 @@ import org.eclipse.core.runtime.Path;
 public class FiltersTreeLabelProvider extends StyledCellLabelProvider {
 	@Override
 	public void update(ViewerCell cell) {
+		System.out.println("FiltersBean");
 		Object object = cell.getElement();
-		if (object instanceof String) {
-			if (cell.getColumnIndex() == 0) {
-				cell.setText(object.toString());
-			}
-		} else if (object instanceof FiltersBean) {
+		if (object instanceof FiltersBean) {
 			updateFiltersBean(cell, (FiltersBean) object);
 		} else if (object instanceof StandardFilterItemBean) {
 			updateStandardFilterItemBean(cell, (StandardFilterItemBean) object);
@@ -54,7 +51,7 @@ public class FiltersTreeLabelProvider extends StyledCellLabelProvider {
 		// Имя
 		if (cell.getColumnIndex() == 0) {
 			cell.setText(filter.getFilter().getName());
-			cell.setImage(getImage(ImageConstants.ICON_FILTER));
+			// cell.setImage(getImage(ImageConstants.ICON_FILTER));
 		}
 		// Количество правил в фильтре
 		if (cell.getColumnIndex() == 1) {
@@ -63,7 +60,8 @@ public class FiltersTreeLabelProvider extends StyledCellLabelProvider {
 		}
 	}
 
-	private void updateStandardFilterItemBean(ViewerCell cell, StandardFilterItemBean item) {
+	private void updateStandardFilterItemBean(ViewerCell cell,
+			StandardFilterItemBean item) {
 		// № п/п
 		if (cell.getColumnIndex() == 1) {
 			int itemIndex = findItemIndex(item);
@@ -71,11 +69,13 @@ public class FiltersTreeLabelProvider extends StyledCellLabelProvider {
 		}
 		// Значение
 		if (cell.getColumnIndex() == 2) {
-			cell.setImage(getImage(ImageConstants.ICON_ITEM));
+			// cell.setImage(getImage(ImageConstants.ICON_ITEM));
 			cell.setText(item.toString());
 		}
 	}
-	private void updateExtendedFilterItemBean(ViewerCell cell, ExtendedFilterItemBean item) {
+
+	private void updateExtendedFilterItemBean(ViewerCell cell,
+			ExtendedFilterItemBean item) {
 		// № п/п
 		if (cell.getColumnIndex() == 1) {
 			int itemIndex = findItemIndex(item);
@@ -83,7 +83,7 @@ public class FiltersTreeLabelProvider extends StyledCellLabelProvider {
 		}
 		// Значение
 		if (cell.getColumnIndex() == 2) {
-			cell.setImage(getImage(ImageConstants.ICON_ITEM));
+			// cell.setImage(getImage(ImageConstants.ICON_ITEM));
 			cell.setText(item.toString());
 		}
 		// Расширенное значение
@@ -91,8 +91,10 @@ public class FiltersTreeLabelProvider extends StyledCellLabelProvider {
 			cell.setText(item.getExtendedDataField());
 		}
 	}
+
 	// TODO: рефакторить повторяющийся код
-	private void updateSheduleFilterItemBean(ViewerCell cell, SheduleFilterItemBean item) {
+	private void updateSheduleFilterItemBean(ViewerCell cell,
+			SheduleFilterItemBean item) {
 		// № п/п
 		if (cell.getColumnIndex() == 1) {
 			int itemIndex = findItemIndex(item);
@@ -100,11 +102,11 @@ public class FiltersTreeLabelProvider extends StyledCellLabelProvider {
 		}
 		// Значение
 		if (cell.getColumnIndex() == 2) {
-			cell.setImage(getImage(ImageConstants.ICON_SHEDULE));
+			// cell.setImage(getImage(ImageConstants.ICON_SHEDULE));
 			cell.setText(item.toString());
 		}
 	}
-	
+
 	/**
 	 * Метод поиска индекса элемента фильтра в модели
 	 * 
@@ -133,7 +135,8 @@ public class FiltersTreeLabelProvider extends StyledCellLabelProvider {
 	}
 
 	/**
-	 * Метод, возвращающий объект изображения по заданному параметру строки пути к изображению
+	 * Метод, возвращающий объект изображения по заданному параметру строки пути
+	 * к изображению
 	 * 
 	 * @param img
 	 * @return

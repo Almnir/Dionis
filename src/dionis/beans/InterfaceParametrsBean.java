@@ -2,7 +2,6 @@ package dionis.beans;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 
 import dionis.xml.BooleanType;
 import dionis.xml.InterfaceDFType;
