@@ -1,13 +1,9 @@
 package dionis.providers;
 
-import java.util.List;
-
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
 import dionis.beans.FiltersBean;
-import dionis.beans.IFilterItem;
-import dionis.models.FiltersModel;
 
 public class FiltersTreeContentProvider implements ITreeContentProvider {
 
@@ -23,20 +19,23 @@ public class FiltersTreeContentProvider implements ITreeContentProvider {
 
 	@Override
 	public Object[] getElements(Object inputElement) {
-		if (inputElement instanceof FiltersModel) {
-			System.out.println((FiltersModel) inputElement);
-			return ((FiltersModel) inputElement).getDataArray();
-		} else
+		if (inputElement instanceof Object[]) {
+			return (Object[]) inputElement;
+		} else {
 			return EMPTY_ARRAY;
+		}
 	}
 
 	@Override
 	public Object[] getChildren(Object parentElement) {
 		if (parentElement instanceof FiltersBean) {
 			FiltersBean filtersBean = (FiltersBean) parentElement;
-			return filtersBean.getFilter().getItem().toArray();
-		} else
-			return EMPTY_ARRAY;
+			System.out.println(filtersBean);
+			if (filtersBean.getFilter() != null && filtersBean.getFilter().getItem() != null) {
+				return filtersBean.getFilter().getItem().toArray();
+			}
+		}
+		return EMPTY_ARRAY;
 	}
 
 	@Override
@@ -46,8 +45,11 @@ public class FiltersTreeContentProvider implements ITreeContentProvider {
 
 	@Override
 	public boolean hasChildren(Object element) {
-		if (element instanceof FiltersBean || element instanceof FiltersModel) {
-			return true;
+		if (element instanceof FiltersBean) {
+			FiltersBean filtersBean = (FiltersBean) element;
+			if (filtersBean.getFilter() != null && filtersBean.getFilter().getItem() != null) {
+				return true;
+			}
 		}
 		return false;
 	}

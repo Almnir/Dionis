@@ -141,11 +141,6 @@ public class InterfaceDialog extends Dialog {
 				return super.getText(element);
 			}
 		});
-		// java.util.LinkedList<String> list = new LinkedList<String>();
-		// for (InterfaceType s : InterfaceType.values()) {
-		// list.add(s.name());
-		// }
-		// comboViewer.setInput(list.toArray(new String[list.size()]));
 		comboViewer.setInput(Arrays.asList(InterfaceType.values()));
 		typeCombo.select(0);
 

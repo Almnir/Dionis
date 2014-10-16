@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.ViewerCell;
@@ -14,7 +15,6 @@ import org.osgi.framework.FrameworkUtil;
 
 import dionis.beans.ExtendedFilterItemBean;
 import dionis.beans.FilterBean;
-import dionis.beans.FilterItemBean;
 import dionis.beans.FiltersBean;
 import dionis.beans.IFilterItem;
 import dionis.beans.SheduleFilterItemBean;
@@ -22,8 +22,6 @@ import dionis.beans.StandardFilterItemBean;
 import dionis.models.FiltersModel;
 import dionis.utils.ImageConstants;
 import dionis.views.DionisView;
-
-import org.eclipse.core.runtime.Path;
 
 /**
  * Класс-провайдер отображения строк табличного дерева
@@ -34,11 +32,12 @@ import org.eclipse.core.runtime.Path;
 public class FiltersTreeLabelProvider extends StyledCellLabelProvider {
 	@Override
 	public void update(ViewerCell cell) {
-		System.out.println("FiltersBean");
 		Object object = cell.getElement();
 		if (object instanceof FiltersBean) {
+			// System.out.println("FiltersBean");
 			updateFiltersBean(cell, (FiltersBean) object);
 		} else if (object instanceof StandardFilterItemBean) {
+			System.out.println("StandardFilterItemBean");
 			updateStandardFilterItemBean(cell, (StandardFilterItemBean) object);
 		} else if (object instanceof ExtendedFilterItemBean) {
 			updateExtendedFilterItemBean(cell, (ExtendedFilterItemBean) object);
@@ -51,12 +50,18 @@ public class FiltersTreeLabelProvider extends StyledCellLabelProvider {
 		// Имя
 		if (cell.getColumnIndex() == 0) {
 			cell.setText(filter.getFilter().getName());
-			// cell.setImage(getImage(ImageConstants.ICON_FILTER));
+			cell.setImage(getImage(ImageConstants.ICON_FILTER));
 		}
 		// Количество правил в фильтре
 		if (cell.getColumnIndex() == 1) {
 			// сколько правил
-			cell.setText(String.valueOf(filter.getFilter().getItem().size()));
+			if (filter.getFilter() != null
+					&& filter.getFilter().getItem() != null) {
+				cell.setText(String
+						.valueOf(filter.getFilter().getItem().size()));
+			} else {
+				cell.setText("0");
+			}
 		}
 	}
 
@@ -69,7 +74,7 @@ public class FiltersTreeLabelProvider extends StyledCellLabelProvider {
 		}
 		// Значение
 		if (cell.getColumnIndex() == 2) {
-			// cell.setImage(getImage(ImageConstants.ICON_ITEM));
+			cell.setImage(getImage(ImageConstants.ICON_ITEM));
 			cell.setText(item.toString());
 		}
 	}
@@ -83,7 +88,7 @@ public class FiltersTreeLabelProvider extends StyledCellLabelProvider {
 		}
 		// Значение
 		if (cell.getColumnIndex() == 2) {
-			// cell.setImage(getImage(ImageConstants.ICON_ITEM));
+			cell.setImage(getImage(ImageConstants.ICON_FILTER));
 			cell.setText(item.toString());
 		}
 		// Расширенное значение
@@ -102,7 +107,7 @@ public class FiltersTreeLabelProvider extends StyledCellLabelProvider {
 		}
 		// Значение
 		if (cell.getColumnIndex() == 2) {
-			// cell.setImage(getImage(ImageConstants.ICON_SHEDULE));
+			cell.setImage(getImage(ImageConstants.ICON_SHEDULE));
 			cell.setText(item.toString());
 		}
 	}
@@ -121,7 +126,7 @@ public class FiltersTreeLabelProvider extends StyledCellLabelProvider {
 		while (it.hasNext() && exitFlag == false) {
 			FiltersBean fsb = it.next();
 			FilterBean fb = fsb.getFilter();
-			List<? extends FilterItemBean> fib = fb.getItem();
+			List<IFilterItem> fib = fb.getItem();
 			// TODO: корявый код, нужно переписать
 			for (Object fitem : fib) {
 				if (fitem.equals(item)) {

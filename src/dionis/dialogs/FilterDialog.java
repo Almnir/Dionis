@@ -1,41 +1,33 @@
 package dionis.dialogs;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Observer;
 
 import org.eclipse.core.databinding.DataBindingContext;
-import org.eclipse.core.databinding.UpdateValueStrategy;
-import org.eclipse.core.databinding.beans.PojoObservables;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.jface.databinding.swt.SWTObservables;
-import org.eclipse.jface.databinding.swt.WidgetProperties;
 import org.eclipse.jface.databinding.viewers.ViewersObservables;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.List;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.ListViewer;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.List;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 
-import dionis.beans.FilterBean;
 import dionis.utils.Constants;
-import dionis.xml.Filters;
 
 public class FilterDialog extends Dialog {
 	private Text nameText;
-	private String name = "хуй";
+	// убрано в целях безопасности
+	private String name = "";
 
 	/**
 	 * Create the dialog.
@@ -56,6 +48,8 @@ public class FilterDialog extends Dialog {
 		Composite container = (Composite) super.createDialogArea(parent);
 		container.setLayout(new GridLayout(1, false));
 
+		parent.getShell().setText("Задайте имя фильтра");
+		
 		nameText = new Text(container, SWT.BORDER);
 		nameText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false,
 				1, 1));
@@ -92,19 +86,12 @@ public class FilterDialog extends Dialog {
 		});
 		listViewer.setInput(fltrs);
 
-		// viewer.setInput(todos);
-
 		DataBindingContext bindingContext = new DataBindingContext();
-
-		// IObservableValue selectedPerson = ViewersObservables
-		// .observeSingleSelection(listViewer);
 
 		IObservableValue selection = ViewersObservables
 				.observeSingleSelection(listViewer);
 		bindingContext.bindValue(
 				SWTObservables.observeText(nameText, SWT.None), selection);
-		// new UpdateValueStrategy(false,
-		// UpdateValueStrategy.POLICY_NEVER);
 		return container;
 	}
 

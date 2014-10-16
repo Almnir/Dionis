@@ -5,7 +5,7 @@ import java.util.List;
 public class FilterBean extends ModelObject {
 
 	protected String name;
-	protected List<? extends FilterItemBean> item;
+	protected List<IFilterItem> item;
 
 	public String getName() {
 		return name;
@@ -15,11 +15,11 @@ public class FilterBean extends ModelObject {
 		firePropertyChange("name", this.name, this.name = name);
 	}
 
-	public List<? extends FilterItemBean> getItem() {
+	public List<IFilterItem> getItem() {
 		return item;
 	}
 
-	public void setItem(List<? extends FilterItemBean> item) {
+	public void setItem(List<IFilterItem> item) {
 		firePropertyChange("item", this.item, this.item = item);
 	}
 

@@ -39,7 +39,6 @@ public class AddressTableDialog extends Dialog {
 	 */
 	public AddressTableDialog(Shell parentShell, IStructuredSelection sel) {
 		super(parentShell);
-		parentShell.setText("Элемент таблицы адресов");
 		if (sel != null) {
 			this.data = (String[]) sel.getFirstElement();
 			this.newadd = false;
@@ -57,6 +56,7 @@ public class AddressTableDialog extends Dialog {
 	@Override
 	protected Control createDialogArea(Composite parent) {
 		Composite container = (Composite) super.createDialogArea(parent);
+		parent.getShell().setText("Элемент таблицы адресов");
 		container.setLayout(new GridLayout(3, false));
 
 		button = new Button(container, SWT.RADIO);

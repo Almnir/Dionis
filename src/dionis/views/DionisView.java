@@ -1,5 +1,7 @@
 package dionis.views;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.TimeZone;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -39,12 +41,14 @@ import org.eclipse.ui.part.ViewPart;
 
 import dionis.beans.FilterBean;
 import dionis.beans.FiltersBean;
+import dionis.beans.IFilterItem;
 import dionis.beans.InterfaceBean;
 import dionis.beans.InterfaceRouteBean;
 import dionis.beans.TunnelBean;
 import dionis.dialogs.FilterDialog;
 import dionis.dialogs.InterfaceDialog;
 import dionis.dialogs.InterfaceRouteDialog;
+import dionis.dialogs.StandardFilterDialog;
 import dionis.dialogs.TunnelDialog;
 import dionis.formatters.TimeZoneTimeFormatter;
 import dionis.models.DionisXAO;
@@ -84,6 +88,7 @@ import dionis.xml.Type;
 
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.jface.dialogs.InputDialog;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.TreeColumnLayout;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 
@@ -1527,28 +1532,26 @@ public class DionisView extends ViewPart {
 			public void widgetSelected(SelectionEvent e) {
 				if (filterTree.getSelection() != null
 						&& filterTree.getSelection().length > 0) {
-					InputDialog dialog = new InputDialog(shell, "Ввод имени", "Новое название фильтра: ", null, null);
 					IStructuredSelection sel = (IStructuredSelection) filterTreeViewer
 							.getSelection();
-					if (sel.getFirstElement() instanceof FilterBean) {
+					if (sel.getFirstElement() instanceof FiltersBean) {
+						FiltersBean fsb = (FiltersBean) sel.getFirstElement();
+						int index = FiltersModel.getInstance().getData().indexOf(fsb);
+						InputDialog dialog = new InputDialog(shell, "Ввод имени", "Новое название фильтра: ", fsb.getFilter().getName(), null);
 						if (dialog.open() == Window.OK) {
-							FilterBean fbean = (FilterBean) sel.getFirstElement();
-							fbean.setName(dialog.getValue());
-							Job job = new Job("change") {
-
-								@Override
-								protected IStatus run(IProgressMonitor monitor) {
+							if (fsb.getFilter() == null) {
+								FilterBean fbean = new FilterBean();
+								fbean.setName(dialog.getValue());
+							} else {
+								fsb.getFilter().setName(dialog.getValue());
+							}
+							FiltersModel.getInstance().getData().set(index, fsb);
 									Display.getDefault().asyncExec(new Runnable() {
 										@Override
 										public void run() {
 											filterTreeViewer.refresh();;
 										}
 									});
-									return Status.OK_STATUS;
-								}
-							};
-							job.setPriority(Job.SHORT);
-							job.schedule();
 						}
 					}
 				}
@@ -1568,10 +1571,6 @@ public class DionisView extends ViewPart {
 					FiltersBean fsbean = new FiltersBean(); 
 					fsbean.setFilter(filterBean);
 					FiltersModel.getInstance().getData().add(fsbean);					
-					Job job = new Job("add") {
-
-						@Override
-						protected IStatus run(IProgressMonitor monitor) {
 							Display.getDefault().asyncExec(new Runnable() {
 								@Override
 								public void run() {
@@ -1579,18 +1578,39 @@ public class DionisView extends ViewPart {
 											.getInstance().getDataArray());
 								}
 							});
-							return Status.OK_STATUS;
-						}
-					};
-					job.setPriority(Job.SHORT);
-					job.schedule();
 				}
 			}
 		});
 		
 		
 		MenuItem deleteItem = new MenuItem(filterMenu, SWT.NONE);
-		deleteItem.setText("Удалить фильтр");
+		deleteItem.setText("Удалить весь фильтр");
+
+		deleteItem.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				if (filterTree.getSelection() != null
+						&& filterTree.getSelection().length > 0) {
+					IStructuredSelection sel = (IStructuredSelection) filterTreeViewer
+							.getSelection();
+					if (sel.getFirstElement() instanceof FiltersBean) {
+						final FiltersBean fsb = (FiltersBean) sel.getFirstElement();
+						boolean dialog = MessageDialog.openConfirm(shell, "Подтверждение", "Удалить фильтр " + fsb.getFilter().getName() + " ?");
+						if (dialog == true) {
+							FiltersModel.getInstance().getData().remove(fsb);
+									Display.getDefault().asyncExec(new Runnable() {
+										@Override
+										public void run() {
+											filterTreeViewer.setInput(FiltersModel
+													.getInstance().getDataArray());
+											filterTreeViewer.refresh(fsb);
+										}
+									});
+						}
+					}
+				}
+			}
+		});
+
 		
 		new MenuItem(filterMenu, SWT.SEPARATOR);
 		
@@ -1604,6 +1624,43 @@ public class DionisView extends ViewPart {
 		
 		MenuItem addStandardItem = new MenuItem(filterMenu, SWT.NONE);
 		addStandardItem.setText("Добавить правило");
+		
+		/** Добавить стандартный IP фильтр **/
+		addStandardItem.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				if (filterTree.getSelection() != null
+						&& filterTree.getSelection().length > 0) {
+					IStructuredSelection sel = (IStructuredSelection) filterTreeViewer
+							.getSelection();
+					if (sel.getFirstElement() instanceof FiltersBean) {
+						final FiltersBean fsb = (FiltersBean) sel.getFirstElement();
+						StandardFilterDialog dialog = new StandardFilterDialog(shell, null);
+						if (dialog.open() == Window.OK) {
+							java.util.List<FiltersBean> filtersList = FiltersModel.getInstance().getData();
+							int index = filtersList.indexOf(fsb);
+							if (fsb.getFilter() != null && fsb.getFilter().getItem() != null) {
+								fsb.getFilter().getItem().add(dialog.getData());
+							} else {
+								FilterBean filterBean = new FilterBean();
+								LinkedList<IFilterItem> lfi = new LinkedList<>();
+								lfi.add(dialog.getData());
+								filterBean.setItem(lfi);
+							}
+							FiltersModel.getInstance().getData().set(index, fsb);
+									Display.getDefault().asyncExec(new Runnable() {
+										@Override
+										public void run() {
+											filterTreeViewer.setInput(FiltersModel
+													.getInstance().getDataArray());
+											filterTreeViewer.refresh(fsb);
+										}
+									});
+						}
+					}
+				}
+			}
+		});
+		
 		
 		MenuItem addExtendedItem = new MenuItem(filterMenu, SWT.NONE);
 		addExtendedItem.setText("Добавить расширенное правило");
@@ -1679,10 +1736,6 @@ public class DionisView extends ViewPart {
 					TunnelDialog dialog = new TunnelDialog(
 							shell, sel);
 					if (dialog.open() == Window.OK) {
-						Job job = new Job("change") {
-
-							@Override
-							protected IStatus run(IProgressMonitor monitor) {
 								Display.getDefault().asyncExec(new Runnable() {
 									@Override
 									public void run() {
@@ -1690,12 +1743,6 @@ public class DionisView extends ViewPart {
 												.getInstance().getDataArray());
 									}
 								});
-								return Status.OK_STATUS;
-							}
-						};
-						job.setPriority(Job.SHORT);
-						job.schedule();
-
 					}
 				}
 			}
@@ -1709,10 +1756,6 @@ public class DionisView extends ViewPart {
 				TunnelDialog dialog = new TunnelDialog(shell,
 						null);
 				if (dialog.open() == Window.OK) {
-					Job job = new Job("add") {
-
-										@Override
-										protected IStatus run(IProgressMonitor monitor) {
 											Display.getDefault().asyncExec(new Runnable() {
 												@Override
 												public void run() {
@@ -1720,11 +1763,6 @@ public class DionisView extends ViewPart {
 															.getInstance().getDataArray());
 												}
 											});
-											return Status.OK_STATUS;
-										}
-									};
-									job.setPriority(Job.SHORT);
-									job.schedule();
 				}
 			}
 		});
@@ -1740,10 +1778,6 @@ public class DionisView extends ViewPart {
 				TunnelBean tunnel = (TunnelBean) sel
 						.getFirstElement();
 				TunnelModel.getInstance().removeData(tunnel);
-				Job job = new Job("remove") {
-
-					@Override
-					protected IStatus run(IProgressMonitor monitor) {
 						Display.getDefault().asyncExec(new Runnable() {
 							@Override
 							public void run() {
@@ -1751,11 +1785,6 @@ public class DionisView extends ViewPart {
 										.getInstance().getDataArray());
 							}
 						});
-						return Status.OK_STATUS;
-					}
-				};
-				job.setPriority(Job.SHORT);
-				job.schedule();
 			}
 		});
 		
