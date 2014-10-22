@@ -127,13 +127,17 @@ public class FiltersTreeLabelProvider extends StyledCellLabelProvider {
 			FiltersBean fsb = it.next();
 			FilterBean fb = fsb.getFilter();
 			List<IFilterItem> fib = fb.getItem();
-			// TODO: корявый код, нужно переписать
-			for (Object fitem : fib) {
-				if (fitem.equals(item)) {
-					exitFlag = true;
-					break;
+			if (fib != null) {
+				// TODO: корявый код, нужно переписать
+				for (IFilterItem fitem : fib) {
+					if (fitem.equals(item)) {
+						exitFlag = true;
+						break;
+					}
+					index++;
 				}
-				index++;
+			} else {
+				exitFlag = true;
 			}
 		}
 		return index;

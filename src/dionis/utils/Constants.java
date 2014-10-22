@@ -90,7 +90,15 @@ public interface Constants {
 			"ограничитель внутренних DNS-запросов" };
 
 	/** Режим IP фильтра **/
-	String[] FILTER_MODE = { "Разрешить", "Запретить", "Сбросить", "Сессия" };
+//	String[] FILTER_MODE = { "Разрешить", "Запретить", "Сбросить", "Сессия" };
+	String[] FILTER_MODE = { "Разрешить", "Запретить", "Сбросить" };
 	/** Направление фильтрации **/
 	String[] FILTER_DIRECTION = { "Отправителя", "Получателя", "Все" };
+	/** Логические операции **/
+	String[] FILTER_LOGIC = { "Нет", "==", "!=", ">", ">=", "<", "<=" };
+	
+	/** Стандартный фильтр **/
+	public static final int DLG_STANDARD = 0;
+	/** Расширенный фильтр **/
+	public static final int DLG_EXTENDED = 1;
 }

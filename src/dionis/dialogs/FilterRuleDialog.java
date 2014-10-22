@@ -1,6 +1,8 @@
 package dionis.dialogs;
 
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -8,7 +10,6 @@ import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -21,21 +22,26 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 
+import dionis.beans.ExtBean;
+import dionis.beans.ExtendedFilterItemBean;
 import dionis.beans.FilterPortsBean;
 import dionis.beans.FilterSourceBean;
 import dionis.beans.FilterTargetBean;
+import dionis.beans.IFilterItem;
 import dionis.beans.StandardFilterItemBean;
 import dionis.utils.Constants;
 import dionis.xml.BooleanType;
+import dionis.xml.FilterLinkType;
+import dionis.xml.FilterOperationType;
 import dionis.xml.FilterPortsType;
 import dionis.xml.FilterProtocolType;
 import dionis.xml.FilterStatusType;
 import dionis.xml.FilterTCPFlagsType;
 
-public class StandardFilterDialog extends Dialog {
+public class FilterRuleDialog extends Dialog {
 	private Text sourceAddressText;
 	private Text targetAddressText;
-	private StandardFilterItemBean data;
+	private IFilterItem data;
 	private boolean newadd;
 	private Button blockButton;
 	private Combo modeCombo;
@@ -47,25 +53,50 @@ public class StandardFilterDialog extends Dialog {
 	private Spinner bitTargetSpinner;
 	private Spinner lowPortSpinner;
 	private Spinner highPortSpinner;
-	private Combo directionCombo;
+	private Combo operationCombo;
 	private ComboViewer protocolComboViewer;
 
-	/**
-	 * Create the dialog.
-	 * 
-	 * @param parentShell
-	 */
-	public StandardFilterDialog(Shell parentShell) {
-		super(parentShell);
-	}
+	private int type;
+	private Group[] group;
+	private Label[] emptyLabel;
+	private Label[] dataLabel;
+	private Label[] shiftLabel;
+	private Label[] operationLabel;
+	private Button[] ipCheckButton;
+	private Spinner[] shiftSpinner;
+	private Combo[] logicalCombo;
+	private Text[] dataText;
+	private Button[] btnOrRadioButton;
+	private Button[] btnAndRadioButton;
 
-	public StandardFilterDialog(Shell parentShell, StandardFilterItemBean sfi) {
+	/**
+	 * @wbp.parser.constructor
+	 */
+	public FilterRuleDialog(Shell parentShell, IFilterItem sfi, int type) {
 		super(parentShell);
+		/** Инициализация массивов элементов расширенного блока **/
+		group = new Group[4];
+		emptyLabel = new Label[4];
+		shiftLabel = new Label[4];
+		operationLabel = new Label[4];
+		dataLabel = new Label[4];
+		ipCheckButton = new Button[4];
+		shiftSpinner = new Spinner[4];
+		logicalCombo = new Combo[4];
+		dataText = new Text[4];
+		btnOrRadioButton = new Button[3];
+		btnAndRadioButton = new Button[3];
+
+		this.type = type;
 		if (sfi != null) {
 			this.setData(sfi);
 			this.newadd = false;
 		} else {
-			this.setData(new StandardFilterItemBean());
+			if (type == Constants.DLG_STANDARD) {
+				this.setData(new StandardFilterItemBean());
+			} else if (type == Constants.DLG_EXTENDED) {
+				this.setData(new ExtendedFilterItemBean());
+			}
 			this.newadd = true;
 		}
 	}
@@ -78,7 +109,7 @@ public class StandardFilterDialog extends Dialog {
 	@Override
 	protected Control createDialogArea(Composite parent) {
 		Composite container = (Composite) super.createDialogArea(parent);
-		container.setLayout(new GridLayout(6, false));
+		container.setLayout(new GridLayout(7, false));
 
 		parent.getShell().setText("Стандартный IP фильтр");
 
@@ -98,6 +129,7 @@ public class StandardFilterDialog extends Dialog {
 				1, 1));
 
 		modeCombo.setItems(Constants.FILTER_MODE);
+		new Label(container, SWT.NONE);
 
 		Group grpTcp = new Group(container, SWT.NONE);
 		grpTcp.setText("TCP флаги");
@@ -143,6 +175,7 @@ public class StandardFilterDialog extends Dialog {
 
 		protocolComboViewer
 				.setInput(Arrays.asList(FilterProtocolType.values()));
+		new Label(container, SWT.NONE);
 
 		Group group = new Group(container, SWT.NONE);
 		group.setText("Отправитель");
@@ -170,6 +203,7 @@ public class StandardFilterDialog extends Dialog {
 		bitSourceSpinner = new Spinner(group, SWT.BORDER);
 		bitSourceSpinner.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,
 				false, 1, 1));
+		new Label(container, SWT.NONE);
 
 		Group group_1 = new Group(container, SWT.NONE);
 		group_1.setText("Получатель");
@@ -217,52 +251,158 @@ public class StandardFilterDialog extends Dialog {
 		new Label(group_1, SWT.NONE);
 		new Label(group_1, SWT.NONE);
 
-		directionCombo = new Combo(group_1, SWT.NONE);
-		directionCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,
+		operationCombo = new Combo(group_1, SWT.NONE);
+		operationCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,
 				false, 2, 1));
-		directionCombo.setItems(Constants.FILTER_DIRECTION);
+		operationCombo.setItems(Constants.FILTER_DIRECTION);
 
 		new Label(group_1, SWT.NONE);
 		new Label(group_1, SWT.NONE);
 		new Label(group_1, SWT.NONE);
 		new Label(group_1, SWT.NONE);
+		new Label(container, SWT.NONE);
+
+		if (this.type == Constants.DLG_EXTENDED) {
+			createExtendedArea(container);
+		}
 
 		init();
 
 		return container;
 	}
 
-	private void init() {
+	private void createExtendedArea(Composite parent) {
+		Group group_all = new Group(parent, SWT.NONE);
+		group_all.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 7,
+				1));
+		group_all.setLayout(new GridLayout(3, true));
+
+		for (int i = 0; i < 3; i += 1) {
+			createGroupBlock(group_all, i);
+			createLogicBlock(group_all, i);
+		}
+		createGroupBlock(group_all, 3);
+	}
+
+	private void createGroupBlock(Composite parent, int blockNumber) {
+		group[blockNumber] = new Group(parent, SWT.NONE);
+		group[blockNumber].setLayoutData(new GridData(SWT.FILL, SWT.FILL, true,
+				true, 5, 2));
+		group[blockNumber].setLayout(new GridLayout(4, true));
+		group[blockNumber].setText(String.valueOf(blockNumber + 1));
+
+		emptyLabel[blockNumber] = new Label(group[blockNumber], SWT.NONE);
+		emptyLabel[blockNumber].setLayoutData(new GridData(SWT.FILL, SWT.FILL,
+				true, false, 1, 2));
+		emptyLabel[blockNumber].setText("      ");
+
+		shiftLabel[blockNumber] = new Label(group[blockNumber], SWT.NONE);
+		shiftLabel[blockNumber].setLayoutData(new GridData(SWT.FILL, SWT.FILL,
+				true, false, 1, 2));
+		shiftLabel[blockNumber].setText("Смещение");
+
+		operationLabel[blockNumber] = new Label(group[blockNumber], SWT.NONE);
+		operationLabel[blockNumber].setLayoutData(new GridData(SWT.FILL,
+				SWT.FILL, true, false, 1, 2));
+		operationLabel[blockNumber].setText("Операция");
+
+		dataLabel[blockNumber] = new Label(group[blockNumber], SWT.NONE);
+		dataLabel[blockNumber].setLayoutData(new GridData(SWT.FILL, SWT.FILL,
+				true, false, 1, 2));
+		dataLabel[blockNumber].setText("Данные");
+
+		ipCheckButton[blockNumber] = new Button(group[blockNumber], SWT.CHECK);
+		ipCheckButton[blockNumber].setLayoutData(new GridData(SWT.FILL,
+				SWT.FILL, true, false, 1, 2));
+		ipCheckButton[blockNumber].setText("IP+");
+
+		shiftSpinner[blockNumber] = new Spinner(group[blockNumber], SWT.BORDER);
+		shiftSpinner[blockNumber].setLayoutData(new GridData(SWT.FILL,
+				SWT.CENTER, true, false, 1, 1));
+		shiftSpinner[blockNumber].setMinimum(0);
+		shiftSpinner[blockNumber].setMaximum(255);
+
+		logicalCombo[blockNumber] = new Combo(group[blockNumber], SWT.NONE);
+		logicalCombo[blockNumber].setLayoutData(new GridData(SWT.FILL,
+				SWT.CENTER, true, false, 1, 1));
+		logicalCombo[blockNumber].setItems(Constants.FILTER_LOGIC);
+
+		dataText[blockNumber] = new Text(group[blockNumber], SWT.NONE);
+		dataText[blockNumber].setLayoutData(new GridData(SWT.FILL, SWT.CENTER,
+				true, false, 1, 1));
+		dataText[blockNumber].setText("0");
+	}
+
+	private void createLogicBlock(Composite parent, int blockNumber) {
+		btnAndRadioButton[blockNumber] = new Button(parent, SWT.RADIO);
+		btnAndRadioButton[blockNumber].setLayoutData(new GridData(SWT.FILL,
+				SWT.FILL, true, false, 1, 2));
+		btnAndRadioButton[blockNumber].setText("И");
+
+		btnOrRadioButton[blockNumber] = new Button(parent, SWT.RADIO);
+		btnOrRadioButton[blockNumber].setLayoutData(new GridData(SWT.FILL,
+				SWT.FILL, true, false, 1, 2));
+		btnOrRadioButton[blockNumber].setText("ИЛИ");
+	}
+
+	protected void init() {
 		setFieldsToDefault();
 		if (getData() != null) {
 			if (newadd == false) {
 				/** изменение **/
 				blockButton
-						.setEnabled(getData().getBlock() == BooleanType.YES ? true
+						.setSelection(getData().getBlock() == BooleanType.YES ? true
 								: false);
 				modeCombo.select(getData().getMode().ordinal());
 				noRadioButton
-						.setEnabled(getData().getTcpFlags() == FilterTCPFlagsType.NO ? true
+						.setSelection(getData().getTcpFlags() == FilterTCPFlagsType.NO ? true
 								: false);
 				synRadioButton
-						.setEnabled(getData().getTcpFlags() == FilterTCPFlagsType.SYN ? true
+						.setSelection(getData().getTcpFlags() == FilterTCPFlagsType.SYN ? true
 								: false);
 				ackRadioButton
-						.setEnabled(getData().getTcpFlags() == FilterTCPFlagsType.ACK ? true
+						.setSelection(getData().getTcpFlags() == FilterTCPFlagsType.ACK ? true
 								: false);
 				protocolCombo.select(getData().getProtocol().ordinal());
 				if (getData().getSource() != null) {
 					sourceAddressText.setText(getData().getSource().getIp());
-					bitSourceSpinner.setSelection(getData().getSource().getBits());
+					bitSourceSpinner.setSelection(getData().getSource()
+							.getBits());
 				}
 				if (getData().getTarget() != null) {
 					targetAddressText.setText(getData().getTarget().getIp());
-					bitTargetSpinner.setSelection(getData().getTarget().getBits());
+					bitTargetSpinner.setSelection(getData().getTarget()
+							.getBits());
 				}
 				if (getData().getPorts() != null) {
 					lowPortSpinner.setSelection(getData().getPorts().getLow());
-					highPortSpinner.setSelection(getData().getPorts().getHigh());
-					directionCombo.select(getData().getPorts().getType().ordinal());
+					highPortSpinner
+							.setSelection(getData().getPorts().getHigh());
+					operationCombo.select(getData().getPorts().getType()
+							.ordinal());
+				}
+				if (this.type == Constants.DLG_EXTENDED) {
+					if (data.getExt() != null) {
+						List<ExtBean> ext = data.getExt();
+						int inx = 0;
+						for (ExtBean eb : ext) {
+							ipCheckButton[inx]
+									.setSelection(eb.getIp() == BooleanType.YES ? true
+											: false);
+							shiftSpinner[inx].setSelection(eb.getOffset());
+							logicalCombo[inx].select(eb.getOperation()
+									.ordinal());
+							dataText[inx].setText(eb.getData());
+							if (inx < 3) {
+								if (eb.getLink() == FilterLinkType.AND) {
+									btnAndRadioButton[inx].setSelection(true);
+								} else {
+									btnOrRadioButton[inx].setSelection(true);
+								}
+							}
+							inx += 1;
+						}
+					}
 				}
 			}
 		}
@@ -270,18 +410,21 @@ public class StandardFilterDialog extends Dialog {
 
 	@Override
 	protected void okPressed() {
-		getData().setBlock(blockButton.getSelection() == true ? BooleanType.YES
-				: BooleanType.NO);
-		getData().setMode(Arrays.asList(FilterStatusType.values()).get(
-				modeCombo.getSelectionIndex()));
+		getData().setBlock(
+				blockButton.getSelection() == true ? BooleanType.YES
+						: BooleanType.NO);
+		getData().setMode(
+				Arrays.asList(FilterStatusType.values()).get(
+						modeCombo.getSelectionIndex()));
 		if (noRadioButton.getSelection())
 			getData().setTcpFlags(FilterTCPFlagsType.NO);
 		else if (ackRadioButton.getSelection())
 			getData().setTcpFlags(FilterTCPFlagsType.ACK);
 		else if (synRadioButton.getSelection())
 			getData().setTcpFlags(FilterTCPFlagsType.SYN);
-		getData().setProtocol(Arrays.asList(FilterProtocolType.values()).get(
-				protocolCombo.getSelectionIndex()));
+		getData().setProtocol(
+				Arrays.asList(FilterProtocolType.values()).get(
+						protocolCombo.getSelectionIndex()));
 		FilterSourceBean sourceBean = new FilterSourceBean();
 		sourceBean.setIp(sourceAddressText.getText());
 		sourceBean.setBits((short) bitSourceSpinner.getSelection());
@@ -294,20 +437,44 @@ public class StandardFilterDialog extends Dialog {
 		filterPortsBean.setLow(lowPortSpinner.getSelection());
 		filterPortsBean.setHigh(highPortSpinner.getSelection());
 		filterPortsBean.setType(Arrays.asList(FilterPortsType.values()).get(
-				directionCombo.getSelectionIndex()));
+				operationCombo.getSelectionIndex()));
 		getData().setPorts(filterPortsBean);
+		if (this.type == Constants.DLG_EXTENDED) {
+			List<ExtBean> extBeans;
+			if (data.getExt() == null) {
+				extBeans = new LinkedList<ExtBean>();
+			} else {
+				extBeans = data.getExt();
+			}
+			ExtBean bean;
+			for (int i = 0; i < 4; i += 1) {
+				bean = new ExtBean();
+				bean.setIp(ipCheckButton[i].getSelection() == true ? BooleanType.YES
+						: BooleanType.NO);
+				bean.setOffset((short) shiftSpinner[i].getSelection());
+				bean.setOperation(Arrays.asList(FilterOperationType.values())
+						.get(logicalCombo[i].getSelectionIndex()));
+				bean.setData(dataText[i].getText());
+				if (i < 3) {
+					bean.setLink(btnAndRadioButton[i].getSelection() == true ? FilterLinkType.AND
+							: FilterLinkType.OR);
+				}
+				extBeans.add(bean);
+			}
+			data.setExt(extBeans);
+		}
 		super.okPressed();
 	}
 
 	/**
 	 * Установка полей в начальные значения
 	 */
-	private void setFieldsToDefault() {
+	protected void setFieldsToDefault() {
 		blockButton.setSelection(false);
 		modeCombo.select(0);
-		noRadioButton.setEnabled(false);
-		synRadioButton.setEnabled(false);
-		ackRadioButton.setEnabled(false);
+		noRadioButton.setSelection(true);
+		synRadioButton.setSelection(false);
+		ackRadioButton.setSelection(false);
 		protocolCombo.select(0);
 		sourceAddressText.setText("0.0.0.0");
 		bitSourceSpinner.setSelection(0);
@@ -315,7 +482,18 @@ public class StandardFilterDialog extends Dialog {
 		bitTargetSpinner.setSelection(0);
 		lowPortSpinner.setSelection(0);
 		highPortSpinner.setSelection(0);
-		directionCombo.select(0);
+		operationCombo.select(0);
+		if (this.type == Constants.DLG_EXTENDED) {
+			for (int i = 0; i < 4; i += 1) {
+				ipCheckButton[i].setSelection(false);
+				shiftSpinner[i].setSelection(0);
+				logicalCombo[i].select(0);
+				dataText[i].setText("00");
+				if (i < 3) {
+					btnAndRadioButton[i].setSelection(true);
+				}
+			}
+		}
 	}
 
 	/**
@@ -331,19 +509,11 @@ public class StandardFilterDialog extends Dialog {
 				IDialogConstants.CANCEL_LABEL, false);
 	}
 
-	/**
-	 * Return the initial size of the dialog.
-	 */
-	@Override
-	protected Point getInitialSize() {
-		return new Point(674, 370);
-	}
-
-	public StandardFilterItemBean getData() {
+	public IFilterItem getData() {
 		return data;
 	}
 
-	public void setData(StandardFilterItemBean data) {
+	public void setData(IFilterItem data) {
 		this.data = data;
 	}
 

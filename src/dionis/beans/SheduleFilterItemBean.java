@@ -30,10 +30,12 @@ public class SheduleFilterItemBean extends FilterItemBean implements
 			sb.append("Вс");
 		}
 		sb.append(" ");
-		sb.append(date.getBegin().getDay()).append("/").append(date.getBegin().getMonth()).append("/").append(date.getBegin().getYear());
-		sb.append("-");
-		sb.append(date.getEnd().getDay()).append("/").append(date.getEnd().getMonth()).append("/").append(date.getEnd().getYear());
-		sb.append(" ");
+		if (date != null) {
+			sb.append(date.getBegin().getDay()).append("/").append(date.getBegin().getMonth()).append("/").append(date.getBegin().getYear());
+			sb.append("-");
+			sb.append(date.getEnd().getDay()).append("/").append(date.getEnd().getMonth()).append("/").append(date.getEnd().getYear());
+			sb.append(" ");
+		}
 		sb.append(timeInterval1.getBegin()).append("-").append(timeInterval1.getEnd());
 		sb.append(" ");
 		sb.append(timeInterval2.getBegin()).append("-").append(timeInterval2.getEnd());

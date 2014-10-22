@@ -1,6 +1,5 @@
 package dionis.views;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.TimeZone;
 
@@ -8,10 +7,13 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.dialogs.InputDialog;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
@@ -43,23 +45,20 @@ import dionis.beans.FilterBean;
 import dionis.beans.FiltersBean;
 import dionis.beans.IFilterItem;
 import dionis.beans.InterfaceBean;
-import dionis.beans.InterfaceRouteBean;
 import dionis.beans.TunnelBean;
 import dionis.dialogs.FilterDialog;
 import dionis.dialogs.InterfaceDialog;
-import dionis.dialogs.InterfaceRouteDialog;
-import dionis.dialogs.StandardFilterDialog;
+import dionis.dialogs.FilterRuleDialog;
+import dionis.dialogs.SheduleRuleDialog;
 import dionis.dialogs.TunnelDialog;
 import dionis.formatters.TimeZoneTimeFormatter;
 import dionis.models.DionisXAO;
 import dionis.models.FiltersModel;
 import dionis.models.InterfaceModel;
-import dionis.models.InterfaceRouteModel;
 import dionis.models.TunnelModel;
 import dionis.providers.FiltersTreeContentProvider;
 import dionis.providers.FiltersTreeLabelProvider;
 import dionis.providers.InterfaceLableProvider;
-import dionis.providers.TunnelFilterLableProvider;
 import dionis.providers.TunnelLableProvider;
 import dionis.utils.Constants;
 import dionis.xml.ARP;
@@ -83,14 +82,7 @@ import dionis.xml.TimeService;
 import dionis.xml.Tracing;
 import dionis.xml.TracingRoute;
 import dionis.xml.TracingServers;
-import dionis.xml.Tunnel;
 import dionis.xml.Type;
-
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.jface.dialogs.InputDialog;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.layout.TreeColumnLayout;
-import org.eclipse.jface.viewers.TreeViewerColumn;
 
 /**
  * Класс отображения плагина управления Dionis
@@ -1500,26 +1492,27 @@ public class DionisView extends ViewPart {
 		
 		filterTreeViewer = new TreeViewer(composite_5, SWT.BORDER);
 		filterTree = filterTreeViewer.getTree();
+		filterTree.setHeaderVisible(true);
 		filterTree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		
 		TreeViewerColumn treeViewerColumn = new TreeViewerColumn(filterTreeViewer, SWT.NONE);
 		TreeColumn nameColumn = treeViewerColumn.getColumn();
-		nameColumn.setWidth(100);
+		nameColumn.setWidth(50);
 		nameColumn.setText("Имя");
 		
 		TreeViewerColumn treeViewerColumn_3 = new TreeViewerColumn(filterTreeViewer, SWT.NONE);
 		TreeColumn numberColumn = treeViewerColumn_3.getColumn();
-		numberColumn.setWidth(100);
+		numberColumn.setWidth(20);
 		numberColumn.setText("#");
 		
 		TreeViewerColumn treeViewerColumn_2 = new TreeViewerColumn(filterTreeViewer, SWT.NONE);
 		TreeColumn dataColumn = treeViewerColumn_2.getColumn();
-		dataColumn.setWidth(100);
+		dataColumn.setWidth(300);
 		dataColumn.setText("Значение");
 		
 		TreeViewerColumn treeViewerColumn_1 = new TreeViewerColumn(filterTreeViewer, SWT.NONE);
 		TreeColumn extendedDataColumn = treeViewerColumn_1.getColumn();
-		extendedDataColumn.setWidth(100);
+		extendedDataColumn.setWidth(300);
 		extendedDataColumn.setText("Расширенное значение");
 		
 		Menu filterMenu = new Menu(filterTree);
@@ -1560,7 +1553,7 @@ public class DionisView extends ViewPart {
 		
 		
 		MenuItem addNewItem = new MenuItem(filterMenu, SWT.NONE);
-		addNewItem.setText("Добавить новый фильтр");
+		addNewItem.setText("Добавить новый пустой фильтр");
 		
 		addNewItem.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -1634,7 +1627,7 @@ public class DionisView extends ViewPart {
 							.getSelection();
 					if (sel.getFirstElement() instanceof FiltersBean) {
 						final FiltersBean fsb = (FiltersBean) sel.getFirstElement();
-						StandardFilterDialog dialog = new StandardFilterDialog(shell, null);
+						FilterRuleDialog dialog = new FilterRuleDialog(shell, null, Constants.DLG_STANDARD);
 						if (dialog.open() == Window.OK) {
 							java.util.List<FiltersBean> filtersList = FiltersModel.getInstance().getData();
 							int index = filtersList.indexOf(fsb);
@@ -1645,6 +1638,7 @@ public class DionisView extends ViewPart {
 								LinkedList<IFilterItem> lfi = new LinkedList<>();
 								lfi.add(dialog.getData());
 								filterBean.setItem(lfi);
+								fsb.setFilter(filterBean);
 							}
 							FiltersModel.getInstance().getData().set(index, fsb);
 									Display.getDefault().asyncExec(new Runnable() {
@@ -1664,10 +1658,84 @@ public class DionisView extends ViewPart {
 		
 		MenuItem addExtendedItem = new MenuItem(filterMenu, SWT.NONE);
 		addExtendedItem.setText("Добавить расширенное правило");
+
+		/** Добавить расширенный IP фильтр **/
+		addExtendedItem.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				if (filterTree.getSelection() != null
+						&& filterTree.getSelection().length > 0) {
+					IStructuredSelection sel = (IStructuredSelection) filterTreeViewer
+							.getSelection();
+					if (sel.getFirstElement() instanceof FiltersBean) {
+						final FiltersBean fsb = (FiltersBean) sel.getFirstElement();
+						FilterRuleDialog dialog = new FilterRuleDialog(shell, null, Constants.DLG_EXTENDED);
+						if (dialog.open() == Window.OK) {
+							java.util.List<FiltersBean> filtersList = FiltersModel.getInstance().getData();
+							int index = filtersList.indexOf(fsb);
+							if (fsb.getFilter() != null && fsb.getFilter().getItem() != null) {
+								fsb.getFilter().getItem().add(dialog.getData());
+							} else {
+								FilterBean filterBean = new FilterBean();
+								LinkedList<IFilterItem> lfi = new LinkedList<>();
+								lfi.add(dialog.getData());
+								filterBean.setItem(lfi);
+								fsb.setFilter(filterBean);
+							}
+							FiltersModel.getInstance().getData().set(index, fsb);
+									Display.getDefault().asyncExec(new Runnable() {
+										@Override
+										public void run() {
+											filterTreeViewer.setInput(FiltersModel
+													.getInstance().getDataArray());
+											filterTreeViewer.refresh(fsb);
+										}
+									});
+						}
+					}
+				}
+			}
+		});
+		
 		
 		MenuItem addSheduleItem = new MenuItem(filterMenu, SWT.NONE);
 		addSheduleItem.setText("Добавить элемент расписания");
 
+		addSheduleItem.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				if (filterTree.getSelection() != null
+						&& filterTree.getSelection().length > 0) {
+					IStructuredSelection sel = (IStructuredSelection) filterTreeViewer
+							.getSelection();
+					if (sel.getFirstElement() instanceof FiltersBean) {
+						final FiltersBean fsb = (FiltersBean) sel.getFirstElement();
+						SheduleRuleDialog dialog = new SheduleRuleDialog(shell, null);
+						if (dialog.open() == Window.OK) {
+							java.util.List<FiltersBean> filtersList = FiltersModel.getInstance().getData();
+							int index = filtersList.indexOf(fsb);
+							if (fsb.getFilter() != null && fsb.getFilter().getItem() != null) {
+								fsb.getFilter().getItem().add(dialog.getData());
+							} else {
+								FilterBean filterBean = new FilterBean();
+								LinkedList<IFilterItem> lfi = new LinkedList<>();
+								lfi.add(dialog.getData());
+								filterBean.setItem(lfi);
+								fsb.setFilter(filterBean);
+							}
+							FiltersModel.getInstance().getData().set(index, fsb);
+									Display.getDefault().asyncExec(new Runnable() {
+										@Override
+										public void run() {
+											filterTreeViewer.setInput(FiltersModel
+													.getInstance().getDataArray());
+											filterTreeViewer.refresh(fsb);
+										}
+									});
+						}
+					}
+				}
+			}
+		});
+		
 		filterTreeViewer.setContentProvider(new FiltersTreeContentProvider());
 		filterTreeViewer.setLabelProvider(new FiltersTreeLabelProvider());
 		filterTreeViewer.setInput(FiltersModel.getInstance().getData());

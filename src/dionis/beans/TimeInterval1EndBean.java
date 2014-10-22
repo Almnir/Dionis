@@ -19,4 +19,15 @@ public class TimeInterval1EndBean extends ModelObject {
 	public void setMinute(short minute) {
 		firePropertyChange("minute", this.minute, this.minute = minute);
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("[Конец: ");
+		builder.append(hour);
+		builder.append(": ");
+		builder.append(minute);
+		builder.append("]");
+		return builder.toString();
+	}
 }
