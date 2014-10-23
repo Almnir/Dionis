@@ -46,15 +46,6 @@ public class TunnelFilterDialog extends Dialog {
 	private ComboViewer protocolComboViewer;
 
 	/**
-	 * Create the dialog.
-	 * 
-	 * @param parentShell
-	 */
-	public TunnelFilterDialog(Shell parentShell) {
-		super(parentShell);
-	}
-
-	/**
 	 * @wbp.parser.constructor
 	 */
 	public TunnelFilterDialog(Shell parentShell, IStructuredSelection sel) {
@@ -93,7 +84,7 @@ public class TunnelFilterDialog extends Dialog {
 				false, 1, 1);
 		gd_modeCombo.widthHint = 162;
 		modeCombo.setLayoutData(gd_modeCombo);
-		modeCombo.setItems(Constants.TUNNEL_FILTER_STATUS);
+		modeCombo.setItems(Constants.FILTER_MODE);
 
 		Label lblNewLabel_1 = new Label(container, SWT.NONE);
 		lblNewLabel_1.setText("Протокол");
@@ -234,35 +225,10 @@ public class TunnelFilterDialog extends Dialog {
 
 	@Override
 	protected void okPressed() {
-		switch (modeCombo.getSelectionIndex()) {
-		case 0:
-			// разрешить
-			data.setStatus(FilterStatusType.SOLVE);
-			break;
-		case 1:
-			// запретить
-			data.setStatus(FilterStatusType.BAN);
-			break;
-		case 2:
-			// перезагрузить
-			data.setStatus(FilterStatusType.RESET);
-			break;
-
-		}
-		switch (protocolCombo.getSelectionIndex()) {
-		case 0:
-			data.setProtocol(TunnelProtocolType.ANY);
-			break;
-		case 1:
-			data.setProtocol(TunnelProtocolType.ICMP);
-			break;
-		case 2:
-			data.setProtocol(TunnelProtocolType.TCP);
-			break;
-		case 3:
-			data.setProtocol(TunnelProtocolType.UDP);
-			break;
-		}
+		data.setStatus(Arrays.asList(FilterStatusType.values()).get(
+				modeCombo.getSelectionIndex()));
+		data.setProtocol(Arrays.asList(TunnelProtocolType.values()).get(
+				protocolCombo.getSelectionIndex()));
 		TunnelFilterPortsBean tunnelFilterPorts = new TunnelFilterPortsBean();
 		tunnelFilterPorts.setLow(portStartSpinner.getSelection());
 		tunnelFilterPorts.setHigh(portEndSpinner.getSelection());

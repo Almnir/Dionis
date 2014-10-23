@@ -7,6 +7,11 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -18,6 +23,8 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.events.MenuEvent;
+import org.eclipse.swt.events.MenuListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -39,12 +46,14 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
+import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.part.ViewPart;
 
 import dionis.beans.FilterBean;
 import dionis.beans.FiltersBean;
 import dionis.beans.IFilterItem;
 import dionis.beans.InterfaceBean;
+import dionis.beans.StandardFilterItemBean;
 import dionis.beans.TunnelBean;
 import dionis.dialogs.FilterDialog;
 import dionis.dialogs.InterfaceDialog;
@@ -161,6 +170,9 @@ public class DionisView extends ViewPart {
 	private MenuItem pasteItem;
 	private TreeViewer filterTreeViewer;
 	private Tree filterTree;
+	private TreeColumn dataColumn;
+	private TreeColumn extendedDataColumn;
+	private TreeColumn nameColumn;
 
 	public DionisView() {
 		super();
@@ -197,7 +209,7 @@ public class DionisView extends ViewPart {
 			public void widgetSelected(SelectionEvent e) {
 				if (combo.getSelectionIndex() == 0) {
 					cleanTabs();
-//					createCommonSettingsTabs();
+					// createCommonSettingsTabs();
 					tabFolder.setSelection(0);
 				} else if (combo.getSelectionIndex() == 1) {
 					cleanTabs();
@@ -233,7 +245,7 @@ public class DionisView extends ViewPart {
 		cleanTabs();
 		tabFolder.setVisible(true);
 		tabFolder.setEnabled(true);
-//		createCommonSettingsTabs();
+		// createCommonSettingsTabs();
 		createNetSettingsTabs();
 		tabFolder.setSelection(1);
 	}
@@ -245,1075 +257,1082 @@ public class DionisView extends ViewPart {
 		}
 	}
 
-//	@SuppressWarnings("unused")
-//	private void createCommonSettingsTabs() {
-//		CTabItem tabItem = new CTabItem(tabFolder, SWT.NONE);
-//		tabItem.setText("Порты");
-//
-//		Composite composite_4 = new Composite(tabFolder, SWT.NONE);
-//		tabItem.setControl(composite_4);
-//		composite_4.setLayout(new GridLayout(1, false));
-//
-//		table = new TableViewer(composite_4, SWT.BORDER | SWT.FULL_SELECTION
-//				| SWT.SINGLE);
-//
-//		table.getTable().setLayoutData(
-//				new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-//		table.getTable().setHeaderVisible(true);
-//		table.getTable().setLinesVisible(true);
-//
-//		Menu menu = new Menu(table.getTable());
-//
-//		MenuItem menuItem = new MenuItem(menu, SWT.PUSH);
-//		menuItem.setText("Изменить");
-//		table.getTable().setMenu(menu);
-//
-//		menuItem.addSelectionListener(new SelectionAdapter() {
-//			public void widgetSelected(SelectionEvent e) {
-//				// если выбрана строка
-//				if (table.getTable().getSelection() != null
-//						&& table.getTable().getSelection().length > 0) {
-//					// если не SYN порт выбран
-//					if (!table.getTable().getSelection()[0].getText().contains(
-//							"SYN")) {
-//						PortConfigurationDialog dialog = new PortConfigurationDialog(
-//								shell, table.getSelection());
-//						if (dialog.open() == Window.OK) {
-//							Job job = new Job("ports") {
-//
-//								@Override
-//								protected IStatus run(IProgressMonitor monitor) {
-//									Display.getDefault().asyncExec(
-//											new Runnable() {
-//												@Override
-//												public void run() {
-//													table.setInput(PortsModel
-//															.getInstance()
-//															.getAllPorts());
-//												}
-//											});
-//									return Status.OK_STATUS;
-//								}
-//							};
-//							job.setPriority(Job.SHORT);
-//							job.schedule();
-//						}
-//					}
-//				}
-//			}
-//		});
-//
-//		TableViewerColumn tblclmnNewColumn = new TableViewerColumn(table,
-//				SWT.NONE);
-//
-//		tblclmnNewColumn.getColumn().setWidth(100);
-//		tblclmnNewColumn.getColumn().setText("Порт");
-//
-//		TableViewerColumn tblclmnNewColumn_1 = new TableViewerColumn(table,
-//				SWT.NONE);
-//		tblclmnNewColumn_1.getColumn().setWidth(100);
-//		tblclmnNewColumn_1.getColumn().setText("Настройка");
-//
-//		table.setContentProvider(ArrayContentProvider.getInstance());
-//		table.setLabelProvider(new PortLabelProvider());
-//		// == тест
-//		SIO sio = new SIO();
-//		SIO sio2 = new SIO();
-//		sio.setBits((byte) 8);
-//		sio.setControl(PortsSIOControlType.RTS_CTS);
-//		sio.setDirection(PortsSIODirectionType.DYNAMIC);
-//		// sio.setNumber((short)0);
-//		sio.setParity(PortsSIOParityType.NONE);
-//		sio.setSpeed((float) 75.0);
-//		sio.setStopBit((float) 1.5);
-//		SYN syn = new SYN();
-//		syn.setNumber((byte) 0);
-//		java.util.List<SIO> sioList = new ArrayList<>();
-//		sioList.add(sio);
-//		sioList.add(sio2);
-//		java.util.List<SYN> synList = new ArrayList<>();
-//		synList.add(syn);
-//		PortsModel.getInstance().setAllPorts(sioList, synList);
-//		// == тест
-//		table.setInput(PortsModel.getInstance().getAllPorts());
-//		table.getTable().select(0);
-//
-//		CTabItem tabItem_1 = new CTabItem(tabFolder, SWT.NONE);
-//		tabItem_1.setText("Базовые константы");
-//
-//		Composite composite_5 = new Composite(tabFolder, SWT.NONE);
-//		tabItem_1.setControl(composite_5);
-//		composite_5.setLayout(new GridLayout(1, false));
-//
-//		Group group = new Group(composite_5, SWT.NONE);
-//		GridData gd_group = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
-//		gd_group.heightHint = 228;
-//		group.setLayoutData(gd_group);
-//		group.setLayout(new GridLayout(4, false));
-//
-//		Label label = new Label(group, SWT.NONE);
-//		label.setText("Адрес узла");
-//
-//		Label label_8 = new Label(group, SWT.NONE);
-//		label_8.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false,
-//				1, 1));
-//		new Label(group, SWT.NONE);
-//
-//		text = new Text(group, SWT.BORDER | SWT.LEFT);
-//		// IPAddressBox text = new IPAddressBox(group, false);
-//		text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-//
-//		Label lblNewLabel = new Label(group, SWT.NONE);
-//		lblNewLabel.setText("Время жизни IP датаграмм");
-//
-//		Label label_9 = new Label(group, SWT.NONE);
-//		new Label(group, SWT.NONE);
-//
-//		spinner = new Spinner(group, SWT.BORDER);
-//		spinner.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false,
-//				1, 1));
-//		spinner.setMinimum(1);
-//		spinner.setMaximum(255);
-//
-//		Label lblTcp = new Label(group, SWT.NONE);
-//		lblTcp.setText("Макс. размер TCP пакета(MSS)");
-//
-//		Label lblNewLabel_12 = new Label(group, SWT.NONE);
-//		new Label(group, SWT.NONE);
-//
-//		// Макс. размер TCP пакета(MSS)
-//		spinner_1 = new Spinner(group, SWT.BORDER);
-//		spinner_1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false,
-//				false, 1, 1));
-//		spinner_1.setMinimum(512);
-//		spinner_1.setMaximum(8192);
-//
-//		Label lblNewLabel_1 = new Label(group, SWT.NONE);
-//		lblNewLabel_1.setText("Размер TCP окна");
-//
-//		Label lblNewLabel_13 = new Label(group, SWT.NONE);
-//		new Label(group, SWT.NONE);
-//
-//		// Размер TCP окна
-//		spinner_2 = new Spinner(group, SWT.BORDER);
-//		spinner_2.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false,
-//				false, 1, 1));
-//		spinner_2.setMinimum(0);
-//		spinner_2.setMaximum(65535);
-//
-//		Label lblNewLabel_2 = new Label(group, SWT.NONE);
-//		lblNewLabel_2.setText("Количество TCB блоков");
-//
-//		Label lblNewLabel_14 = new Label(group, SWT.NONE);
-//		new Label(group, SWT.NONE);
-//
-//		// Количество TCB блоков
-//		spinner_3 = new Spinner(group, SWT.BORDER);
-//		spinner_3.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false,
-//				false, 1, 1));
-//		spinner_3.setMinimum(16);
-//		spinner_3.setMaximum(450);
-//
-//		Label lblNewLabel_3 = new Label(group, SWT.NONE);
-//		lblNewLabel_3.setText("Размер буфера TCB блока");
-//
-//		Label lblNewLabel_15 = new Label(group, SWT.NONE);
-//		new Label(group, SWT.NONE);
-//
-//		// Размер буфера TCB блока
-//		spinner_4 = new Spinner(group, SWT.BORDER);
-//		spinner_4.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false,
-//				false, 1, 1));
-//		spinner_4.setMinimum(8);
-//		spinner_4.setMaximum(64);
-//
-//		Label lblNewLabel_4 = new Label(group, SWT.NONE);
-//		lblNewLabel_4.setText("Количество proxy-буферов");
-//
-//		Label lblNewLabel_16 = new Label(group, SWT.NONE);
-//		new Label(group, SWT.NONE);
-//
-//		// Количество proxy-буферов
-//		spinner_5 = new Spinner(group, SWT.BORDER);
-//		spinner_5.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false,
-//				false, 1, 1));
-//		spinner_5.setMinimum(8);
-//		spinner_5.setMaximum(255);
-//
-//		Group group_1 = new Group(composite_5, SWT.NONE);
-//		group_1.setText("Кластер");
-//		group_1.setLayout(new GridLayout(2, false));
-//		GridData gd_group_1 = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
-//		gd_group_1.heightHint = 84;
-//		gd_group_1.widthHint = 548;
-//		group_1.setLayoutData(gd_group_1);
-//
-//		Label lblNewLabel_5 = new Label(group_1, SWT.NONE);
-//		lblNewLabel_5.setText("Режим работы");
-//
-//		combo_6 = new Combo(group_1, SWT.READ_ONLY);
-//		GridData gd_combo_6 = new GridData(SWT.LEFT, SWT.CENTER, true, false,
-//				1, 1);
-//		gd_combo_6.widthHint = 173;
-//		combo_6.setLayoutData(gd_combo_6);
-//
-//		combo_6.setItems(Constants.CLUSTER_MODE);
-//		combo_6.select(Constants.CLUSTER_MODE.length / 2);
-//
-//		Label lblNewLabel_6 = new Label(group_1, SWT.NONE);
-//		lblNewLabel_6.setText("Таймер");
-//
-//		// Таймер
-//		spinner_7 = new Spinner(group_1, SWT.BORDER);
-//		GridData gd_spinner_7 = new GridData(SWT.LEFT, SWT.CENTER, true, false,
-//				1, 1);
-//		gd_spinner_7.widthHint = 51;
-//		spinner_7.setLayoutData(gd_spinner_7);
-//
-//		spinner_7.setMinimum(0);
-//		spinner_7.setMaximum(60);
-//
-//		CTabItem tbtmNewItem_1 = new CTabItem(tabFolder, SWT.NONE);
-//		tbtmNewItem_1.setText("Трансляция адресов NAT");
-//
-//		Composite composite_6 = new Composite(tabFolder, SWT.NONE);
-//		tbtmNewItem_1.setControl(composite_6);
-//		composite_6.setLayout(new GridLayout(1, false));
-//
-//		Group group_2 = new Group(composite_6, SWT.NONE);
-//		GridData gd_group_2 = new GridData(SWT.FILL, SWT.TOP, true, false, 1, 1);
-//		gd_group_2.widthHint = 545;
-//		gd_group_2.heightHint = 90;
-//		group_2.setLayoutData(gd_group_2);
-//		group_2.setText("Адрес перегрузки");
-//		group_2.setLayout(new GridLayout(2, false));
-//
-//		btnCheckButton = new Button(group_2, SWT.RADIO);
-//		btnCheckButton.setText("Не установлен");
-//		new Label(group_2, SWT.NONE);
-//
-//		btnCheckButton_1 = new Button(group_2, SWT.RADIO);
-//		btnCheckButton_1.setText("Автоматический");
-//		new Label(group_2, SWT.NONE);
-//
-//		btnCheckButton_2 = new Button(group_2, SWT.RADIO);
-//		btnCheckButton_2.setText("Фиксированный");
-//
-//		text_1 = new Text(group_2, SWT.BORDER);
-//		// final IPAddressBox text_1 = new IPAddressBox(group_2, false);
-//		GridData gd_text_1 = new GridData(SWT.FILL, SWT.CENTER, false, false,
-//				1, 1);
-//		gd_text_1.widthHint = 197;
-//		text_1.setLayoutData(gd_text_1);
-//		text_1.setText("0.0.0.0");
-//
-//		// не установлен
-//		btnCheckButton.addListener(SWT.Selection, new Listener() {
-//			@Override
-//			public void handleEvent(Event event) {
-//				if (text_1 != null) {
-//					text_1.setEnabled(false);
-//				}
-//			}
-//		});
-//		// автоматический
-//		btnCheckButton_1.addListener(SWT.Selection, new Listener() {
-//			@Override
-//			public void handleEvent(Event event) {
-//				if (text_1 != null) {
-//					text_1.setText("1.1.1.1");
-//					text_1.setEnabled(false);
-//				}
-//			}
-//		});
-//		// Фиксированный
-//		btnCheckButton_2.addListener(SWT.Selection, new Listener() {
-//			@Override
-//			public void handleEvent(Event event) {
-//				if (text_1 != null) {
-//					text_1.setText("1.1.1.1");
-//					text_1.setEnabled(true);
-//				}
-//			}
-//		});
-//
-//		// Трансляция адресов NAT
-//		Composite composite_7 = new Composite(composite_6, SWT.NONE);
-//		composite_7.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false,
-//				1, 1));
-//		composite_7.setLayout(new GridLayout(2, false));
-//
-//		Label lblNewLabel_17 = new Label(composite_7, SWT.NONE);
-//		lblNewLabel_17.setText("Ограничение сессий для одного абонента");
-//
-//		spinner_8 = new Spinner(composite_7, SWT.BORDER);
-//		GridData gd_spinner_8 = new GridData(SWT.RIGHT, SWT.CENTER, true,
-//				false, 1, 1);
-//		gd_spinner_8.widthHint = 100;
-//		spinner_8.setLayoutData(gd_spinner_8);
-//		spinner_8.setMinimum(0);
-//		spinner_8.setMaximum(65535);
-//
-//		Label lblNewLabel_7 = new Label(composite_7, SWT.NONE);
-//		lblNewLabel_7.setText("Размер рабочей NAT таблицы в блоках");
-//
-//		spinner_9 = new Spinner(composite_7, SWT.BORDER);
-//		GridData gd_spinner_9 = new GridData(SWT.RIGHT, SWT.CENTER, true,
-//				false, 1, 1);
-//		gd_spinner_9.widthHint = 100;
-//		spinner_9.setLayoutData(gd_spinner_9);
-//		spinner_9.setMinimum(1);
-//		spinner_9.setMaximum(32);
-//
-//		Label lblNat = new Label(composite_7, SWT.NONE);
-//		lblNat.setText("Статическая NAT таблица");
-//		new Label(composite_7, SWT.NONE);
-//
-//		Composite composite_8 = new Composite(composite_6, SWT.NONE);
-//		composite_8.setLayout(new GridLayout(1, false));
-//		composite_8.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true,
-//				1, 1));
-//
-//		table_1 = new TableViewer(composite_8, SWT.BORDER | SWT.FULL_SELECTION);
-//		table_1.getTable().setLayoutData(
-//				new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-//		table_1.getTable().setHeaderVisible(true);
-//		table_1.getTable().setLinesVisible(true);
-//
-//		Menu menu_1 = new Menu(table_1.getTable());
-//		table_1.getTable().setMenu(menu_1);
-//
-//		final MenuItem menuItem1_1 = new MenuItem(menu_1, SWT.NONE);
-//		menuItem1_1.setText("Изменить");
-//		final MenuItem menuItem1_2 = new MenuItem(menu_1, SWT.NONE);
-//		menuItem1_2.setText("Добавить");
-//		final MenuItem menuItem1_3 = new MenuItem(menu_1, SWT.NONE);
-//		menuItem1_3.setText("Удалить");
-//
-//		menu_1.addListener(SWT.Show, new Listener() {
-//			@Override
-//			public void handleEvent(Event event) {
-//				TableItem[] selected = table_1.getTable().getSelection();
-//				if (selected.length == 0) {
-//					menuItem1_1.setEnabled(false);
-//					menuItem1_2.setEnabled(true);
-//					menuItem1_3.setEnabled(false);
-//				} else {
-//					menuItem1_1.setEnabled(true);
-//					menuItem1_2.setEnabled(true);
-//					menuItem1_3.setEnabled(true);
-//				}
-//			}
-//		});
-//
-//		// Изменить
-//		menuItem1_1.addSelectionListener(new SelectionAdapter() {
-//			public void widgetSelected(SelectionEvent e) {
-//				// если выбрана строка
-//				if (table_1.getTable().getSelection() != null
-//						&& table_1.getTable().getSelection().length > 0) {
-//					NATAddressDialog dialog = new NATAddressDialog(shell,
-//							table_1.getSelection());
-//					if (dialog.open() == Window.OK) {
-//						Job job = new Job("change") {
-//
-//							@Override
-//							protected IStatus run(IProgressMonitor monitor) {
-//								Display.getDefault().asyncExec(new Runnable() {
-//									@Override
-//									public void run() {
-//										table_1.setInput(NATAddressModel
-//												.getInstance()
-//												.getNatTableArray());
-//									}
-//								});
-//								return Status.OK_STATUS;
-//							}
-//						};
-//						job.setPriority(Job.SHORT);
-//						job.schedule();
-//					}
-//				}
-//
-//			}
-//		});
-//		// Добавить
-//		menuItem1_2.addSelectionListener(new SelectionAdapter() {
-//			public void widgetSelected(SelectionEvent e) {
-//				NATAddressDialog dialog = new NATAddressDialog(shell, null);
-//				if (dialog.open() == Window.OK) {
-//					Job job = new Job("add") {
-//
-//						@Override
-//						protected IStatus run(IProgressMonitor monitor) {
-//							Display.getDefault().asyncExec(new Runnable() {
-//								@Override
-//								public void run() {
-//									table_1.setInput(NATAddressModel
-//											.getInstance().getNatTableArray());
-//								}
-//							});
-//							return Status.OK_STATUS;
-//						}
-//					};
-//					job.setPriority(Job.SHORT);
-//					job.schedule();
-//				}
-//			}
-//		});
-//		// Удалить
-//		menuItem1_3.addSelectionListener(new SelectionAdapter() {
-//			public void widgetSelected(SelectionEvent e) {
-//				IStructuredSelection sel = (IStructuredSelection) table_1
-//						.getSelection();
-//				NATTableStatic natTable = (NATTableStatic) sel
-//						.getFirstElement();
-//				NATAddressModel.getInstance().removeNatTable(natTable);
-//				Job job = new Job("remove") {
-//
-//					@Override
-//					protected IStatus run(IProgressMonitor monitor) {
-//						Display.getDefault().asyncExec(new Runnable() {
-//							@Override
-//							public void run() {
-//								table_1.setInput(NATAddressModel.getInstance()
-//										.getNatTableArray());
-//							}
-//						});
-//						return Status.OK_STATUS;
-//					}
-//				};
-//				job.setPriority(Job.SHORT);
-//				job.schedule();
-//			}
-//		});
-//
-//		TableColumn tableColumn = new TableColumn(table_1.getTable(), SWT.NONE);
-//		tableColumn.setWidth(100);
-//		tableColumn.setText("Внутренний адрес");
-//
-//		TableColumn tblclmnNewColumn_2 = new TableColumn(table_1.getTable(),
-//				SWT.NONE);
-//		tblclmnNewColumn_2.setWidth(100);
-//		tblclmnNewColumn_2.setText("Внешний адрес");
-//
-//		table_1.setContentProvider(ArrayContentProvider.getInstance());
-//		table_1.setLabelProvider(new NATLabelProvider());
-//		table_1.setInput(NATAddressModel.getInstance().getNatTableArray());
-//
-//		CTabItem tbtmNewItem_4 = new CTabItem(tabFolder, SWT.NONE);
-//		tbtmNewItem_4.setText("Удалённое управление");
-//
-//		Composite composite_12 = new Composite(tabFolder, SWT.NONE);
-//		tbtmNewItem_4.setControl(composite_12);
-//		composite_12.setLayout(new GridLayout(3, false));
-//
-//		Label label_1 = new Label(composite_12, SWT.NONE);
-//		label_1.setText("Имя абонента");
-//
-//		text_2 = new Text(composite_12, SWT.BORDER);
-//		text_2.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1,
-//				1));
-//
-//		Label lblNewLabel_8 = new Label(composite_12, SWT.NONE);
-//		lblNewLabel_8.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true,
-//				false, 1, 1));
-//		lblNewLabel_8.setText("Ключи");
-//
-//		Label label_2 = new Label(composite_12, SWT.NONE);
-//		label_2.setText("Доп. пароль");
-//
-//		text_3 = new Text(composite_12, SWT.BORDER);
-//		text_3.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1,
-//				1));
-//
-//		list = new List(composite_12, SWT.BORDER);
-//		list.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 3));
-//
-//		Label label_3 = new Label(composite_12, SWT.NONE);
-//		label_3.setText("Режим");
-//
-//		combo_1 = new Combo(composite_12, SWT.NONE);
-//		combo_1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false,
-//				1, 1));
-//		combo_1.setItems(Constants.REMOTE_MODE);
-//		combo_1.select(Constants.REMOTE_MODE.length / 2);
-//
-//		btnCheckButton_24 = new Button(composite_12, SWT.CHECK);
-//		btnCheckButton_24.setText("Разрешена перезагрузка");
-//		new Label(composite_12, SWT.NONE);
-//
-//		Group group_8 = new Group(composite_12, SWT.NONE);
-//		group_8.setText("Ограничения на обмен файлами");
-//		group_8.setLayout(new GridLayout(2, false));
-//		group_8.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 3,
-//				1));
-//
-//		Label label_4 = new Label(group_8, SWT.NONE);
-//		label_4.setText("Передача");
-//
-//		text_4 = new Text(group_8, SWT.BORDER);
-//		text_4.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false,
-//				1, 1));
-//
-//		Label label_5 = new Label(group_8, SWT.NONE);
-//		label_5.setText("Приём");
-//
-//		text_5 = new Text(group_8, SWT.BORDER);
-//		text_5.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false,
-//				1, 1));
-//
-//		CTabItem tbtmNewItem = new CTabItem(tabFolder, SWT.NONE);
-//		tbtmNewItem.setText("ARP");
-//
-//		Composite composite_9 = new Composite(tabFolder, SWT.NONE);
-//		tbtmNewItem.setControl(composite_9);
-//		composite_9.setLayout(new GridLayout(1, false));
-//
-//		btnArp = new Button(composite_9, SWT.CHECK);
-//		btnArp.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, true, false, 1, 1));
-//		btnArp.setText("Разрешить proxy-ARP");
-//
-//		Group grpArp = new Group(composite_9, SWT.NONE);
-//		grpArp.setText("Статическая ARP таблица");
-//		grpArp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-//		grpArp.setLayout(new GridLayout(1, false));
-//
-//		final TableViewer tableViewer = new TableViewer(grpArp, SWT.BORDER
-//				| SWT.FULL_SELECTION);
-//		table_2 = tableViewer.getTable();
-//		table_2.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-//		table_2.setHeaderVisible(true);
-//
-//		TableViewerColumn tableViewerColumn_1 = new TableViewerColumn(
-//				tableViewer, SWT.NONE);
-//		TableColumn tblclmnNewColumn_23 = tableViewerColumn_1.getColumn();
-//		tblclmnNewColumn_23.setWidth(100);
-//		tblclmnNewColumn_23.setText("MAC адрес");
-//
-//		TableViewerColumn tableViewerColumn = new TableViewerColumn(
-//				tableViewer, SWT.NONE);
-//		TableColumn tblclmnNewColumn_22 = tableViewerColumn.getColumn();
-//		tblclmnNewColumn_22.setWidth(100);
-//		tblclmnNewColumn_22.setText("IP адрес");
-//
-//		Menu menu_2 = new Menu(table_2);
-//		table_2.setMenu(menu_2);
-//
-//		tableViewer.setContentProvider(new ArrayContentProvider());
-//		tableViewer.setLabelProvider(new ARPLabelProvider());
-//		tableViewer.setInput(ARPModel.getInstance().getAllARPArray());
-//
-//		final MenuItem mntmNewItem = new MenuItem(menu_2, SWT.NONE);
-//		mntmNewItem.setText("Изменить");
-//		// Изменить
-//		mntmNewItem.addSelectionListener(new SelectionAdapter() {
-//			public void widgetSelected(SelectionEvent e) {
-//				if (table_2.getSelection() != null
-//						&& table_2.getSelection().length > 0) {
-//					IStructuredSelection sel = (IStructuredSelection) tableViewer
-//							.getSelection();
-//					ARPElementDialog dialog = new ARPElementDialog(shell, sel);
-//					if (dialog.open() == Window.OK) {
-//						Job job = new Job("change") {
-//
-//							@Override
-//							protected IStatus run(IProgressMonitor monitor) {
-//								Display.getDefault().asyncExec(new Runnable() {
-//									@Override
-//									public void run() {
-//										tableViewer
-//												.setInput(ARPModel
-//														.getInstance()
-//														.getAllARPArray());
-//									}
-//								});
-//								return Status.OK_STATUS;
-//							}
-//						};
-//						job.setPriority(Job.SHORT);
-//						job.schedule();
-//
-//					}
-//				}
-//			}
-//		});
-//
-//		final MenuItem mntmNewItem_1 = new MenuItem(menu_2, SWT.NONE);
-//		mntmNewItem_1.setText("Добавить");
-//
-//		mntmNewItem_1.addSelectionListener(new SelectionAdapter() {
-//			public void widgetSelected(SelectionEvent e) {
-//				ARPElementDialog dialog = new ARPElementDialog(shell, null);
-//				if (dialog.open() == Window.OK) {
-//					Job job = new Job("add") {
-//
-//						@Override
-//						protected IStatus run(IProgressMonitor monitor) {
-//							Display.getDefault().asyncExec(new Runnable() {
-//								@Override
-//								public void run() {
-//									tableViewer.setInput(ARPModel.getInstance()
-//											.getAllARPArray());
-//								}
-//							});
-//							return Status.OK_STATUS;
-//						}
-//					};
-//					job.setPriority(Job.SHORT);
-//					job.schedule();
-//
-//				}
-//			}
-//		});
-//
-//		final MenuItem mntmNewItem_2 = new MenuItem(menu_2, SWT.NONE);
-//		mntmNewItem_2.setText("Удалить");
-//
-//		mntmNewItem_2.addSelectionListener(new SelectionAdapter() {
-//			public void widgetSelected(SelectionEvent e) {
-//				IStructuredSelection sel = (IStructuredSelection) tableViewer
-//						.getSelection();
-//				String[] data = (String[]) sel.getFirstElement();
-//				ARPModel.getInstance().removeARP(data);
-//				Job job = new Job("remove") {
-//
-//					@Override
-//					protected IStatus run(IProgressMonitor monitor) {
-//						Display.getDefault().asyncExec(new Runnable() {
-//							@Override
-//							public void run() {
-//								tableViewer.setInput(ARPModel.getInstance()
-//										.getAllARPArray());
-//							}
-//						});
-//						return Status.OK_STATUS;
-//					}
-//				};
-//				job.setPriority(Job.SHORT);
-//				job.schedule();
-//			}
-//		});
-//
-//		// обработчик отображения пунктов всплывающего меню
-//		menu_2.addListener(SWT.Show, new Listener() {
-//			@Override
-//			public void handleEvent(Event event) {
-//				TableItem[] selected = table_2.getSelection();
-//				if (selected.length == 0) {
-//					mntmNewItem.setEnabled(false);
-//					mntmNewItem_1.setEnabled(true);
-//					mntmNewItem_2.setEnabled(false);
-//				} else {
-//					mntmNewItem.setEnabled(true);
-//					mntmNewItem_1.setEnabled(true);
-//					mntmNewItem_2.setEnabled(true);
-//				}
-//			}
-//		});
-//
-//		CTabItem tbtmNewItem_2 = new CTabItem(tabFolder, SWT.NONE);
-//		tbtmNewItem_2.setText("Трассировка");
-//
-//		Composite composite_10 = new Composite(tabFolder, SWT.NONE);
-//		tbtmNewItem_2.setControl(composite_10);
-//		composite_10.setLayout(new GridLayout(2, false));
-//
-//		Group group_3 = new Group(composite_10, SWT.NONE);
-//		group_3.setLayout(new GridLayout(1, false));
-//		group_3.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-//		group_3.setText("Интерфейсы");
-//
-//		Group group_6 = new Group(group_3, SWT.NONE);
-//		group_6.setLayout(new GridLayout(2, false));
-//		group_6.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-//		group_6.setText("Тип");
-//
-//		btnEthernet = new Button(group_6, SWT.CHECK);
-//		btnEthernet.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,
-//				true, 1, 1));
-//		btnEthernet.setText("Ethernet");
-//
-//		btnCheckButton_3 = new Button(group_6, SWT.CHECK);
-//		btnCheckButton_3.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,
-//				true, 1, 1));
-//		btnCheckButton_3.setText("Loopback, Broadcast");
-//
-//		btnSlipppp = new Button(group_6, SWT.CHECK);
-//		btnSlipppp.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true,
-//				1, 1));
-//		btnSlipppp.setText("SLIP/PPP");
-//
-//		btnCheckButton_4 = new Button(group_6, SWT.CHECK);
-//		btnCheckButton_4.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,
-//				true, 1, 1));
-//		btnCheckButton_4.setText("ARP");
-//
-//		Group group_7 = new Group(group_3, SWT.NONE);
-//		group_7.setLayout(new GridLayout(2, false));
-//		group_7.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-//		group_7.setText("Уровень");
-//
-//		btnCheckButton_5 = new Button(group_7, SWT.CHECK);
-//		btnCheckButton_5.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,
-//				true, 1, 1));
-//		btnCheckButton_5.setText("Канал");
-//
-//		btnCheckButton_6 = new Button(group_7, SWT.CHECK);
-//		btnCheckButton_6.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,
-//				true, 1, 1));
-//		btnCheckButton_6.setText("TCP, UDP, ICMP");
-//
-//		btnCheckButton_7 = new Button(group_7, SWT.CHECK);
-//		btnCheckButton_7.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,
-//				true, 1, 1));
-//		btnCheckButton_7.setText("IP, ARP");
-//
-//		btnCheckButton_8 = new Button(group_7, SWT.CHECK);
-//		btnCheckButton_8.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,
-//				true, 1, 1));
-//		btnCheckButton_8.setText("HEX дамп");
-//
-//		Group group_5 = new Group(composite_10, SWT.NONE);
-//		group_5.setText("Службы");
-//		group_5.setLayout(new GridLayout(2, false));
-//		GridData gd_group_5 = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 2);
-//		gd_group_5.heightHint = 156;
-//		group_5.setLayoutData(gd_group_5);
-//
-//		btnCheckButton_12 = new Button(group_5, SWT.CHECK);
-//		btnCheckButton_12.setLayoutData(new GridData(SWT.FILL, SWT.CENTER,
-//				true, true, 1, 1));
-//		btnCheckButton_12.setText("Telnet");
-//
-//		btnCheckButton_13 = new Button(group_5, SWT.CHECK);
-//		btnCheckButton_13.setLayoutData(new GridData(SWT.FILL, SWT.CENTER,
-//				true, true, 1, 1));
-//		btnCheckButton_13.setText("DNSD");
-//
-//		btnTelnetd = new Button(group_5, SWT.CHECK);
-//		btnTelnetd.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true,
-//				1, 1));
-//		btnTelnetd.setText("TelnetD");
-//
-//		btnCheckButton_14 = new Button(group_5, SWT.CHECK);
-//		btnCheckButton_14.setLayoutData(new GridData(SWT.FILL, SWT.CENTER,
-//				true, true, 1, 1));
-//		btnCheckButton_14.setText("DHCPD");
-//
-//		btnDns = new Button(group_5, SWT.CHECK);
-//		btnDns.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true, 1,
-//				1));
-//		btnDns.setText("DNS");
-//
-//		btnRip = new Button(group_5, SWT.CHECK);
-//		btnRip.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true, 1,
-//				1));
-//		btnRip.setText("RIP");
-//
-//		btnHttpgw = new Button(group_5, SWT.CHECK);
-//		btnHttpgw.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true,
-//				1, 1));
-//		btnHttpgw.setText("HTTPGW");
-//
-//		btnCheckButton_15 = new Button(group_5, SWT.CHECK);
-//		btnCheckButton_15.setLayoutData(new GridData(SWT.FILL, SWT.CENTER,
-//				true, true, 1, 1));
-//		btnCheckButton_15.setText("IGMP");
-//
-//		btnCheckButton_17 = new Button(group_5, SWT.CHECK);
-//		btnCheckButton_17.setLayoutData(new GridData(SWT.FILL, SWT.CENTER,
-//				true, true, 1, 1));
-//		btnCheckButton_17.setText("SNMP");
-//
-//		btnCheckButton_18 = new Button(group_5, SWT.CHECK);
-//		btnCheckButton_18.setLayoutData(new GridData(SWT.FILL, SWT.CENTER,
-//				true, true, 1, 1));
-//		btnCheckButton_18.setText("ISAKMP");
-//
-//		btnCheckButton_19 = new Button(group_5, SWT.CHECK);
-//		btnCheckButton_19.setLayoutData(new GridData(SWT.FILL, SWT.CENTER,
-//				true, true, 1, 1));
-//		btnCheckButton_19.setText("SNTP");
-//
-//		btnCheckButton_22 = new Button(group_5, SWT.CHECK);
-//		btnCheckButton_22.setLayoutData(new GridData(SWT.FILL, SWT.CENTER,
-//				true, true, 1, 1));
-//		btnCheckButton_22.setText("DCP");
-//
-//		btnCheckButton_23 = new Button(group_5, SWT.CHECK);
-//		btnCheckButton_23.setLayoutData(new GridData(SWT.FILL, SWT.CENTER,
-//				true, true, 1, 1));
-//		btnCheckButton_23.setText("Cluster");
-//		new Label(group_5, SWT.NONE);
-//
-//		Group group_4 = new Group(composite_10, SWT.NONE);
-//		group_4.setLayout(new GridLayout(2, false));
-//		group_4.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-//		group_4.setText("Маршрутизатор");
-//
-//		button = new Button(group_4, SWT.CHECK);
-//		button.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true, 1,
-//				1));
-//		button.setText("Ошибки");
-//
-//		btnCheckButton_9 = new Button(group_4, SWT.CHECK);
-//		btnCheckButton_9.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,
-//				true, 1, 1));
-//		btnCheckButton_9.setText("Подробно");
-//
-//		btnCheckButton_10 = new Button(group_4, SWT.CHECK);
-//		btnCheckButton_10.setLayoutData(new GridData(SWT.FILL, SWT.CENTER,
-//				true, true, 1, 1));
-//		btnCheckButton_10.setText("Все");
-//
-//		btnCheckButton_11 = new Button(group_4, SWT.CHECK);
-//		btnCheckButton_11.setLayoutData(new GridData(SWT.FILL, SWT.CENTER,
-//				true, true, 1, 1));
-//		btnCheckButton_11.setText("HEX дамп");
-//
-//		CTabItem tbtmNewItem_3 = new CTabItem(tabFolder, SWT.NONE);
-//		tbtmNewItem_3.setText("Таблица адресов");
-//
-//		Composite composite_11 = new Composite(tabFolder, SWT.NONE);
-//		tbtmNewItem_3.setControl(composite_11);
-//		composite_11.setLayout(new GridLayout(1, false));
-//
-//		final TableViewer tableViewer_1 = new TableViewer(composite_11,
-//				SWT.BORDER | SWT.FULL_SELECTION);
-//		table_3 = tableViewer_1.getTable();
-//		table_3.setHeaderVisible(true);
-//		table_3.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-//
-//		TableViewerColumn tableViewerColumn_3 = new TableViewerColumn(
-//				tableViewer_1, SWT.NONE);
-//		TableColumn tblclmnNewColumn_25 = tableViewerColumn_3.getColumn();
-//		tblclmnNewColumn_25.setWidth(100);
-//		tblclmnNewColumn_25.setText("Адрес");
-//
-//		TableViewerColumn tableViewerColumn_2 = new TableViewerColumn(
-//				tableViewer_1, SWT.NONE);
-//		TableColumn tblclmnNewColumn_24 = tableViewerColumn_2.getColumn();
-//		tblclmnNewColumn_24.setWidth(100);
-//		tblclmnNewColumn_24.setText("Имя");
-//
-//		Menu menu_3 = new Menu(table_3);
-//		table_3.setMenu(menu_3);
-//
-//		final MenuItem mntmNewItem_3 = new MenuItem(menu_3, SWT.NONE);
-//		mntmNewItem_3.setText("Изменить");
-//
-//		mntmNewItem_3.addSelectionListener(new SelectionAdapter() {
-//			public void widgetSelected(SelectionEvent e) {
-//				if (table_3.getSelection() != null
-//						&& table_3.getSelection().length > 0) {
-//					IStructuredSelection sel = (IStructuredSelection) tableViewer_1
-//							.getSelection();
-//					AddressTableDialog dialog = new AddressTableDialog(shell,
-//							sel);
-//					if (dialog.open() == Window.OK) {
-//						Job job = new Job("change") {
-//
-//							@Override
-//							protected IStatus run(IProgressMonitor monitor) {
-//								Display.getDefault().asyncExec(new Runnable() {
-//									@Override
-//									public void run() {
-//										tableViewer_1.setInput(AddressModel
-//												.getInstance()
-//												.getAllAddressArray());
-//									}
-//								});
-//								return Status.OK_STATUS;
-//							}
-//						};
-//						job.setPriority(Job.SHORT);
-//						job.schedule();
-//
-//					}
-//				}
-//			}
-//		});
-//
-//		final MenuItem mntmNewItem_4 = new MenuItem(menu_3, SWT.NONE);
-//		mntmNewItem_4.setText("Добавить");
-//
-//		mntmNewItem_4.addSelectionListener(new SelectionAdapter() {
-//			public void widgetSelected(SelectionEvent e) {
-//				AddressTableDialog dialog = new AddressTableDialog(shell, null);
-//				if (dialog.open() == Window.OK) {
-//					Job job = new Job("add") {
-//
-//						@Override
-//						protected IStatus run(IProgressMonitor monitor) {
-//							Display.getDefault().asyncExec(new Runnable() {
-//								@Override
-//								public void run() {
-//									tableViewer_1
-//											.setInput(AddressModel
-//													.getInstance()
-//													.getAllAddressArray());
-//								}
-//							});
-//							return Status.OK_STATUS;
-//						}
-//					};
-//					job.setPriority(Job.SHORT);
-//					job.schedule();
-//
-//				}
-//			}
-//		});
-//
-//		final MenuItem mntmNewItem_5 = new MenuItem(menu_3, SWT.NONE);
-//		mntmNewItem_5.setText("Удалить");
-//
-//		mntmNewItem_5.addSelectionListener(new SelectionAdapter() {
-//			public void widgetSelected(SelectionEvent e) {
-//				IStructuredSelection sel = (IStructuredSelection) tableViewer_1
-//						.getSelection();
-//				String[] data = (String[]) sel.getFirstElement();
-//				AddressModel.getInstance().removeAddress(data);
-//				Job job = new Job("remove") {
-//
-//					@Override
-//					protected IStatus run(IProgressMonitor monitor) {
-//						Display.getDefault().asyncExec(new Runnable() {
-//							@Override
-//							public void run() {
-//								tableViewer_1.setInput(AddressModel
-//										.getInstance().getAllAddressArray());
-//							}
-//						});
-//						return Status.OK_STATUS;
-//					}
-//				};
-//				job.setPriority(Job.SHORT);
-//				job.schedule();
-//			}
-//		});
-//
-//		menu_3.addListener(SWT.Show, new Listener() {
-//			@Override
-//			public void handleEvent(Event event) {
-//				TableItem[] selected = table_3.getSelection();
-//				if (selected.length == 0) {
-//					mntmNewItem_3.setEnabled(false);
-//					mntmNewItem_4.setEnabled(true);
-//					mntmNewItem_5.setEnabled(false);
-//				} else {
-//					mntmNewItem_3.setEnabled(true);
-//					mntmNewItem_4.setEnabled(true);
-//					mntmNewItem_5.setEnabled(true);
-//				}
-//			}
-//		});
-//
-//		tableViewer_1.setContentProvider(new ArrayContentProvider());
-//		tableViewer_1.setLabelProvider(new AddressLabelProvider());
-//		tableViewer_1.setInput(AddressModel.getInstance().getAllAddressArray());
-//		
-//		CTabItem tbtmNewItem_5 = new CTabItem(tabFolder, SWT.NONE);
-//		tbtmNewItem_5.setText("Подбор паролей");
-//
-//		Composite composite_13 = new Composite(tabFolder, SWT.NONE);
-//		tbtmNewItem_5.setControl(composite_13);
-//		composite_13.setLayout(new GridLayout(2, false));
-//
-//		Label lblNewLabel_9 = new Label(composite_13, SWT.NONE);
-//		GridData gd_lblNewLabel_9 = new GridData(SWT.CENTER, SWT.CENTER, true,
-//				false, 2, 1);
-//		gd_lblNewLabel_9.heightHint = 39;
-//		lblNewLabel_9.setLayoutData(gd_lblNewLabel_9);
-//		lblNewLabel_9
-//				.setText("Реакция системы в случае обнаружения\n попыток подбора паролей абонентами");
-//
-//		Label lblNewLabel_10 = new Label(composite_13, SWT.NONE);
-//		lblNewLabel_10.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false,
-//				false, 1, 1));
-//		lblNewLabel_10.setText("Уведомлять администратора");
-//
-//		combo_2 = new Combo(composite_13, SWT.NONE);
-//		combo_2.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false,
-//				1, 1));
-//		combo_2.setItems(Constants.NOTIFY_ADMIN);
-//		combo_2.select(0);
-//
-//		Label lblNewLabel_11 = new Label(composite_13, SWT.NONE);
-//		lblNewLabel_11.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false,
-//				false, 1, 1));
-//		lblNewLabel_11.setText("Блокировать абонента");
-//
-//		combo_3 = new Combo(composite_13, SWT.NONE);
-//		combo_3.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false,
-//				1, 1));
-//		combo_3.setItems(Constants.FREEZE_CLIENT);
-//		combo_3.select(0);
-//
-//		CTabItem tbtmNewItem_6 = new CTabItem(tabFolder, SWT.NONE);
-//		tbtmNewItem_6.setText("Служба времени");
-//
-//		Composite composite_14 = new Composite(tabFolder, SWT.NONE);
-//		tbtmNewItem_6.setControl(composite_14);
-//		composite_14.setLayout(new GridLayout(2, false));
-//
-//		btnCheckButton_25 = new Button(composite_14, SWT.CHECK);
-//		btnCheckButton_25.setText("Служба инициализирована");
-//
-//		btnCheckButton_26 = new Button(composite_14, SWT.CHECK);
-//		btnCheckButton_26.setText("Автопереход на летнее время и обратно");
-//
-//		btnCheckButton_27 = new Button(composite_14, SWT.CHECK);
-//		btnCheckButton_27.setText("Установлено летнее время");
-//
-//		btnCheckButton_28 = new Button(composite_14, SWT.CHECK);
-//		btnCheckButton_28.setText("Выполнять SNTP коррекцию часов");
-//
-//		Group group_9 = new Group(composite_14, SWT.NONE);
-//		group_9.setText("Часовой пояс");
-//		group_9.setLayout(new GridLayout(1, false));
-//		group_9.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1,
-//				1));
-//
-//		combo_4 = new Combo(group_9, SWT.NONE);
-//		combo_4.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false,
-//				1, 1));
-//		// выборка только смещений GMT+
-//		String[] slice = new String[Constants.TIME_ZONES.length];
-//		for (int i = 0; i < slice.length; ++i) {
-//			slice[i] = Constants.TIME_ZONES[i][0];
-//		}
-//		combo_4.setItems(slice);
-//
-//		text_6 = new Text(group_9, SWT.BORDER);
-//		text_6.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1,
-//				1));
-//
-//		Group group_10 = new Group(composite_14, SWT.NONE);
-//		group_10.setText("Наименование часового пояса");
-//		group_10.setLayout(new GridLayout(2, false));
-//		group_10.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false,
-//				1, 1));
-//
-//		Label label_6 = new Label(group_10, SWT.NONE);
-//		label_6.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false,
-//				1, 1));
-//		label_6.setText("Основное");
-//
-//		text_7 = new Text(group_10, SWT.BORDER);
-//		text_7.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false,
-//				1, 1));
-//
-//		Label label_7 = new Label(group_10, SWT.NONE);
-//		label_7.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false,
-//				1, 1));
-//		label_7.setText("Для летнего времени");
-//
-//		text_8 = new Text(group_10, SWT.BORDER);
-//		text_8.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false,
-//				1, 1));
-//
-//	}
+	// @SuppressWarnings("unused")
+	// private void createCommonSettingsTabs() {
+	// CTabItem tabItem = new CTabItem(tabFolder, SWT.NONE);
+	// tabItem.setText("Порты");
+	//
+	// Composite composite_4 = new Composite(tabFolder, SWT.NONE);
+	// tabItem.setControl(composite_4);
+	// composite_4.setLayout(new GridLayout(1, false));
+	//
+	// table = new TableViewer(composite_4, SWT.BORDER | SWT.FULL_SELECTION
+	// | SWT.SINGLE);
+	//
+	// table.getTable().setLayoutData(
+	// new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+	// table.getTable().setHeaderVisible(true);
+	// table.getTable().setLinesVisible(true);
+	//
+	// Menu menu = new Menu(table.getTable());
+	//
+	// MenuItem menuItem = new MenuItem(menu, SWT.PUSH);
+	// menuItem.setText("Изменить");
+	// table.getTable().setMenu(menu);
+	//
+	// menuItem.addSelectionListener(new SelectionAdapter() {
+	// public void widgetSelected(SelectionEvent e) {
+	// // если выбрана строка
+	// if (table.getTable().getSelection() != null
+	// && table.getTable().getSelection().length > 0) {
+	// // если не SYN порт выбран
+	// if (!table.getTable().getSelection()[0].getText().contains(
+	// "SYN")) {
+	// PortConfigurationDialog dialog = new PortConfigurationDialog(
+	// shell, table.getSelection());
+	// if (dialog.open() == Window.OK) {
+	// Job job = new Job("ports") {
+	//
+	// @Override
+	// protected IStatus run(IProgressMonitor monitor) {
+	// Display.getDefault().asyncExec(
+	// new Runnable() {
+	// @Override
+	// public void run() {
+	// table.setInput(PortsModel
+	// .getInstance()
+	// .getAllPorts());
+	// }
+	// });
+	// return Status.OK_STATUS;
+	// }
+	// };
+	// job.setPriority(Job.SHORT);
+	// job.schedule();
+	// }
+	// }
+	// }
+	// }
+	// });
+	//
+	// TableViewerColumn tblclmnNewColumn = new TableViewerColumn(table,
+	// SWT.NONE);
+	//
+	// tblclmnNewColumn.getColumn().setWidth(100);
+	// tblclmnNewColumn.getColumn().setText("Порт");
+	//
+	// TableViewerColumn tblclmnNewColumn_1 = new TableViewerColumn(table,
+	// SWT.NONE);
+	// tblclmnNewColumn_1.getColumn().setWidth(100);
+	// tblclmnNewColumn_1.getColumn().setText("Настройка");
+	//
+	// table.setContentProvider(ArrayContentProvider.getInstance());
+	// table.setLabelProvider(new PortLabelProvider());
+	// // == тест
+	// SIO sio = new SIO();
+	// SIO sio2 = new SIO();
+	// sio.setBits((byte) 8);
+	// sio.setControl(PortsSIOControlType.RTS_CTS);
+	// sio.setDirection(PortsSIODirectionType.DYNAMIC);
+	// // sio.setNumber((short)0);
+	// sio.setParity(PortsSIOParityType.NONE);
+	// sio.setSpeed((float) 75.0);
+	// sio.setStopBit((float) 1.5);
+	// SYN syn = new SYN();
+	// syn.setNumber((byte) 0);
+	// java.util.List<SIO> sioList = new ArrayList<>();
+	// sioList.add(sio);
+	// sioList.add(sio2);
+	// java.util.List<SYN> synList = new ArrayList<>();
+	// synList.add(syn);
+	// PortsModel.getInstance().setAllPorts(sioList, synList);
+	// // == тест
+	// table.setInput(PortsModel.getInstance().getAllPorts());
+	// table.getTable().select(0);
+	//
+	// CTabItem tabItem_1 = new CTabItem(tabFolder, SWT.NONE);
+	// tabItem_1.setText("Базовые константы");
+	//
+	// Composite composite_5 = new Composite(tabFolder, SWT.NONE);
+	// tabItem_1.setControl(composite_5);
+	// composite_5.setLayout(new GridLayout(1, false));
+	//
+	// Group group = new Group(composite_5, SWT.NONE);
+	// GridData gd_group = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+	// gd_group.heightHint = 228;
+	// group.setLayoutData(gd_group);
+	// group.setLayout(new GridLayout(4, false));
+	//
+	// Label label = new Label(group, SWT.NONE);
+	// label.setText("Адрес узла");
+	//
+	// Label label_8 = new Label(group, SWT.NONE);
+	// label_8.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false,
+	// 1, 1));
+	// new Label(group, SWT.NONE);
+	//
+	// text = new Text(group, SWT.BORDER | SWT.LEFT);
+	// // IPAddressBox text = new IPAddressBox(group, false);
+	// text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1,
+	// 1));
+	//
+	// Label lblNewLabel = new Label(group, SWT.NONE);
+	// lblNewLabel.setText("Время жизни IP датаграмм");
+	//
+	// Label label_9 = new Label(group, SWT.NONE);
+	// new Label(group, SWT.NONE);
+	//
+	// spinner = new Spinner(group, SWT.BORDER);
+	// spinner.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false,
+	// 1, 1));
+	// spinner.setMinimum(1);
+	// spinner.setMaximum(255);
+	//
+	// Label lblTcp = new Label(group, SWT.NONE);
+	// lblTcp.setText("Макс. размер TCP пакета(MSS)");
+	//
+	// Label lblNewLabel_12 = new Label(group, SWT.NONE);
+	// new Label(group, SWT.NONE);
+	//
+	// // Макс. размер TCP пакета(MSS)
+	// spinner_1 = new Spinner(group, SWT.BORDER);
+	// spinner_1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false,
+	// false, 1, 1));
+	// spinner_1.setMinimum(512);
+	// spinner_1.setMaximum(8192);
+	//
+	// Label lblNewLabel_1 = new Label(group, SWT.NONE);
+	// lblNewLabel_1.setText("Размер TCP окна");
+	//
+	// Label lblNewLabel_13 = new Label(group, SWT.NONE);
+	// new Label(group, SWT.NONE);
+	//
+	// // Размер TCP окна
+	// spinner_2 = new Spinner(group, SWT.BORDER);
+	// spinner_2.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false,
+	// false, 1, 1));
+	// spinner_2.setMinimum(0);
+	// spinner_2.setMaximum(65535);
+	//
+	// Label lblNewLabel_2 = new Label(group, SWT.NONE);
+	// lblNewLabel_2.setText("Количество TCB блоков");
+	//
+	// Label lblNewLabel_14 = new Label(group, SWT.NONE);
+	// new Label(group, SWT.NONE);
+	//
+	// // Количество TCB блоков
+	// spinner_3 = new Spinner(group, SWT.BORDER);
+	// spinner_3.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false,
+	// false, 1, 1));
+	// spinner_3.setMinimum(16);
+	// spinner_3.setMaximum(450);
+	//
+	// Label lblNewLabel_3 = new Label(group, SWT.NONE);
+	// lblNewLabel_3.setText("Размер буфера TCB блока");
+	//
+	// Label lblNewLabel_15 = new Label(group, SWT.NONE);
+	// new Label(group, SWT.NONE);
+	//
+	// // Размер буфера TCB блока
+	// spinner_4 = new Spinner(group, SWT.BORDER);
+	// spinner_4.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false,
+	// false, 1, 1));
+	// spinner_4.setMinimum(8);
+	// spinner_4.setMaximum(64);
+	//
+	// Label lblNewLabel_4 = new Label(group, SWT.NONE);
+	// lblNewLabel_4.setText("Количество proxy-буферов");
+	//
+	// Label lblNewLabel_16 = new Label(group, SWT.NONE);
+	// new Label(group, SWT.NONE);
+	//
+	// // Количество proxy-буферов
+	// spinner_5 = new Spinner(group, SWT.BORDER);
+	// spinner_5.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false,
+	// false, 1, 1));
+	// spinner_5.setMinimum(8);
+	// spinner_5.setMaximum(255);
+	//
+	// Group group_1 = new Group(composite_5, SWT.NONE);
+	// group_1.setText("Кластер");
+	// group_1.setLayout(new GridLayout(2, false));
+	// GridData gd_group_1 = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+	// gd_group_1.heightHint = 84;
+	// gd_group_1.widthHint = 548;
+	// group_1.setLayoutData(gd_group_1);
+	//
+	// Label lblNewLabel_5 = new Label(group_1, SWT.NONE);
+	// lblNewLabel_5.setText("Режим работы");
+	//
+	// combo_6 = new Combo(group_1, SWT.READ_ONLY);
+	// GridData gd_combo_6 = new GridData(SWT.LEFT, SWT.CENTER, true, false,
+	// 1, 1);
+	// gd_combo_6.widthHint = 173;
+	// combo_6.setLayoutData(gd_combo_6);
+	//
+	// combo_6.setItems(Constants.CLUSTER_MODE);
+	// combo_6.select(Constants.CLUSTER_MODE.length / 2);
+	//
+	// Label lblNewLabel_6 = new Label(group_1, SWT.NONE);
+	// lblNewLabel_6.setText("Таймер");
+	//
+	// // Таймер
+	// spinner_7 = new Spinner(group_1, SWT.BORDER);
+	// GridData gd_spinner_7 = new GridData(SWT.LEFT, SWT.CENTER, true, false,
+	// 1, 1);
+	// gd_spinner_7.widthHint = 51;
+	// spinner_7.setLayoutData(gd_spinner_7);
+	//
+	// spinner_7.setMinimum(0);
+	// spinner_7.setMaximum(60);
+	//
+	// CTabItem tbtmNewItem_1 = new CTabItem(tabFolder, SWT.NONE);
+	// tbtmNewItem_1.setText("Трансляция адресов NAT");
+	//
+	// Composite composite_6 = new Composite(tabFolder, SWT.NONE);
+	// tbtmNewItem_1.setControl(composite_6);
+	// composite_6.setLayout(new GridLayout(1, false));
+	//
+	// Group group_2 = new Group(composite_6, SWT.NONE);
+	// GridData gd_group_2 = new GridData(SWT.FILL, SWT.TOP, true, false, 1, 1);
+	// gd_group_2.widthHint = 545;
+	// gd_group_2.heightHint = 90;
+	// group_2.setLayoutData(gd_group_2);
+	// group_2.setText("Адрес перегрузки");
+	// group_2.setLayout(new GridLayout(2, false));
+	//
+	// btnCheckButton = new Button(group_2, SWT.RADIO);
+	// btnCheckButton.setText("Не установлен");
+	// new Label(group_2, SWT.NONE);
+	//
+	// btnCheckButton_1 = new Button(group_2, SWT.RADIO);
+	// btnCheckButton_1.setText("Автоматический");
+	// new Label(group_2, SWT.NONE);
+	//
+	// btnCheckButton_2 = new Button(group_2, SWT.RADIO);
+	// btnCheckButton_2.setText("Фиксированный");
+	//
+	// text_1 = new Text(group_2, SWT.BORDER);
+	// // final IPAddressBox text_1 = new IPAddressBox(group_2, false);
+	// GridData gd_text_1 = new GridData(SWT.FILL, SWT.CENTER, false, false,
+	// 1, 1);
+	// gd_text_1.widthHint = 197;
+	// text_1.setLayoutData(gd_text_1);
+	// text_1.setText("0.0.0.0");
+	//
+	// // не установлен
+	// btnCheckButton.addListener(SWT.Selection, new Listener() {
+	// @Override
+	// public void handleEvent(Event event) {
+	// if (text_1 != null) {
+	// text_1.setEnabled(false);
+	// }
+	// }
+	// });
+	// // автоматический
+	// btnCheckButton_1.addListener(SWT.Selection, new Listener() {
+	// @Override
+	// public void handleEvent(Event event) {
+	// if (text_1 != null) {
+	// text_1.setText("1.1.1.1");
+	// text_1.setEnabled(false);
+	// }
+	// }
+	// });
+	// // Фиксированный
+	// btnCheckButton_2.addListener(SWT.Selection, new Listener() {
+	// @Override
+	// public void handleEvent(Event event) {
+	// if (text_1 != null) {
+	// text_1.setText("1.1.1.1");
+	// text_1.setEnabled(true);
+	// }
+	// }
+	// });
+	//
+	// // Трансляция адресов NAT
+	// Composite composite_7 = new Composite(composite_6, SWT.NONE);
+	// composite_7.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false,
+	// 1, 1));
+	// composite_7.setLayout(new GridLayout(2, false));
+	//
+	// Label lblNewLabel_17 = new Label(composite_7, SWT.NONE);
+	// lblNewLabel_17.setText("Ограничение сессий для одного абонента");
+	//
+	// spinner_8 = new Spinner(composite_7, SWT.BORDER);
+	// GridData gd_spinner_8 = new GridData(SWT.RIGHT, SWT.CENTER, true,
+	// false, 1, 1);
+	// gd_spinner_8.widthHint = 100;
+	// spinner_8.setLayoutData(gd_spinner_8);
+	// spinner_8.setMinimum(0);
+	// spinner_8.setMaximum(65535);
+	//
+	// Label lblNewLabel_7 = new Label(composite_7, SWT.NONE);
+	// lblNewLabel_7.setText("Размер рабочей NAT таблицы в блоках");
+	//
+	// spinner_9 = new Spinner(composite_7, SWT.BORDER);
+	// GridData gd_spinner_9 = new GridData(SWT.RIGHT, SWT.CENTER, true,
+	// false, 1, 1);
+	// gd_spinner_9.widthHint = 100;
+	// spinner_9.setLayoutData(gd_spinner_9);
+	// spinner_9.setMinimum(1);
+	// spinner_9.setMaximum(32);
+	//
+	// Label lblNat = new Label(composite_7, SWT.NONE);
+	// lblNat.setText("Статическая NAT таблица");
+	// new Label(composite_7, SWT.NONE);
+	//
+	// Composite composite_8 = new Composite(composite_6, SWT.NONE);
+	// composite_8.setLayout(new GridLayout(1, false));
+	// composite_8.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true,
+	// 1, 1));
+	//
+	// table_1 = new TableViewer(composite_8, SWT.BORDER | SWT.FULL_SELECTION);
+	// table_1.getTable().setLayoutData(
+	// new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+	// table_1.getTable().setHeaderVisible(true);
+	// table_1.getTable().setLinesVisible(true);
+	//
+	// Menu menu_1 = new Menu(table_1.getTable());
+	// table_1.getTable().setMenu(menu_1);
+	//
+	// final MenuItem menuItem1_1 = new MenuItem(menu_1, SWT.NONE);
+	// menuItem1_1.setText("Изменить");
+	// final MenuItem menuItem1_2 = new MenuItem(menu_1, SWT.NONE);
+	// menuItem1_2.setText("Добавить");
+	// final MenuItem menuItem1_3 = new MenuItem(menu_1, SWT.NONE);
+	// menuItem1_3.setText("Удалить");
+	//
+	// menu_1.addListener(SWT.Show, new Listener() {
+	// @Override
+	// public void handleEvent(Event event) {
+	// TableItem[] selected = table_1.getTable().getSelection();
+	// if (selected.length == 0) {
+	// menuItem1_1.setEnabled(false);
+	// menuItem1_2.setEnabled(true);
+	// menuItem1_3.setEnabled(false);
+	// } else {
+	// menuItem1_1.setEnabled(true);
+	// menuItem1_2.setEnabled(true);
+	// menuItem1_3.setEnabled(true);
+	// }
+	// }
+	// });
+	//
+	// // Изменить
+	// menuItem1_1.addSelectionListener(new SelectionAdapter() {
+	// public void widgetSelected(SelectionEvent e) {
+	// // если выбрана строка
+	// if (table_1.getTable().getSelection() != null
+	// && table_1.getTable().getSelection().length > 0) {
+	// NATAddressDialog dialog = new NATAddressDialog(shell,
+	// table_1.getSelection());
+	// if (dialog.open() == Window.OK) {
+	// Job job = new Job("change") {
+	//
+	// @Override
+	// protected IStatus run(IProgressMonitor monitor) {
+	// Display.getDefault().asyncExec(new Runnable() {
+	// @Override
+	// public void run() {
+	// table_1.setInput(NATAddressModel
+	// .getInstance()
+	// .getNatTableArray());
+	// }
+	// });
+	// return Status.OK_STATUS;
+	// }
+	// };
+	// job.setPriority(Job.SHORT);
+	// job.schedule();
+	// }
+	// }
+	//
+	// }
+	// });
+	// // Добавить
+	// menuItem1_2.addSelectionListener(new SelectionAdapter() {
+	// public void widgetSelected(SelectionEvent e) {
+	// NATAddressDialog dialog = new NATAddressDialog(shell, null);
+	// if (dialog.open() == Window.OK) {
+	// Job job = new Job("add") {
+	//
+	// @Override
+	// protected IStatus run(IProgressMonitor monitor) {
+	// Display.getDefault().asyncExec(new Runnable() {
+	// @Override
+	// public void run() {
+	// table_1.setInput(NATAddressModel
+	// .getInstance().getNatTableArray());
+	// }
+	// });
+	// return Status.OK_STATUS;
+	// }
+	// };
+	// job.setPriority(Job.SHORT);
+	// job.schedule();
+	// }
+	// }
+	// });
+	// // Удалить
+	// menuItem1_3.addSelectionListener(new SelectionAdapter() {
+	// public void widgetSelected(SelectionEvent e) {
+	// IStructuredSelection sel = (IStructuredSelection) table_1
+	// .getSelection();
+	// NATTableStatic natTable = (NATTableStatic) sel
+	// .getFirstElement();
+	// NATAddressModel.getInstance().removeNatTable(natTable);
+	// Job job = new Job("remove") {
+	//
+	// @Override
+	// protected IStatus run(IProgressMonitor monitor) {
+	// Display.getDefault().asyncExec(new Runnable() {
+	// @Override
+	// public void run() {
+	// table_1.setInput(NATAddressModel.getInstance()
+	// .getNatTableArray());
+	// }
+	// });
+	// return Status.OK_STATUS;
+	// }
+	// };
+	// job.setPriority(Job.SHORT);
+	// job.schedule();
+	// }
+	// });
+	//
+	// TableColumn tableColumn = new TableColumn(table_1.getTable(), SWT.NONE);
+	// tableColumn.setWidth(100);
+	// tableColumn.setText("Внутренний адрес");
+	//
+	// TableColumn tblclmnNewColumn_2 = new TableColumn(table_1.getTable(),
+	// SWT.NONE);
+	// tblclmnNewColumn_2.setWidth(100);
+	// tblclmnNewColumn_2.setText("Внешний адрес");
+	//
+	// table_1.setContentProvider(ArrayContentProvider.getInstance());
+	// table_1.setLabelProvider(new NATLabelProvider());
+	// table_1.setInput(NATAddressModel.getInstance().getNatTableArray());
+	//
+	// CTabItem tbtmNewItem_4 = new CTabItem(tabFolder, SWT.NONE);
+	// tbtmNewItem_4.setText("Удалённое управление");
+	//
+	// Composite composite_12 = new Composite(tabFolder, SWT.NONE);
+	// tbtmNewItem_4.setControl(composite_12);
+	// composite_12.setLayout(new GridLayout(3, false));
+	//
+	// Label label_1 = new Label(composite_12, SWT.NONE);
+	// label_1.setText("Имя абонента");
+	//
+	// text_2 = new Text(composite_12, SWT.BORDER);
+	// text_2.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1,
+	// 1));
+	//
+	// Label lblNewLabel_8 = new Label(composite_12, SWT.NONE);
+	// lblNewLabel_8.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true,
+	// false, 1, 1));
+	// lblNewLabel_8.setText("Ключи");
+	//
+	// Label label_2 = new Label(composite_12, SWT.NONE);
+	// label_2.setText("Доп. пароль");
+	//
+	// text_3 = new Text(composite_12, SWT.BORDER);
+	// text_3.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1,
+	// 1));
+	//
+	// list = new List(composite_12, SWT.BORDER);
+	// list.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 3));
+	//
+	// Label label_3 = new Label(composite_12, SWT.NONE);
+	// label_3.setText("Режим");
+	//
+	// combo_1 = new Combo(composite_12, SWT.NONE);
+	// combo_1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false,
+	// 1, 1));
+	// combo_1.setItems(Constants.REMOTE_MODE);
+	// combo_1.select(Constants.REMOTE_MODE.length / 2);
+	//
+	// btnCheckButton_24 = new Button(composite_12, SWT.CHECK);
+	// btnCheckButton_24.setText("Разрешена перезагрузка");
+	// new Label(composite_12, SWT.NONE);
+	//
+	// Group group_8 = new Group(composite_12, SWT.NONE);
+	// group_8.setText("Ограничения на обмен файлами");
+	// group_8.setLayout(new GridLayout(2, false));
+	// group_8.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 3,
+	// 1));
+	//
+	// Label label_4 = new Label(group_8, SWT.NONE);
+	// label_4.setText("Передача");
+	//
+	// text_4 = new Text(group_8, SWT.BORDER);
+	// text_4.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false,
+	// 1, 1));
+	//
+	// Label label_5 = new Label(group_8, SWT.NONE);
+	// label_5.setText("Приём");
+	//
+	// text_5 = new Text(group_8, SWT.BORDER);
+	// text_5.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false,
+	// 1, 1));
+	//
+	// CTabItem tbtmNewItem = new CTabItem(tabFolder, SWT.NONE);
+	// tbtmNewItem.setText("ARP");
+	//
+	// Composite composite_9 = new Composite(tabFolder, SWT.NONE);
+	// tbtmNewItem.setControl(composite_9);
+	// composite_9.setLayout(new GridLayout(1, false));
+	//
+	// btnArp = new Button(composite_9, SWT.CHECK);
+	// btnArp.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, true, false, 1, 1));
+	// btnArp.setText("Разрешить proxy-ARP");
+	//
+	// Group grpArp = new Group(composite_9, SWT.NONE);
+	// grpArp.setText("Статическая ARP таблица");
+	// grpArp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+	// grpArp.setLayout(new GridLayout(1, false));
+	//
+	// final TableViewer tableViewer = new TableViewer(grpArp, SWT.BORDER
+	// | SWT.FULL_SELECTION);
+	// table_2 = tableViewer.getTable();
+	// table_2.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1,
+	// 1));
+	// table_2.setHeaderVisible(true);
+	//
+	// TableViewerColumn tableViewerColumn_1 = new TableViewerColumn(
+	// tableViewer, SWT.NONE);
+	// TableColumn tblclmnNewColumn_23 = tableViewerColumn_1.getColumn();
+	// tblclmnNewColumn_23.setWidth(100);
+	// tblclmnNewColumn_23.setText("MAC адрес");
+	//
+	// TableViewerColumn tableViewerColumn = new TableViewerColumn(
+	// tableViewer, SWT.NONE);
+	// TableColumn tblclmnNewColumn_22 = tableViewerColumn.getColumn();
+	// tblclmnNewColumn_22.setWidth(100);
+	// tblclmnNewColumn_22.setText("IP адрес");
+	//
+	// Menu menu_2 = new Menu(table_2);
+	// table_2.setMenu(menu_2);
+	//
+	// tableViewer.setContentProvider(new ArrayContentProvider());
+	// tableViewer.setLabelProvider(new ARPLabelProvider());
+	// tableViewer.setInput(ARPModel.getInstance().getAllARPArray());
+	//
+	// final MenuItem mntmNewItem = new MenuItem(menu_2, SWT.NONE);
+	// mntmNewItem.setText("Изменить");
+	// // Изменить
+	// mntmNewItem.addSelectionListener(new SelectionAdapter() {
+	// public void widgetSelected(SelectionEvent e) {
+	// if (table_2.getSelection() != null
+	// && table_2.getSelection().length > 0) {
+	// IStructuredSelection sel = (IStructuredSelection) tableViewer
+	// .getSelection();
+	// ARPElementDialog dialog = new ARPElementDialog(shell, sel);
+	// if (dialog.open() == Window.OK) {
+	// Job job = new Job("change") {
+	//
+	// @Override
+	// protected IStatus run(IProgressMonitor monitor) {
+	// Display.getDefault().asyncExec(new Runnable() {
+	// @Override
+	// public void run() {
+	// tableViewer
+	// .setInput(ARPModel
+	// .getInstance()
+	// .getAllARPArray());
+	// }
+	// });
+	// return Status.OK_STATUS;
+	// }
+	// };
+	// job.setPriority(Job.SHORT);
+	// job.schedule();
+	//
+	// }
+	// }
+	// }
+	// });
+	//
+	// final MenuItem mntmNewItem_1 = new MenuItem(menu_2, SWT.NONE);
+	// mntmNewItem_1.setText("Добавить");
+	//
+	// mntmNewItem_1.addSelectionListener(new SelectionAdapter() {
+	// public void widgetSelected(SelectionEvent e) {
+	// ARPElementDialog dialog = new ARPElementDialog(shell, null);
+	// if (dialog.open() == Window.OK) {
+	// Job job = new Job("add") {
+	//
+	// @Override
+	// protected IStatus run(IProgressMonitor monitor) {
+	// Display.getDefault().asyncExec(new Runnable() {
+	// @Override
+	// public void run() {
+	// tableViewer.setInput(ARPModel.getInstance()
+	// .getAllARPArray());
+	// }
+	// });
+	// return Status.OK_STATUS;
+	// }
+	// };
+	// job.setPriority(Job.SHORT);
+	// job.schedule();
+	//
+	// }
+	// }
+	// });
+	//
+	// final MenuItem mntmNewItem_2 = new MenuItem(menu_2, SWT.NONE);
+	// mntmNewItem_2.setText("Удалить");
+	//
+	// mntmNewItem_2.addSelectionListener(new SelectionAdapter() {
+	// public void widgetSelected(SelectionEvent e) {
+	// IStructuredSelection sel = (IStructuredSelection) tableViewer
+	// .getSelection();
+	// String[] data = (String[]) sel.getFirstElement();
+	// ARPModel.getInstance().removeARP(data);
+	// Job job = new Job("remove") {
+	//
+	// @Override
+	// protected IStatus run(IProgressMonitor monitor) {
+	// Display.getDefault().asyncExec(new Runnable() {
+	// @Override
+	// public void run() {
+	// tableViewer.setInput(ARPModel.getInstance()
+	// .getAllARPArray());
+	// }
+	// });
+	// return Status.OK_STATUS;
+	// }
+	// };
+	// job.setPriority(Job.SHORT);
+	// job.schedule();
+	// }
+	// });
+	//
+	// // обработчик отображения пунктов всплывающего меню
+	// menu_2.addListener(SWT.Show, new Listener() {
+	// @Override
+	// public void handleEvent(Event event) {
+	// TableItem[] selected = table_2.getSelection();
+	// if (selected.length == 0) {
+	// mntmNewItem.setEnabled(false);
+	// mntmNewItem_1.setEnabled(true);
+	// mntmNewItem_2.setEnabled(false);
+	// } else {
+	// mntmNewItem.setEnabled(true);
+	// mntmNewItem_1.setEnabled(true);
+	// mntmNewItem_2.setEnabled(true);
+	// }
+	// }
+	// });
+	//
+	// CTabItem tbtmNewItem_2 = new CTabItem(tabFolder, SWT.NONE);
+	// tbtmNewItem_2.setText("Трассировка");
+	//
+	// Composite composite_10 = new Composite(tabFolder, SWT.NONE);
+	// tbtmNewItem_2.setControl(composite_10);
+	// composite_10.setLayout(new GridLayout(2, false));
+	//
+	// Group group_3 = new Group(composite_10, SWT.NONE);
+	// group_3.setLayout(new GridLayout(1, false));
+	// group_3.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1,
+	// 1));
+	// group_3.setText("Интерфейсы");
+	//
+	// Group group_6 = new Group(group_3, SWT.NONE);
+	// group_6.setLayout(new GridLayout(2, false));
+	// group_6.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1,
+	// 1));
+	// group_6.setText("Тип");
+	//
+	// btnEthernet = new Button(group_6, SWT.CHECK);
+	// btnEthernet.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,
+	// true, 1, 1));
+	// btnEthernet.setText("Ethernet");
+	//
+	// btnCheckButton_3 = new Button(group_6, SWT.CHECK);
+	// btnCheckButton_3.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,
+	// true, 1, 1));
+	// btnCheckButton_3.setText("Loopback, Broadcast");
+	//
+	// btnSlipppp = new Button(group_6, SWT.CHECK);
+	// btnSlipppp.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true,
+	// 1, 1));
+	// btnSlipppp.setText("SLIP/PPP");
+	//
+	// btnCheckButton_4 = new Button(group_6, SWT.CHECK);
+	// btnCheckButton_4.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,
+	// true, 1, 1));
+	// btnCheckButton_4.setText("ARP");
+	//
+	// Group group_7 = new Group(group_3, SWT.NONE);
+	// group_7.setLayout(new GridLayout(2, false));
+	// group_7.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1,
+	// 1));
+	// group_7.setText("Уровень");
+	//
+	// btnCheckButton_5 = new Button(group_7, SWT.CHECK);
+	// btnCheckButton_5.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,
+	// true, 1, 1));
+	// btnCheckButton_5.setText("Канал");
+	//
+	// btnCheckButton_6 = new Button(group_7, SWT.CHECK);
+	// btnCheckButton_6.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,
+	// true, 1, 1));
+	// btnCheckButton_6.setText("TCP, UDP, ICMP");
+	//
+	// btnCheckButton_7 = new Button(group_7, SWT.CHECK);
+	// btnCheckButton_7.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,
+	// true, 1, 1));
+	// btnCheckButton_7.setText("IP, ARP");
+	//
+	// btnCheckButton_8 = new Button(group_7, SWT.CHECK);
+	// btnCheckButton_8.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,
+	// true, 1, 1));
+	// btnCheckButton_8.setText("HEX дамп");
+	//
+	// Group group_5 = new Group(composite_10, SWT.NONE);
+	// group_5.setText("Службы");
+	// group_5.setLayout(new GridLayout(2, false));
+	// GridData gd_group_5 = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 2);
+	// gd_group_5.heightHint = 156;
+	// group_5.setLayoutData(gd_group_5);
+	//
+	// btnCheckButton_12 = new Button(group_5, SWT.CHECK);
+	// btnCheckButton_12.setLayoutData(new GridData(SWT.FILL, SWT.CENTER,
+	// true, true, 1, 1));
+	// btnCheckButton_12.setText("Telnet");
+	//
+	// btnCheckButton_13 = new Button(group_5, SWT.CHECK);
+	// btnCheckButton_13.setLayoutData(new GridData(SWT.FILL, SWT.CENTER,
+	// true, true, 1, 1));
+	// btnCheckButton_13.setText("DNSD");
+	//
+	// btnTelnetd = new Button(group_5, SWT.CHECK);
+	// btnTelnetd.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true,
+	// 1, 1));
+	// btnTelnetd.setText("TelnetD");
+	//
+	// btnCheckButton_14 = new Button(group_5, SWT.CHECK);
+	// btnCheckButton_14.setLayoutData(new GridData(SWT.FILL, SWT.CENTER,
+	// true, true, 1, 1));
+	// btnCheckButton_14.setText("DHCPD");
+	//
+	// btnDns = new Button(group_5, SWT.CHECK);
+	// btnDns.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true, 1,
+	// 1));
+	// btnDns.setText("DNS");
+	//
+	// btnRip = new Button(group_5, SWT.CHECK);
+	// btnRip.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true, 1,
+	// 1));
+	// btnRip.setText("RIP");
+	//
+	// btnHttpgw = new Button(group_5, SWT.CHECK);
+	// btnHttpgw.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true,
+	// 1, 1));
+	// btnHttpgw.setText("HTTPGW");
+	//
+	// btnCheckButton_15 = new Button(group_5, SWT.CHECK);
+	// btnCheckButton_15.setLayoutData(new GridData(SWT.FILL, SWT.CENTER,
+	// true, true, 1, 1));
+	// btnCheckButton_15.setText("IGMP");
+	//
+	// btnCheckButton_17 = new Button(group_5, SWT.CHECK);
+	// btnCheckButton_17.setLayoutData(new GridData(SWT.FILL, SWT.CENTER,
+	// true, true, 1, 1));
+	// btnCheckButton_17.setText("SNMP");
+	//
+	// btnCheckButton_18 = new Button(group_5, SWT.CHECK);
+	// btnCheckButton_18.setLayoutData(new GridData(SWT.FILL, SWT.CENTER,
+	// true, true, 1, 1));
+	// btnCheckButton_18.setText("ISAKMP");
+	//
+	// btnCheckButton_19 = new Button(group_5, SWT.CHECK);
+	// btnCheckButton_19.setLayoutData(new GridData(SWT.FILL, SWT.CENTER,
+	// true, true, 1, 1));
+	// btnCheckButton_19.setText("SNTP");
+	//
+	// btnCheckButton_22 = new Button(group_5, SWT.CHECK);
+	// btnCheckButton_22.setLayoutData(new GridData(SWT.FILL, SWT.CENTER,
+	// true, true, 1, 1));
+	// btnCheckButton_22.setText("DCP");
+	//
+	// btnCheckButton_23 = new Button(group_5, SWT.CHECK);
+	// btnCheckButton_23.setLayoutData(new GridData(SWT.FILL, SWT.CENTER,
+	// true, true, 1, 1));
+	// btnCheckButton_23.setText("Cluster");
+	// new Label(group_5, SWT.NONE);
+	//
+	// Group group_4 = new Group(composite_10, SWT.NONE);
+	// group_4.setLayout(new GridLayout(2, false));
+	// group_4.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1,
+	// 1));
+	// group_4.setText("Маршрутизатор");
+	//
+	// button = new Button(group_4, SWT.CHECK);
+	// button.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true, 1,
+	// 1));
+	// button.setText("Ошибки");
+	//
+	// btnCheckButton_9 = new Button(group_4, SWT.CHECK);
+	// btnCheckButton_9.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,
+	// true, 1, 1));
+	// btnCheckButton_9.setText("Подробно");
+	//
+	// btnCheckButton_10 = new Button(group_4, SWT.CHECK);
+	// btnCheckButton_10.setLayoutData(new GridData(SWT.FILL, SWT.CENTER,
+	// true, true, 1, 1));
+	// btnCheckButton_10.setText("Все");
+	//
+	// btnCheckButton_11 = new Button(group_4, SWT.CHECK);
+	// btnCheckButton_11.setLayoutData(new GridData(SWT.FILL, SWT.CENTER,
+	// true, true, 1, 1));
+	// btnCheckButton_11.setText("HEX дамп");
+	//
+	// CTabItem tbtmNewItem_3 = new CTabItem(tabFolder, SWT.NONE);
+	// tbtmNewItem_3.setText("Таблица адресов");
+	//
+	// Composite composite_11 = new Composite(tabFolder, SWT.NONE);
+	// tbtmNewItem_3.setControl(composite_11);
+	// composite_11.setLayout(new GridLayout(1, false));
+	//
+	// final TableViewer tableViewer_1 = new TableViewer(composite_11,
+	// SWT.BORDER | SWT.FULL_SELECTION);
+	// table_3 = tableViewer_1.getTable();
+	// table_3.setHeaderVisible(true);
+	// table_3.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1,
+	// 1));
+	//
+	// TableViewerColumn tableViewerColumn_3 = new TableViewerColumn(
+	// tableViewer_1, SWT.NONE);
+	// TableColumn tblclmnNewColumn_25 = tableViewerColumn_3.getColumn();
+	// tblclmnNewColumn_25.setWidth(100);
+	// tblclmnNewColumn_25.setText("Адрес");
+	//
+	// TableViewerColumn tableViewerColumn_2 = new TableViewerColumn(
+	// tableViewer_1, SWT.NONE);
+	// TableColumn tblclmnNewColumn_24 = tableViewerColumn_2.getColumn();
+	// tblclmnNewColumn_24.setWidth(100);
+	// tblclmnNewColumn_24.setText("Имя");
+	//
+	// Menu menu_3 = new Menu(table_3);
+	// table_3.setMenu(menu_3);
+	//
+	// final MenuItem mntmNewItem_3 = new MenuItem(menu_3, SWT.NONE);
+	// mntmNewItem_3.setText("Изменить");
+	//
+	// mntmNewItem_3.addSelectionListener(new SelectionAdapter() {
+	// public void widgetSelected(SelectionEvent e) {
+	// if (table_3.getSelection() != null
+	// && table_3.getSelection().length > 0) {
+	// IStructuredSelection sel = (IStructuredSelection) tableViewer_1
+	// .getSelection();
+	// AddressTableDialog dialog = new AddressTableDialog(shell,
+	// sel);
+	// if (dialog.open() == Window.OK) {
+	// Job job = new Job("change") {
+	//
+	// @Override
+	// protected IStatus run(IProgressMonitor monitor) {
+	// Display.getDefault().asyncExec(new Runnable() {
+	// @Override
+	// public void run() {
+	// tableViewer_1.setInput(AddressModel
+	// .getInstance()
+	// .getAllAddressArray());
+	// }
+	// });
+	// return Status.OK_STATUS;
+	// }
+	// };
+	// job.setPriority(Job.SHORT);
+	// job.schedule();
+	//
+	// }
+	// }
+	// }
+	// });
+	//
+	// final MenuItem mntmNewItem_4 = new MenuItem(menu_3, SWT.NONE);
+	// mntmNewItem_4.setText("Добавить");
+	//
+	// mntmNewItem_4.addSelectionListener(new SelectionAdapter() {
+	// public void widgetSelected(SelectionEvent e) {
+	// AddressTableDialog dialog = new AddressTableDialog(shell, null);
+	// if (dialog.open() == Window.OK) {
+	// Job job = new Job("add") {
+	//
+	// @Override
+	// protected IStatus run(IProgressMonitor monitor) {
+	// Display.getDefault().asyncExec(new Runnable() {
+	// @Override
+	// public void run() {
+	// tableViewer_1
+	// .setInput(AddressModel
+	// .getInstance()
+	// .getAllAddressArray());
+	// }
+	// });
+	// return Status.OK_STATUS;
+	// }
+	// };
+	// job.setPriority(Job.SHORT);
+	// job.schedule();
+	//
+	// }
+	// }
+	// });
+	//
+	// final MenuItem mntmNewItem_5 = new MenuItem(menu_3, SWT.NONE);
+	// mntmNewItem_5.setText("Удалить");
+	//
+	// mntmNewItem_5.addSelectionListener(new SelectionAdapter() {
+	// public void widgetSelected(SelectionEvent e) {
+	// IStructuredSelection sel = (IStructuredSelection) tableViewer_1
+	// .getSelection();
+	// String[] data = (String[]) sel.getFirstElement();
+	// AddressModel.getInstance().removeAddress(data);
+	// Job job = new Job("remove") {
+	//
+	// @Override
+	// protected IStatus run(IProgressMonitor monitor) {
+	// Display.getDefault().asyncExec(new Runnable() {
+	// @Override
+	// public void run() {
+	// tableViewer_1.setInput(AddressModel
+	// .getInstance().getAllAddressArray());
+	// }
+	// });
+	// return Status.OK_STATUS;
+	// }
+	// };
+	// job.setPriority(Job.SHORT);
+	// job.schedule();
+	// }
+	// });
+	//
+	// menu_3.addListener(SWT.Show, new Listener() {
+	// @Override
+	// public void handleEvent(Event event) {
+	// TableItem[] selected = table_3.getSelection();
+	// if (selected.length == 0) {
+	// mntmNewItem_3.setEnabled(false);
+	// mntmNewItem_4.setEnabled(true);
+	// mntmNewItem_5.setEnabled(false);
+	// } else {
+	// mntmNewItem_3.setEnabled(true);
+	// mntmNewItem_4.setEnabled(true);
+	// mntmNewItem_5.setEnabled(true);
+	// }
+	// }
+	// });
+	//
+	// tableViewer_1.setContentProvider(new ArrayContentProvider());
+	// tableViewer_1.setLabelProvider(new AddressLabelProvider());
+	// tableViewer_1.setInput(AddressModel.getInstance().getAllAddressArray());
+	//
+	// CTabItem tbtmNewItem_5 = new CTabItem(tabFolder, SWT.NONE);
+	// tbtmNewItem_5.setText("Подбор паролей");
+	//
+	// Composite composite_13 = new Composite(tabFolder, SWT.NONE);
+	// tbtmNewItem_5.setControl(composite_13);
+	// composite_13.setLayout(new GridLayout(2, false));
+	//
+	// Label lblNewLabel_9 = new Label(composite_13, SWT.NONE);
+	// GridData gd_lblNewLabel_9 = new GridData(SWT.CENTER, SWT.CENTER, true,
+	// false, 2, 1);
+	// gd_lblNewLabel_9.heightHint = 39;
+	// lblNewLabel_9.setLayoutData(gd_lblNewLabel_9);
+	// lblNewLabel_9
+	// .setText("Реакция системы в случае обнаружения\n попыток подбора паролей абонентами");
+	//
+	// Label lblNewLabel_10 = new Label(composite_13, SWT.NONE);
+	// lblNewLabel_10.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false,
+	// false, 1, 1));
+	// lblNewLabel_10.setText("Уведомлять администратора");
+	//
+	// combo_2 = new Combo(composite_13, SWT.NONE);
+	// combo_2.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false,
+	// 1, 1));
+	// combo_2.setItems(Constants.NOTIFY_ADMIN);
+	// combo_2.select(0);
+	//
+	// Label lblNewLabel_11 = new Label(composite_13, SWT.NONE);
+	// lblNewLabel_11.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false,
+	// false, 1, 1));
+	// lblNewLabel_11.setText("Блокировать абонента");
+	//
+	// combo_3 = new Combo(composite_13, SWT.NONE);
+	// combo_3.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false,
+	// 1, 1));
+	// combo_3.setItems(Constants.FREEZE_CLIENT);
+	// combo_3.select(0);
+	//
+	// CTabItem tbtmNewItem_6 = new CTabItem(tabFolder, SWT.NONE);
+	// tbtmNewItem_6.setText("Служба времени");
+	//
+	// Composite composite_14 = new Composite(tabFolder, SWT.NONE);
+	// tbtmNewItem_6.setControl(composite_14);
+	// composite_14.setLayout(new GridLayout(2, false));
+	//
+	// btnCheckButton_25 = new Button(composite_14, SWT.CHECK);
+	// btnCheckButton_25.setText("Служба инициализирована");
+	//
+	// btnCheckButton_26 = new Button(composite_14, SWT.CHECK);
+	// btnCheckButton_26.setText("Автопереход на летнее время и обратно");
+	//
+	// btnCheckButton_27 = new Button(composite_14, SWT.CHECK);
+	// btnCheckButton_27.setText("Установлено летнее время");
+	//
+	// btnCheckButton_28 = new Button(composite_14, SWT.CHECK);
+	// btnCheckButton_28.setText("Выполнять SNTP коррекцию часов");
+	//
+	// Group group_9 = new Group(composite_14, SWT.NONE);
+	// group_9.setText("Часовой пояс");
+	// group_9.setLayout(new GridLayout(1, false));
+	// group_9.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1,
+	// 1));
+	//
+	// combo_4 = new Combo(group_9, SWT.NONE);
+	// combo_4.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false,
+	// 1, 1));
+	// // выборка только смещений GMT+
+	// String[] slice = new String[Constants.TIME_ZONES.length];
+	// for (int i = 0; i < slice.length; ++i) {
+	// slice[i] = Constants.TIME_ZONES[i][0];
+	// }
+	// combo_4.setItems(slice);
+	//
+	// text_6 = new Text(group_9, SWT.BORDER);
+	// text_6.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1,
+	// 1));
+	//
+	// Group group_10 = new Group(composite_14, SWT.NONE);
+	// group_10.setText("Наименование часового пояса");
+	// group_10.setLayout(new GridLayout(2, false));
+	// group_10.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false,
+	// 1, 1));
+	//
+	// Label label_6 = new Label(group_10, SWT.NONE);
+	// label_6.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false,
+	// 1, 1));
+	// label_6.setText("Основное");
+	//
+	// text_7 = new Text(group_10, SWT.BORDER);
+	// text_7.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false,
+	// 1, 1));
+	//
+	// Label label_7 = new Label(group_10, SWT.NONE);
+	// label_7.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false,
+	// 1, 1));
+	// label_7.setText("Для летнего времени");
+	//
+	// text_8 = new Text(group_10, SWT.BORDER);
+	// text_8.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false,
+	// 1, 1));
+	//
+	// }
 
 	private void createNetSettingsTabs() {
 		CTabItem tabItem = new CTabItem(tabFolder, SWT.NONE);
@@ -1323,9 +1342,11 @@ public class DionisView extends ViewPart {
 		tabItem.setControl(composite_4);
 		composite_4.setLayout(new GridLayout(1, false));
 
-		final TableViewer interfaceTableViewer = new TableViewer(composite_4, SWT.BORDER | SWT.FULL_SELECTION);
+		final TableViewer interfaceTableViewer = new TableViewer(composite_4,
+				SWT.BORDER | SWT.FULL_SELECTION);
 		final Table interfaceTable = interfaceTableViewer.getTable();
-		interfaceTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		interfaceTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true,
+				true, 1, 1));
 		interfaceTable.setHeaderVisible(true);
 		interfaceTable.setLinesVisible(true);
 
@@ -1333,65 +1354,80 @@ public class DionisView extends ViewPart {
 		tblclmnNewColumn.setWidth(10);
 		tblclmnNewColumn.setText("№");
 
-		TableColumn tblclmnNewColumn_1 = new TableColumn(interfaceTable, SWT.NONE);
+		TableColumn tblclmnNewColumn_1 = new TableColumn(interfaceTable,
+				SWT.NONE);
 		tblclmnNewColumn_1.setWidth(100);
 		tblclmnNewColumn_1.setText("Имя");
 
-		TableColumn tblclmnNewColumn_2 = new TableColumn(interfaceTable, SWT.NONE);
+		TableColumn tblclmnNewColumn_2 = new TableColumn(interfaceTable,
+				SWT.NONE);
 		tblclmnNewColumn_2.setWidth(100);
 		tblclmnNewColumn_2.setText("Тип");
 
-		TableColumn tblclmnNewColumn_3 = new TableColumn(interfaceTable, SWT.NONE);
+		TableColumn tblclmnNewColumn_3 = new TableColumn(interfaceTable,
+				SWT.NONE);
 		tblclmnNewColumn_3.setWidth(100);
 		tblclmnNewColumn_3.setText("Активизация");
 
-		TableColumn tblclmnNewColumn_4 = new TableColumn(interfaceTable, SWT.NONE);
+		TableColumn tblclmnNewColumn_4 = new TableColumn(interfaceTable,
+				SWT.NONE);
 		tblclmnNewColumn_4.setWidth(100);
 		tblclmnNewColumn_4.setText("Локальный IP");
 
-		TableColumn tblclmnNewColumn_5 = new TableColumn(interfaceTable, SWT.NONE);
+		TableColumn tblclmnNewColumn_5 = new TableColumn(interfaceTable,
+				SWT.NONE);
 		tblclmnNewColumn_5.setWidth(100);
 		tblclmnNewColumn_5.setText("Удалённый IP");
 
-		TableColumn tblclmnNewColumn_6 = new TableColumn(interfaceTable, SWT.NONE);
+		TableColumn tblclmnNewColumn_6 = new TableColumn(interfaceTable,
+				SWT.NONE);
 		tblclmnNewColumn_6.setWidth(100);
 		tblclmnNewColumn_6.setText("NAT");
 
-		TableColumn tblclmnNewColumn_7 = new TableColumn(interfaceTable, SWT.NONE);
+		TableColumn tblclmnNewColumn_7 = new TableColumn(interfaceTable,
+				SWT.NONE);
 		tblclmnNewColumn_7.setWidth(100);
 		tblclmnNewColumn_7.setText("Фильтр входящих");
 
-		TableColumn tblclmnNewColumn_8 = new TableColumn(interfaceTable, SWT.NONE);
+		TableColumn tblclmnNewColumn_8 = new TableColumn(interfaceTable,
+				SWT.NONE);
 		tblclmnNewColumn_8.setWidth(100);
 		tblclmnNewColumn_8.setText("Фильтр исходящих");
 
-		TableColumn tblclmnNewColumn_9 = new TableColumn(interfaceTable, SWT.NONE);
+		TableColumn tblclmnNewColumn_9 = new TableColumn(interfaceTable,
+				SWT.NONE);
 		tblclmnNewColumn_9.setWidth(100);
 		tblclmnNewColumn_9.setText("MTU");
 
-		TableColumn tblclmnNewColumn_10 = new TableColumn(interfaceTable, SWT.NONE);
+		TableColumn tblclmnNewColumn_10 = new TableColumn(interfaceTable,
+				SWT.NONE);
 		tblclmnNewColumn_10.setWidth(100);
 		tblclmnNewColumn_10.setText("Порт");
 
-		TableColumn tblclmnNewColumn_11 = new TableColumn(interfaceTable, SWT.NONE);
+		TableColumn tblclmnNewColumn_11 = new TableColumn(interfaceTable,
+				SWT.NONE);
 		tblclmnNewColumn_11.setWidth(100);
 		tblclmnNewColumn_11.setText("Таймер");
 
-		TableColumn tblclmnNewColumn_12 = new TableColumn(interfaceTable, SWT.NONE);
+		TableColumn tblclmnNewColumn_12 = new TableColumn(interfaceTable,
+				SWT.NONE);
 		tblclmnNewColumn_12.setWidth(100);
 		tblclmnNewColumn_12.setText("Доп. параметры");
 
-		TableColumn tblclmnNewColumn_13 = new TableColumn(interfaceTable, SWT.NONE);
+		TableColumn tblclmnNewColumn_13 = new TableColumn(interfaceTable,
+				SWT.NONE);
 		tblclmnNewColumn_13.setWidth(100);
 		tblclmnNewColumn_13.setText("Таблица маршрутов");
-		
-		interfaceTableViewer.setContentProvider(ArrayContentProvider.getInstance());
+
+		interfaceTableViewer.setContentProvider(ArrayContentProvider
+				.getInstance());
 		interfaceTableViewer.setLabelProvider(new InterfaceLableProvider());
-		interfaceTableViewer.setInput(InterfaceModel.getInstance().getDataArray());
-		
+		interfaceTableViewer.setInput(InterfaceModel.getInstance()
+				.getDataArray());
+
 		Menu menu = new Menu(interfaceTable);
 		interfaceTable.setMenu(menu);
-		
+
 		final MenuItem menuItem = new MenuItem(menu, SWT.NONE);
 		menuItem.setText("Изменить");
 
@@ -1403,14 +1439,12 @@ public class DionisView extends ViewPart {
 					IStructuredSelection sel = (IStructuredSelection) interfaceTableViewer
 							.getSelection();
 					// выбранный элемент таблицы как бин
-					InterfaceBean ibean = (InterfaceBean) sel
-							.getFirstElement();
+					InterfaceBean ibean = (InterfaceBean) sel.getFirstElement();
 					// индекс бина в списке
 					int indx = InterfaceModel.getInstance().getData()
 							.indexOf(ibean);
 					// создание диалога
-					InterfaceDialog dialog = new InterfaceDialog(
-							shell);
+					InterfaceDialog dialog = new InterfaceDialog(shell);
 					// передача бина диалогу
 					dialog.setInterfaceBean(ibean);
 					if (dialog.open() == Window.OK) {
@@ -1423,28 +1457,29 @@ public class DionisView extends ViewPart {
 				}
 			}
 		});
-		
+
 		final MenuItem menuItem_1 = new MenuItem(menu, SWT.NONE);
 		menuItem_1.setText("Добавить");
 
-//		InterfaceModel.getInstance().addData(new InterfaceBean());
-		
+		// InterfaceModel.getInstance().addData(new InterfaceBean());
+
 		menuItem_1.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				// создание диалога
-				InterfaceDialog dialog = new InterfaceDialog(
-						shell);
+				InterfaceDialog dialog = new InterfaceDialog(shell);
 				dialog.setInterfaceBean(null);
 				if (dialog.open() == Window.OK) {
 					// замена бина в модели по выбранному индексу
-					InterfaceModel.getInstance().getData().add(dialog.getInterfaceBean());
+					InterfaceModel.getInstance().getData()
+							.add(dialog.getInterfaceBean());
 					// обновление данных для таблицы
-					interfaceTableViewer.setInput(InterfaceModel.getInstance().getDataArray());
+					interfaceTableViewer.setInput(InterfaceModel.getInstance()
+							.getDataArray());
 				}
 			}
 		});
-		
+
 		final MenuItem mntmNewItem = new MenuItem(menu, SWT.NONE);
 		mntmNewItem.setText("Удалить");
 
@@ -1456,16 +1491,15 @@ public class DionisView extends ViewPart {
 					IStructuredSelection sel = (IStructuredSelection) interfaceTableViewer
 							.getSelection();
 					// выбранный элемент таблицы как бин
-					InterfaceBean ibean = (InterfaceBean) sel
-							.getFirstElement();
+					InterfaceBean ibean = (InterfaceBean) sel.getFirstElement();
 					InterfaceModel.getInstance().getData().remove(ibean);
 					// обновление данных для таблицы
-					interfaceTableViewer.setInput(InterfaceModel.getInstance().getDataArray());
+					interfaceTableViewer.setInput(InterfaceModel.getInstance()
+							.getDataArray());
 				}
 			}
 		});
-		
-		
+
 		menu.addListener(SWT.Show, new Listener() {
 			@Override
 			public void handleEvent(Event event) {
@@ -1481,7 +1515,7 @@ public class DionisView extends ViewPart {
 				}
 			}
 		});
-		
+
 		/** Фильтры **/
 		CTabItem tbtmNewItem = new CTabItem(tabFolder, SWT.NONE);
 		tbtmNewItem.setText("Фильтры");
@@ -1489,257 +1523,346 @@ public class DionisView extends ViewPart {
 		Composite composite_5 = new Composite(tabFolder, SWT.NONE);
 		tbtmNewItem.setControl(composite_5);
 		composite_5.setLayout(new GridLayout(1, false));
-		
+
 		filterTreeViewer = new TreeViewer(composite_5, SWT.BORDER);
 		filterTree = filterTreeViewer.getTree();
 		filterTree.setHeaderVisible(true);
-		filterTree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-		
-		TreeViewerColumn treeViewerColumn = new TreeViewerColumn(filterTreeViewer, SWT.NONE);
-		TreeColumn nameColumn = treeViewerColumn.getColumn();
-		nameColumn.setWidth(50);
+		filterTree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true,
+				1, 1));
+		filterTreeViewer.setAutoExpandLevel(3);
+
+		TreeViewerColumn treeViewerColumn = new TreeViewerColumn(
+				filterTreeViewer, SWT.NONE);
+		nameColumn = treeViewerColumn.getColumn();
+		nameColumn.setWidth(150);
 		nameColumn.setText("Имя");
-		
-		TreeViewerColumn treeViewerColumn_3 = new TreeViewerColumn(filterTreeViewer, SWT.NONE);
+
+		TreeViewerColumn treeViewerColumn_3 = new TreeViewerColumn(
+				filterTreeViewer, SWT.NONE);
 		TreeColumn numberColumn = treeViewerColumn_3.getColumn();
 		numberColumn.setWidth(20);
 		numberColumn.setText("#");
-		
-		TreeViewerColumn treeViewerColumn_2 = new TreeViewerColumn(filterTreeViewer, SWT.NONE);
-		TreeColumn dataColumn = treeViewerColumn_2.getColumn();
-		dataColumn.setWidth(300);
-		dataColumn.setText("Значение");
-		
-		TreeViewerColumn treeViewerColumn_1 = new TreeViewerColumn(filterTreeViewer, SWT.NONE);
-		TreeColumn extendedDataColumn = treeViewerColumn_1.getColumn();
-		extendedDataColumn.setWidth(300);
-		extendedDataColumn.setText("Расширенное значение");
-		
-		Menu filterMenu = new Menu(filterTree);
-		filterTree.setMenu(filterMenu);
-		
-		MenuItem changeNameItem = new MenuItem(filterMenu, SWT.NONE);
-		changeNameItem.setText("Изменить имя фильтра");
 
-		changeNameItem.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e) {
-				if (filterTree.getSelection() != null
-						&& filterTree.getSelection().length > 0) {
-					IStructuredSelection sel = (IStructuredSelection) filterTreeViewer
-							.getSelection();
-					if (sel.getFirstElement() instanceof FiltersBean) {
-						FiltersBean fsb = (FiltersBean) sel.getFirstElement();
-						int index = FiltersModel.getInstance().getData().indexOf(fsb);
-						InputDialog dialog = new InputDialog(shell, "Ввод имени", "Новое название фильтра: ", fsb.getFilter().getName(), null);
+		TreeViewerColumn dataViewerColumn = new TreeViewerColumn(
+				filterTreeViewer, SWT.NONE);
+		dataColumn = dataViewerColumn.getColumn();
+		dataColumn.setWidth(400);
+		dataColumn.setText("Значение");
+
+		TreeViewerColumn treeViewerColumn_1 = new TreeViewerColumn(
+				filterTreeViewer, SWT.NONE);
+		extendedDataColumn = treeViewerColumn_1.getColumn();
+		extendedDataColumn.setWidth(400);
+		extendedDataColumn.setText("Расширенное значение");
+
+		// Menu filterMenu = new Menu(filterTree);
+		// filterTree.setMenu(filterMenu);
+		//
+		// Менеджер меню фильтров
+		final MenuManager mgr = new MenuManager();
+		// удалять меню при показе для динамического изменения пунктов
+		mgr.setRemoveAllWhenShown(true);
+		// привязка контрола к менеджеру
+		filterTreeViewer.getControl()
+				.setMenu(mgr.createContextMenu(filterTree));
+
+		// обработчик появления меню
+		mgr.addMenuListener(new IMenuListener() {
+			private Action addNewNameAction;
+			private Action addTemplateItemAction;
+
+			public void menuAboutToShow(IMenuManager manager) {
+
+				// Действие для "Добавить новый пустой фильтр"
+				addNewNameAction = new Action("Добавить новый пустой фильтр") {
+					public void run() {
+						FilterDialog dialog = new FilterDialog(shell);
 						if (dialog.open() == Window.OK) {
-							if (fsb.getFilter() == null) {
-								FilterBean fbean = new FilterBean();
-								fbean.setName(dialog.getValue());
-							} else {
-								fsb.getFilter().setName(dialog.getValue());
-							}
-							FiltersModel.getInstance().getData().set(index, fsb);
-									Display.getDefault().asyncExec(new Runnable() {
-										@Override
-										public void run() {
-											filterTreeViewer.refresh();;
-										}
-									});
-						}
-					}
-				}
-			}
-		});
-		
-		
-		MenuItem addNewItem = new MenuItem(filterMenu, SWT.NONE);
-		addNewItem.setText("Добавить новый пустой фильтр");
-		
-		addNewItem.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e) {
-				FilterDialog dialog = new FilterDialog(shell);
-				if (dialog.open() == Window.OK) {
-					FilterBean filterBean = new FilterBean();
-					filterBean.setName(dialog.getName());
-					FiltersBean fsbean = new FiltersBean(); 
-					fsbean.setFilter(filterBean);
-					FiltersModel.getInstance().getData().add(fsbean);					
+							FilterBean filterBean = new FilterBean();
+							filterBean.setName(dialog.getName());
+							FiltersBean fsbean = new FiltersBean();
+							fsbean.setFilter(filterBean);
+							FiltersModel.getInstance().getData().add(fsbean);
 							Display.getDefault().asyncExec(new Runnable() {
 								@Override
 								public void run() {
 									filterTreeViewer.setInput(FiltersModel
 											.getInstance().getDataArray());
+									nameColumn.pack();
 								}
 							});
-				}
-			}
-		});
-		
-		
-		MenuItem deleteItem = new MenuItem(filterMenu, SWT.NONE);
-		deleteItem.setText("Удалить весь фильтр");
-
-		deleteItem.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e) {
-				if (filterTree.getSelection() != null
-						&& filterTree.getSelection().length > 0) {
-					IStructuredSelection sel = (IStructuredSelection) filterTreeViewer
-							.getSelection();
-					if (sel.getFirstElement() instanceof FiltersBean) {
-						final FiltersBean fsb = (FiltersBean) sel.getFirstElement();
-						boolean dialog = MessageDialog.openConfirm(shell, "Подтверждение", "Удалить фильтр " + fsb.getFilter().getName() + " ?");
-						if (dialog == true) {
-							FiltersModel.getInstance().getData().remove(fsb);
-									Display.getDefault().asyncExec(new Runnable() {
-										@Override
-										public void run() {
-											filterTreeViewer.setInput(FiltersModel
-													.getInstance().getDataArray());
-											filterTreeViewer.refresh(fsb);
-										}
-									});
 						}
-					}
-				}
-			}
-		});
 
-		
-		new MenuItem(filterMenu, SWT.SEPARATOR);
-		
-		MenuItem makeTemplateItem = new MenuItem(filterMenu, SWT.NONE);
-		makeTemplateItem.setText("Создать шаблон фильтра");
-		
-		MenuItem addTemplateItem = new MenuItem(filterMenu, SWT.NONE);
-		addTemplateItem.setText("Добавить фильтр по шаблону");
-		
-		new MenuItem(filterMenu, SWT.SEPARATOR);
-		
-		MenuItem addStandardItem = new MenuItem(filterMenu, SWT.NONE);
-		addStandardItem.setText("Добавить правило");
-		
-		/** Добавить стандартный IP фильтр **/
-		addStandardItem.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e) {
-				if (filterTree.getSelection() != null
-						&& filterTree.getSelection().length > 0) {
-					IStructuredSelection sel = (IStructuredSelection) filterTreeViewer
-							.getSelection();
-					if (sel.getFirstElement() instanceof FiltersBean) {
-						final FiltersBean fsb = (FiltersBean) sel.getFirstElement();
-						FilterRuleDialog dialog = new FilterRuleDialog(shell, null, Constants.DLG_STANDARD);
-						if (dialog.open() == Window.OK) {
-							java.util.List<FiltersBean> filtersList = FiltersModel.getInstance().getData();
-							int index = filtersList.indexOf(fsb);
-							if (fsb.getFilter() != null && fsb.getFilter().getItem() != null) {
-								fsb.getFilter().getItem().add(dialog.getData());
-							} else {
-								FilterBean filterBean = new FilterBean();
-								LinkedList<IFilterItem> lfi = new LinkedList<>();
-								lfi.add(dialog.getData());
-								filterBean.setItem(lfi);
-								fsb.setFilter(filterBean);
+					}
+				};
+				// Действие для "Добавить фильтр по шаблону"
+				addTemplateItemAction = new Action("Добавить фильтр по шаблону") {
+					public void run() {
+					}
+				};
+				// текущий выбор
+				final IStructuredSelection selection = (IStructuredSelection) filterTreeViewer
+						.getSelection();
+				// если ничего не выбрано
+				if (selection.isEmpty()) {
+					// Добавить новый пустой фильтр
+					mgr.add(addNewNameAction);
+					/** Добавить фильтр по шаблону **/
+					mgr.add(addTemplateItemAction);
+					// если есть выбор
+				} else {
+					// если выбран фильтр
+					if (selection.getFirstElement() instanceof FiltersBean) {
+						// Изменить имя фильтра
+						Action changeNameAction = new Action(
+								"Изменить имя фильтра") {
+							public void run() {
+								FiltersBean fsb = (FiltersBean) selection
+										.getFirstElement();
+								int index = FiltersModel.getInstance()
+										.getData().indexOf(fsb);
+								InputDialog dialog = new InputDialog(shell,
+										"Ввод имени",
+										"Новое название фильтра: ", fsb
+												.getFilter().getName(), null);
+								if (dialog.open() == Window.OK) {
+									if (fsb.getFilter() == null) {
+										FilterBean fbean = new FilterBean();
+										fbean.setName(dialog.getValue());
+									} else {
+										fsb.getFilter().setName(
+												dialog.getValue());
+									}
+									FiltersModel.getInstance().getData()
+											.set(index, fsb);
+									Display.getDefault().asyncExec(
+											new Runnable() {
+												@Override
+												public void run() {
+													filterTreeViewer.refresh();
+													nameColumn.pack();
+												}
+											});
+								}
+
+							};
+						};
+						mgr.add(changeNameAction);
+						// Добавить новый пустой фильтр
+						mgr.add(addNewNameAction);
+						// Удалить весь фильтр
+						Action deleteFilterAction = new Action(
+								"Удалить весь фильтр") {
+							public void run() {
+								final FiltersBean fsb = (FiltersBean) selection
+										.getFirstElement();
+								boolean dialog = MessageDialog.openConfirm(
+										shell, "Подтверждение",
+										"Удалить фильтр "
+												+ fsb.getFilter().getName()
+												+ " ?");
+								if (dialog == true) {
+									FiltersModel.getInstance().getData()
+											.remove(fsb);
+									Display.getDefault().asyncExec(
+											new Runnable() {
+												@Override
+												public void run() {
+													filterTreeViewer
+															.setInput(FiltersModel
+																	.getInstance()
+																	.getDataArray());
+												}
+											});
+								}
 							}
-							FiltersModel.getInstance().getData().set(index, fsb);
-									Display.getDefault().asyncExec(new Runnable() {
-										@Override
-										public void run() {
-											filterTreeViewer.setInput(FiltersModel
-													.getInstance().getDataArray());
-											filterTreeViewer.refresh(fsb);
-										}
-									});
-						}
-					}
-				}
-			}
-		});
-		
-		
-		MenuItem addExtendedItem = new MenuItem(filterMenu, SWT.NONE);
-		addExtendedItem.setText("Добавить расширенное правило");
-
-		/** Добавить расширенный IP фильтр **/
-		addExtendedItem.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e) {
-				if (filterTree.getSelection() != null
-						&& filterTree.getSelection().length > 0) {
-					IStructuredSelection sel = (IStructuredSelection) filterTreeViewer
-							.getSelection();
-					if (sel.getFirstElement() instanceof FiltersBean) {
-						final FiltersBean fsb = (FiltersBean) sel.getFirstElement();
-						FilterRuleDialog dialog = new FilterRuleDialog(shell, null, Constants.DLG_EXTENDED);
-						if (dialog.open() == Window.OK) {
-							java.util.List<FiltersBean> filtersList = FiltersModel.getInstance().getData();
-							int index = filtersList.indexOf(fsb);
-							if (fsb.getFilter() != null && fsb.getFilter().getItem() != null) {
-								fsb.getFilter().getItem().add(dialog.getData());
-							} else {
-								FilterBean filterBean = new FilterBean();
-								LinkedList<IFilterItem> lfi = new LinkedList<>();
-								lfi.add(dialog.getData());
-								filterBean.setItem(lfi);
-								fsb.setFilter(filterBean);
+						};
+						mgr.add(deleteFilterAction);
+						// разделитель
+						mgr.add(new Separator(
+								IWorkbenchActionConstants.MB_ADDITIONS));
+						// Добавить правило
+						/** Добавить стандартный IP фильтр **/
+						Action addStandardItemAction = new Action(
+								"Добавить правило") {
+							public void run() {
+								final FiltersBean fsb = (FiltersBean) selection
+										.getFirstElement();
+								FilterRuleDialog dialog = new FilterRuleDialog(
+										shell, null, Constants.DLG_STANDARD);
+								if (dialog.open() == Window.OK) {
+									java.util.List<FiltersBean> filtersList = FiltersModel
+											.getInstance().getData();
+									int index = filtersList.indexOf(fsb);
+									if (fsb.getFilter() != null
+											&& fsb.getFilter().getItem() != null) {
+										fsb.getFilter().getItem()
+												.add(dialog.getData());
+									} else {
+										FilterBean filterBean = new FilterBean();
+										filterBean.setName(fsb.getFilter().getName());
+										LinkedList<IFilterItem> lfi = new LinkedList<>();
+										lfi.add(dialog.getData());
+										filterBean.setItem(lfi);
+										fsb.setFilter(filterBean);
+									}
+									FiltersModel.getInstance().getData()
+											.set(index, fsb);
+									Display.getDefault().asyncExec(
+											new Runnable() {
+												@Override
+												public void run() {
+													filterTreeViewer
+															.setInput(FiltersModel
+																	.getInstance()
+																	.getDataArray());
+													dataColumn.pack();
+												}
+											});
+								}
 							}
-							FiltersModel.getInstance().getData().set(index, fsb);
-									Display.getDefault().asyncExec(new Runnable() {
-										@Override
-										public void run() {
-											filterTreeViewer.setInput(FiltersModel
-													.getInstance().getDataArray());
-											filterTreeViewer.refresh(fsb);
-										}
-									});
-						}
-					}
-				}
-			}
-		});
-		
-		
-		MenuItem addSheduleItem = new MenuItem(filterMenu, SWT.NONE);
-		addSheduleItem.setText("Добавить элемент расписания");
-
-		addSheduleItem.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e) {
-				if (filterTree.getSelection() != null
-						&& filterTree.getSelection().length > 0) {
-					IStructuredSelection sel = (IStructuredSelection) filterTreeViewer
-							.getSelection();
-					if (sel.getFirstElement() instanceof FiltersBean) {
-						final FiltersBean fsb = (FiltersBean) sel.getFirstElement();
-						SheduleRuleDialog dialog = new SheduleRuleDialog(shell, null);
-						if (dialog.open() == Window.OK) {
-							java.util.List<FiltersBean> filtersList = FiltersModel.getInstance().getData();
-							int index = filtersList.indexOf(fsb);
-							if (fsb.getFilter() != null && fsb.getFilter().getItem() != null) {
-								fsb.getFilter().getItem().add(dialog.getData());
-							} else {
-								FilterBean filterBean = new FilterBean();
-								LinkedList<IFilterItem> lfi = new LinkedList<>();
-								lfi.add(dialog.getData());
-								filterBean.setItem(lfi);
-								fsb.setFilter(filterBean);
+						};
+						mgr.add(addStandardItemAction);
+						/** Добавить расширенный IP фильтр **/
+						Action addExtendedItemAction = new Action(
+								"Добавить расширенное правило") {
+							public void run() {
+								final FiltersBean fsb = (FiltersBean) selection
+										.getFirstElement();
+								FilterRuleDialog dialog = new FilterRuleDialog(
+										shell, null, Constants.DLG_EXTENDED);
+								if (dialog.open() == Window.OK) {
+									java.util.List<FiltersBean> filtersList = FiltersModel
+											.getInstance().getData();
+									int index = filtersList.indexOf(fsb);
+									if (fsb.getFilter() != null
+											&& fsb.getFilter().getItem() != null) {
+										fsb.getFilter().getItem()
+												.add(dialog.getData());
+									} else {
+										FilterBean filterBean = new FilterBean();
+										filterBean.setName(fsb.getFilter().getName());
+										LinkedList<IFilterItem> lfi = new LinkedList<>();
+										lfi.add(dialog.getData());
+										filterBean.setItem(lfi);
+										fsb.setFilter(filterBean);
+									}
+									FiltersModel.getInstance().getData()
+											.set(index, fsb);
+									Display.getDefault().asyncExec(
+											new Runnable() {
+												@Override
+												public void run() {
+													filterTreeViewer
+															.setInput(FiltersModel
+																	.getInstance()
+																	.getDataArray());
+													dataColumn.pack();
+													extendedDataColumn.pack();
+												}
+											});
+								}
 							}
-							FiltersModel.getInstance().getData().set(index, fsb);
-									Display.getDefault().asyncExec(new Runnable() {
-										@Override
-										public void run() {
-											filterTreeViewer.setInput(FiltersModel
-													.getInstance().getDataArray());
-											filterTreeViewer.refresh(fsb);
+						};
+						mgr.add(addExtendedItemAction);
+						/** Добавить элемент расписания **/
+						Action addSheduleItemAction = new Action(
+								"Добавить элемент расписания") {
+							public void run() {
+								final FiltersBean fsb = (FiltersBean) selection
+										.getFirstElement();
+								SheduleRuleDialog dialog = new SheduleRuleDialog(
+										shell, null);
+								if (dialog.open() == Window.OK) {
+									java.util.List<FiltersBean> filtersList = FiltersModel
+											.getInstance().getData();
+									int index = filtersList.indexOf(fsb);
+									if (fsb.getFilter() != null
+											&& fsb.getFilter().getItem() != null) {
+										fsb.getFilter().getItem()
+												.add(dialog.getData());
+									} else {
+										FilterBean filterBean = new FilterBean();
+										filterBean.setName(fsb.getFilter().getName());
+										LinkedList<IFilterItem> lfi = new LinkedList<>();
+										lfi.add(dialog.getData());
+										filterBean.setItem(lfi);
+										fsb.setFilter(filterBean);
+									}
+									FiltersModel.getInstance().getData()
+											.set(index, fsb);
+									Display.getDefault().asyncExec(
+											new Runnable() {
+												@Override
+												public void run() {
+													filterTreeViewer
+															.setInput(FiltersModel
+																	.getInstance()
+																	.getDataArray());
+													dataColumn.pack();
+												}
+											});
+								}
+							}
+						};
+						mgr.add(addSheduleItemAction);
+						// разделитель
+						mgr.add(new Separator(
+								IWorkbenchActionConstants.MB_ADDITIONS));
+						/** Создать шаблон фильтра **/
+						Action makeTemplateItemAction = new Action(
+								"Создать шаблон фильтра") {
+							public void run() {
+							}
+						};
+						mgr.add(makeTemplateItemAction);
+						/** Добавить фильтр по шаблону **/
+						mgr.add(addTemplateItemAction);
+					} else
+					// если выбрано правило
+					if (selection.getFirstElement() instanceof IFilterItem) {
+						/** Изменить правило **/
+						Action changeItemAction = new Action("Изменить") {
+							public void run() {
+								if (selection.getFirstElement() instanceof StandardFilterItemBean) {
+									StandardFilterItemBean sitem = (StandardFilterItemBean) selection
+											.getFirstElement();
+									java.util.List<FiltersBean> filtersList = FiltersModel
+											.getInstance().getData();
+									int index = 0;
+									for (FiltersBean fbean : filtersList) {
+										if (fbean.getFilter() != null
+												&& fbean.getFilter().getItem() != null) {
+											java.util.List<IFilterItem> ruleList = fbean
+													.getFilter().getItem();
+											for (IFilterItem item : ruleList) {
+												if (item.equals(sitem)) {
+													break;
+												}
+											}
 										}
-									});
-						}
+									}
+									FilterRuleDialog dialog = new FilterRuleDialog(
+											shell, sitem,
+											Constants.DLG_STANDARD);
+									if (dialog.open() == Window.OK) {
+
+									}
+								}
+							}
+						};
+						mgr.add(changeItemAction);
+
 					}
+
 				}
 			}
 		});
-		
+
 		filterTreeViewer.setContentProvider(new FiltersTreeContentProvider());
 		filterTreeViewer.setLabelProvider(new FiltersTreeLabelProvider());
 		filterTreeViewer.setInput(FiltersModel.getInstance().getData());
-		
+
 		CTabItem tbtmNewItem_1 = new CTabItem(tabFolder, SWT.NONE);
 		tbtmNewItem_1.setText("Туннели");
 
@@ -1747,16 +1870,19 @@ public class DionisView extends ViewPart {
 		tbtmNewItem_1.setControl(composite_6);
 		composite_6.setLayout(new GridLayout(1, false));
 
-		final TableViewer tunnelTableViewer = new TableViewer(composite_6, SWT.BORDER | SWT.FULL_SELECTION);
+		final TableViewer tunnelTableViewer = new TableViewer(composite_6,
+				SWT.BORDER | SWT.FULL_SELECTION);
 		final Table tunnelTable = tunnelTableViewer.getTable();
-		tunnelTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		tunnelTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true,
+				1, 1));
 		tunnelTable.setHeaderVisible(true);
 		tunnelTable.setLinesVisible(true);
 
-		tunnelTableViewer.setContentProvider(ArrayContentProvider.getInstance());
+		tunnelTableViewer
+				.setContentProvider(ArrayContentProvider.getInstance());
 		tunnelTableViewer.setLabelProvider(new TunnelLableProvider());
 		tunnelTableViewer.setInput(TunnelModel.getInstance().getDataArray());
-		
+
 		TableColumn tblclmnNewColumn_14 = new TableColumn(tunnelTable, SWT.NONE);
 		tblclmnNewColumn_14.setWidth(100);
 		tblclmnNewColumn_14.setText("№");
@@ -1788,64 +1914,20 @@ public class DionisView extends ViewPart {
 		TableColumn tblclmnNewColumn_21 = new TableColumn(tunnelTable, SWT.NONE);
 		tblclmnNewColumn_21.setWidth(100);
 		tblclmnNewColumn_21.setText("Правила отбора");
-		
+
 		Menu tunnelMenu = new Menu(tunnelTable);
 		tunnelTable.setMenu(tunnelMenu);
-		
+
 		final MenuItem changeMenuItem = new MenuItem(tunnelMenu, SWT.NONE);
 		changeMenuItem.setText("Изменить");
-		
+
 		changeMenuItem.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e) {
-				if (tunnelTable.getSelection() != null
-						&& tunnelTable.getSelection().length > 0) {
-					IStructuredSelection sel = (IStructuredSelection) tunnelTableViewer
-							.getSelection();
-					TunnelDialog dialog = new TunnelDialog(
-							shell, sel);
-					if (dialog.open() == Window.OK) {
-								Display.getDefault().asyncExec(new Runnable() {
-									@Override
-									public void run() {
-										tunnelTableViewer.setInput(TunnelModel
-												.getInstance().getDataArray());
-									}
-								});
-					}
-				}
-			}
-		});
-		
-		final MenuItem addMenuItem = new MenuItem(tunnelMenu, SWT.NONE);
-		addMenuItem.setText("Добавить");
-		
-		addMenuItem.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e) {
-				TunnelDialog dialog = new TunnelDialog(shell,
-						null);
-				if (dialog.open() == Window.OK) {
-											Display.getDefault().asyncExec(new Runnable() {
-												@Override
-												public void run() {
-													tunnelTableViewer.setInput(TunnelModel
-															.getInstance().getDataArray());
-												}
-											});
-				}
-			}
-		});
-			
-		
-		final MenuItem removeMenuItem = new MenuItem(tunnelMenu, SWT.NONE);
-		removeMenuItem.setText("Удалить");
-		
-		removeMenuItem.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				IStructuredSelection sel = (IStructuredSelection) tunnelTableViewer
 						.getSelection();
-				TunnelBean tunnel = (TunnelBean) sel
-						.getFirstElement();
-				TunnelModel.getInstance().removeData(tunnel);
+				if (!sel.isEmpty()) {
+					TunnelDialog dialog = new TunnelDialog(shell, sel);
+					if (dialog.open() == Window.OK) {
 						Display.getDefault().asyncExec(new Runnable() {
 							@Override
 							public void run() {
@@ -1853,20 +1935,59 @@ public class DionisView extends ViewPart {
 										.getInstance().getDataArray());
 							}
 						});
+					}
+				}
 			}
 		});
-		
+
+		final MenuItem addMenuItem = new MenuItem(tunnelMenu, SWT.NONE);
+		addMenuItem.setText("Добавить");
+
+		addMenuItem.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				TunnelDialog dialog = new TunnelDialog(shell, null);
+				if (dialog.open() == Window.OK) {
+					Display.getDefault().asyncExec(new Runnable() {
+						@Override
+						public void run() {
+							tunnelTableViewer.setInput(TunnelModel
+									.getInstance().getDataArray());
+						}
+					});
+				}
+			}
+		});
+
+		final MenuItem removeMenuItem = new MenuItem(tunnelMenu, SWT.NONE);
+		removeMenuItem.setText("Удалить");
+
+		removeMenuItem.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				IStructuredSelection sel = (IStructuredSelection) tunnelTableViewer
+						.getSelection();
+				if (!sel.isEmpty()) {
+					TunnelBean tunnel = (TunnelBean) sel.getFirstElement();
+					TunnelModel.getInstance().removeData(tunnel);
+					Display.getDefault().asyncExec(new Runnable() {
+						@Override
+						public void run() {
+							tunnelTableViewer.setInput(TunnelModel
+									.getInstance().getDataArray());
+						}
+					});
+				}
+			}
+		});
+
 		final MenuItem copyItem = new MenuItem(tunnelMenu, SWT.NONE);
 		copyItem.setText("Копировать");
 
 		copyItem.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				if (tunnelTable.getSelection() != null
-						&& tunnelTable.getSelection().length > 0) {
-					IStructuredSelection sel = (IStructuredSelection) tunnelTableViewer
-							.getSelection();
-					TunnelBean tunnel = (TunnelBean) sel
-							.getFirstElement();
+				IStructuredSelection sel = (IStructuredSelection) tunnelTableViewer
+						.getSelection();
+				if (!sel.isEmpty()) {
+					TunnelBean tunnel = (TunnelBean) sel.getFirstElement();
 					// скопировать ссылку на текущее выделение
 					try {
 						copyPasteTunnel = (TunnelBean) tunnel.clone();
@@ -1910,8 +2031,7 @@ public class DionisView extends ViewPart {
 				job.schedule();
 			}
 		});
-		
-		
+
 		tunnelMenu.addListener(SWT.Show, new Listener() {
 			@Override
 			public void handleEvent(Event event) {

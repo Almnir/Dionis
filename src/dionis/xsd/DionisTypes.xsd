@@ -379,6 +379,7 @@
             <xs:enumeration value="Solve"/>
             <xs:enumeration value="Ban"/>
             <xs:enumeration value="Reset"/>
+            <xs:enumeration value="Session"/>
         </xs:restriction>
     </xs:simpleType>
 

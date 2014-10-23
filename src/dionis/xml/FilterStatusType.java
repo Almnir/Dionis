@@ -17,6 +17,7 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;enumeration value="Solve"/>
  *     &lt;enumeration value="Ban"/>
  *     &lt;enumeration value="Reset"/>
+ *     &lt;enumeration value="Session"/>
  *   &lt;/restriction>
  * &lt;/simpleType>
  * </pre>
@@ -31,7 +32,9 @@ public enum FilterStatusType {
     @XmlEnumValue("Ban")
     BAN("Ban"),
     @XmlEnumValue("Reset")
-    RESET("Reset");
+    RESET("Reset"),
+    @XmlEnumValue("Session")
+    SESSION("Session");
     private final String value;
 
     FilterStatusType(String v) {

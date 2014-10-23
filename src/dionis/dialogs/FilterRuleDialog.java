@@ -124,7 +124,7 @@ public class FilterRuleDialog extends Dialog {
 				false, 1, 1));
 		lblNewLabel_3.setText("Режим");
 
-		modeCombo = new Combo(container, SWT.NONE);
+		modeCombo = new Combo(container, SWT.READ_ONLY);
 		modeCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false,
 				1, 1));
 
@@ -156,7 +156,7 @@ public class FilterRuleDialog extends Dialog {
 				false, 1, 1));
 		lblNewLabel_4.setText("Протокол");
 
-		protocolCombo = new Combo(container, SWT.NONE);
+		protocolCombo = new Combo(container, SWT.READ_ONLY);
 		protocolCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,
 				false, 1, 1));
 
@@ -251,7 +251,7 @@ public class FilterRuleDialog extends Dialog {
 		new Label(group_1, SWT.NONE);
 		new Label(group_1, SWT.NONE);
 
-		operationCombo = new Combo(group_1, SWT.NONE);
+		operationCombo = new Combo(group_1, SWT.READ_ONLY);
 		operationCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,
 				false, 2, 1));
 		operationCombo.setItems(Constants.FILTER_DIRECTION);
@@ -334,80 +334,84 @@ public class FilterRuleDialog extends Dialog {
 	}
 
 	private void createLogicBlock(Composite parent, int blockNumber) {
-		btnAndRadioButton[blockNumber] = new Button(parent, SWT.RADIO);
+		Composite logicComposite = new Composite(parent, SWT.NONE);
+		logicComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true,
+				false, 4, 1));
+		logicComposite.setLayout(new GridLayout(3, false));
+
+		btnAndRadioButton[blockNumber] = new Button(logicComposite, SWT.RADIO);
 		btnAndRadioButton[blockNumber].setLayoutData(new GridData(SWT.FILL,
 				SWT.FILL, true, false, 1, 2));
 		btnAndRadioButton[blockNumber].setText("И");
 
-		btnOrRadioButton[blockNumber] = new Button(parent, SWT.RADIO);
+		btnOrRadioButton[blockNumber] = new Button(logicComposite, SWT.RADIO);
 		btnOrRadioButton[blockNumber].setLayoutData(new GridData(SWT.FILL,
 				SWT.FILL, true, false, 1, 2));
 		btnOrRadioButton[blockNumber].setText("ИЛИ");
 	}
 
+	/**
+	 * Метод инициализации полей данными
+	 */
 	protected void init() {
 		setFieldsToDefault();
-		if (getData() != null) {
-			if (newadd == false) {
-				/** изменение **/
-				blockButton
-						.setSelection(getData().getBlock() == BooleanType.YES ? true
-								: false);
-				modeCombo.select(getData().getMode().ordinal());
-				noRadioButton
-						.setSelection(getData().getTcpFlags() == FilterTCPFlagsType.NO ? true
-								: false);
-				synRadioButton
-						.setSelection(getData().getTcpFlags() == FilterTCPFlagsType.SYN ? true
-								: false);
-				ackRadioButton
-						.setSelection(getData().getTcpFlags() == FilterTCPFlagsType.ACK ? true
-								: false);
-				protocolCombo.select(getData().getProtocol().ordinal());
-				if (getData().getSource() != null) {
-					sourceAddressText.setText(getData().getSource().getIp());
-					bitSourceSpinner.setSelection(getData().getSource()
-							.getBits());
-				}
-				if (getData().getTarget() != null) {
-					targetAddressText.setText(getData().getTarget().getIp());
-					bitTargetSpinner.setSelection(getData().getTarget()
-							.getBits());
-				}
-				if (getData().getPorts() != null) {
-					lowPortSpinner.setSelection(getData().getPorts().getLow());
-					highPortSpinner
-							.setSelection(getData().getPorts().getHigh());
-					operationCombo.select(getData().getPorts().getType()
-							.ordinal());
-				}
-				if (this.type == Constants.DLG_EXTENDED) {
-					if (data.getExt() != null) {
-						List<ExtBean> ext = data.getExt();
-						int inx = 0;
-						for (ExtBean eb : ext) {
-							ipCheckButton[inx]
-									.setSelection(eb.getIp() == BooleanType.YES ? true
-											: false);
-							shiftSpinner[inx].setSelection(eb.getOffset());
-							logicalCombo[inx].select(eb.getOperation()
-									.ordinal());
-							dataText[inx].setText(eb.getData());
-							if (inx < 3) {
-								if (eb.getLink() == FilterLinkType.AND) {
-									btnAndRadioButton[inx].setSelection(true);
-								} else {
-									btnOrRadioButton[inx].setSelection(true);
-								}
+		if (newadd == false) {
+			/** изменение **/
+			blockButton
+					.setSelection(getData().getBlock() == BooleanType.YES ? true
+							: false);
+			modeCombo.select(getData().getMode().ordinal());
+			noRadioButton
+					.setSelection(getData().getTcpFlags() == FilterTCPFlagsType.NO ? true
+							: false);
+			synRadioButton
+					.setSelection(getData().getTcpFlags() == FilterTCPFlagsType.SYN ? true
+							: false);
+			ackRadioButton
+					.setSelection(getData().getTcpFlags() == FilterTCPFlagsType.ACK ? true
+							: false);
+			protocolCombo.select(getData().getProtocol().ordinal());
+			if (getData().getSource() != null) {
+				sourceAddressText.setText(getData().getSource().getIp());
+				bitSourceSpinner.setSelection(getData().getSource().getBits());
+			}
+			if (getData().getTarget() != null) {
+				targetAddressText.setText(getData().getTarget().getIp());
+				bitTargetSpinner.setSelection(getData().getTarget().getBits());
+			}
+			if (getData().getPorts() != null) {
+				lowPortSpinner.setSelection(getData().getPorts().getLow());
+				highPortSpinner.setSelection(getData().getPorts().getHigh());
+				operationCombo.select(getData().getPorts().getType().ordinal());
+			}
+			if (this.type == Constants.DLG_EXTENDED) {
+				if (data.getExt() != null) {
+					List<ExtBean> ext = data.getExt();
+					int inx = 0;
+					for (ExtBean eb : ext) {
+						ipCheckButton[inx]
+								.setSelection(eb.getIp() == BooleanType.YES ? true
+										: false);
+						shiftSpinner[inx].setSelection(eb.getOffset());
+						logicalCombo[inx].select(eb.getOperation().ordinal());
+						dataText[inx].setText(eb.getData());
+						if (inx < 3) {
+							if (eb.getLink() == FilterLinkType.AND) {
+								btnAndRadioButton[inx].setSelection(true);
+							} else {
+								btnOrRadioButton[inx].setSelection(true);
 							}
-							inx += 1;
 						}
+						inx += 1;
 					}
 				}
 			}
 		}
 	}
 
+	/**
+	 * Заполнение объекта данными формы диалога
+	 */
 	@Override
 	protected void okPressed() {
 		getData().setBlock(
@@ -456,8 +460,15 @@ public class FilterRuleDialog extends Dialog {
 						.get(logicalCombo[i].getSelectionIndex()));
 				bean.setData(dataText[i].getText());
 				if (i < 3) {
-					bean.setLink(btnAndRadioButton[i].getSelection() == true ? FilterLinkType.AND
-							: FilterLinkType.OR);
+					if (btnAndRadioButton[i].getSelection() == true
+							&& btnOrRadioButton[i].getSelection() == false) {
+						bean.setLink(FilterLinkType.AND);
+					} else {
+						bean.setLink(FilterLinkType.OR);
+					}
+				} else {
+					// дефолтное значение для логического блока 
+					bean.setLink(FilterLinkType.OR);
 				}
 				extBeans.add(bean);
 			}

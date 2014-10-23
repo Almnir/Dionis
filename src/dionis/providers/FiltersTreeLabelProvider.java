@@ -34,10 +34,8 @@ public class FiltersTreeLabelProvider extends StyledCellLabelProvider {
 	public void update(ViewerCell cell) {
 		Object object = cell.getElement();
 		if (object instanceof FiltersBean) {
-			// System.out.println("FiltersBean");
 			updateFiltersBean(cell, (FiltersBean) object);
 		} else if (object instanceof StandardFilterItemBean) {
-			System.out.println("StandardFilterItemBean");
 			updateStandardFilterItemBean(cell, (StandardFilterItemBean) object);
 		} else if (object instanceof ExtendedFilterItemBean) {
 			updateExtendedFilterItemBean(cell, (ExtendedFilterItemBean) object);
@@ -74,7 +72,21 @@ public class FiltersTreeLabelProvider extends StyledCellLabelProvider {
 		}
 		// Значение
 		if (cell.getColumnIndex() == 2) {
-			cell.setImage(getImage(ImageConstants.ICON_ITEM));
+			// определим иконку для режима фильтра
+			switch (item.getMode()) {
+			case SOLVE:
+				cell.setImage(getImage(ImageConstants.ICON_SOLVE));
+				break;
+			case BAN:
+				cell.setImage(getImage(ImageConstants.ICON_BAN));
+				break;
+			case RESET:
+				cell.setImage(getImage(ImageConstants.ICON_RESET));
+				break;
+			case SESSION:
+				cell.setImage(getImage(ImageConstants.ICON_SESSION));
+				break;
+			}
 			cell.setText(item.toString());
 		}
 	}
@@ -88,7 +100,21 @@ public class FiltersTreeLabelProvider extends StyledCellLabelProvider {
 		}
 		// Значение
 		if (cell.getColumnIndex() == 2) {
-			cell.setImage(getImage(ImageConstants.ICON_FILTER));
+			// определим иконку для режима фильтра
+			switch (item.getMode()) {
+			case SOLVE:
+				cell.setImage(getImage(ImageConstants.ICON_SOLVE));
+				break;
+			case BAN:
+				cell.setImage(getImage(ImageConstants.ICON_BAN));
+				break;
+			case RESET:
+				cell.setImage(getImage(ImageConstants.ICON_RESET));
+				break;
+			case SESSION:
+				cell.setImage(getImage(ImageConstants.ICON_SESSION));
+				break;
+			}
 			cell.setText(item.toString());
 		}
 		// Расширенное значение

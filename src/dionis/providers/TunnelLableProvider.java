@@ -109,6 +109,9 @@ public class TunnelLableProvider extends LabelProvider implements
 						case RESET:
 							sb.append("сбросить");
 							break;
+						case SESSION:
+							sb.append("сессия");
+							break;
 						}
 						sb.append(" ");
 						sb.append(filter.getSource().getIp()).append("/")

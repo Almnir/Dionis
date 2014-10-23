@@ -360,7 +360,7 @@ public class SheduleRuleDialog extends Dialog {
 		friCheckButton.setSelection(false);
 		satCheckButton.setSelection(false);
 		sunCheckButton.setSelection(false);
-		dateCheckButton.setSelection(false);
+		dateCheckButton.setSelection(true);
 		beginTimeInterval1.setDate(0, 0, 0);
 		endTimeInterval1.setDate(0, 0, 0);
 		beginTimeInterval2.setDate(0, 0, 0);

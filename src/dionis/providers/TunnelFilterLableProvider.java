@@ -37,7 +37,7 @@ public class TunnelFilterLableProvider extends LabelProvider implements
 				break;
 			case 1:
 				// статус
-				rv = Constants.TUNNEL_FILTER_STATUS[data.getStatus().ordinal()];
+				rv = Constants.FILTER_MODE[data.getStatus().ordinal()];
 				break;
 			case 2:
 				// отправитель
