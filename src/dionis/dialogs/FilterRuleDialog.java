@@ -43,7 +43,7 @@ public class FilterRuleDialog extends Dialog {
 	private Text targetAddressText;
 	private IFilterItem data;
 	private boolean newadd;
-	private Button blockButton;
+	private Button fixButton;
 	private Combo modeCombo;
 	private Button noRadioButton;
 	private Button synRadioButton;
@@ -113,8 +113,8 @@ public class FilterRuleDialog extends Dialog {
 
 		parent.getShell().setText("Стандартный IP фильтр");
 
-		blockButton = new Button(container, SWT.CHECK);
-		blockButton.setText("Фиксировать");
+		fixButton = new Button(container, SWT.CHECK);
+		fixButton.setText("Фиксировать");
 		new Label(container, SWT.NONE);
 		new Label(container, SWT.NONE);
 		new Label(container, SWT.NONE);
@@ -333,7 +333,7 @@ public class FilterRuleDialog extends Dialog {
 		dataText[blockNumber].setText("0");
 	}
 
-	private void createLogicBlock(Composite parent, int blockNumber) {
+	private void createLogicBlock(Composite parent, final int blockNumber) {
 		Composite logicComposite = new Composite(parent, SWT.NONE);
 		logicComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true,
 				false, 4, 1));
@@ -357,32 +357,31 @@ public class FilterRuleDialog extends Dialog {
 		setFieldsToDefault();
 		if (newadd == false) {
 			/** изменение **/
-			blockButton
-					.setSelection(getData().getBlock() == BooleanType.YES ? true
-							: false);
-			modeCombo.select(getData().getMode().ordinal());
+			fixButton.setSelection(data.getFix() == BooleanType.YES ? true
+					: false);
+			modeCombo.select(data.getMode().ordinal());
 			noRadioButton
-					.setSelection(getData().getTcpFlags() == FilterTCPFlagsType.NO ? true
+					.setSelection(data.getTcpFlags() == FilterTCPFlagsType.NO ? true
 							: false);
 			synRadioButton
-					.setSelection(getData().getTcpFlags() == FilterTCPFlagsType.SYN ? true
+					.setSelection(data.getTcpFlags() == FilterTCPFlagsType.SYN ? true
 							: false);
 			ackRadioButton
-					.setSelection(getData().getTcpFlags() == FilterTCPFlagsType.ACK ? true
+					.setSelection(data.getTcpFlags() == FilterTCPFlagsType.ACK ? true
 							: false);
-			protocolCombo.select(getData().getProtocol().ordinal());
-			if (getData().getSource() != null) {
-				sourceAddressText.setText(getData().getSource().getIp());
-				bitSourceSpinner.setSelection(getData().getSource().getBits());
+			protocolCombo.select(data.getProtocol().ordinal());
+			if (data.getSource() != null) {
+				sourceAddressText.setText(data.getSource().getIp());
+				bitSourceSpinner.setSelection(data.getSource().getBits());
 			}
-			if (getData().getTarget() != null) {
-				targetAddressText.setText(getData().getTarget().getIp());
-				bitTargetSpinner.setSelection(getData().getTarget().getBits());
+			if (data.getTarget() != null) {
+				targetAddressText.setText(data.getTarget().getIp());
+				bitTargetSpinner.setSelection(data.getTarget().getBits());
 			}
-			if (getData().getPorts() != null) {
-				lowPortSpinner.setSelection(getData().getPorts().getLow());
-				highPortSpinner.setSelection(getData().getPorts().getHigh());
-				operationCombo.select(getData().getPorts().getType().ordinal());
+			if (data.getPorts() != null) {
+				lowPortSpinner.setSelection(data.getPorts().getLow());
+				highPortSpinner.setSelection(data.getPorts().getHigh());
+				operationCombo.select(data.getPorts().getType().ordinal());
 			}
 			if (this.type == Constants.DLG_EXTENDED) {
 				if (data.getExt() != null) {
@@ -398,7 +397,9 @@ public class FilterRuleDialog extends Dialog {
 						if (inx < 3) {
 							if (eb.getLink() == FilterLinkType.AND) {
 								btnAndRadioButton[inx].setSelection(true);
+								btnOrRadioButton[inx].setSelection(false);
 							} else {
+								btnAndRadioButton[inx].setSelection(false);
 								btnOrRadioButton[inx].setSelection(true);
 							}
 						}
@@ -414,35 +415,32 @@ public class FilterRuleDialog extends Dialog {
 	 */
 	@Override
 	protected void okPressed() {
-		getData().setBlock(
-				blockButton.getSelection() == true ? BooleanType.YES
-						: BooleanType.NO);
-		getData().setMode(
-				Arrays.asList(FilterStatusType.values()).get(
-						modeCombo.getSelectionIndex()));
+		data.setFix(fixButton.getSelection() == true ? BooleanType.YES
+				: BooleanType.NO);
+		data.setMode(Arrays.asList(FilterStatusType.values()).get(
+				modeCombo.getSelectionIndex()));
 		if (noRadioButton.getSelection())
-			getData().setTcpFlags(FilterTCPFlagsType.NO);
+			data.setTcpFlags(FilterTCPFlagsType.NO);
 		else if (ackRadioButton.getSelection())
-			getData().setTcpFlags(FilterTCPFlagsType.ACK);
+			data.setTcpFlags(FilterTCPFlagsType.ACK);
 		else if (synRadioButton.getSelection())
-			getData().setTcpFlags(FilterTCPFlagsType.SYN);
-		getData().setProtocol(
-				Arrays.asList(FilterProtocolType.values()).get(
-						protocolCombo.getSelectionIndex()));
+			data.setTcpFlags(FilterTCPFlagsType.SYN);
+		data.setProtocol(Arrays.asList(FilterProtocolType.values()).get(
+				protocolCombo.getSelectionIndex()));
 		FilterSourceBean sourceBean = new FilterSourceBean();
 		sourceBean.setIp(sourceAddressText.getText());
 		sourceBean.setBits((short) bitSourceSpinner.getSelection());
-		getData().setSource(sourceBean);
+		data.setSource(sourceBean);
 		FilterTargetBean targetBean = new FilterTargetBean();
 		targetBean.setIp(targetAddressText.getText());
 		targetBean.setBits((short) bitTargetSpinner.getSelection());
-		getData().setTarget(targetBean);
+		data.setTarget(targetBean);
 		FilterPortsBean filterPortsBean = new FilterPortsBean();
 		filterPortsBean.setLow(lowPortSpinner.getSelection());
 		filterPortsBean.setHigh(highPortSpinner.getSelection());
 		filterPortsBean.setType(Arrays.asList(FilterPortsType.values()).get(
 				operationCombo.getSelectionIndex()));
-		getData().setPorts(filterPortsBean);
+		data.setPorts(filterPortsBean);
 		if (this.type == Constants.DLG_EXTENDED) {
 			List<ExtBean> extBeans;
 			if (data.getExt() == null) {
@@ -450,8 +448,9 @@ public class FilterRuleDialog extends Dialog {
 			} else {
 				extBeans = data.getExt();
 			}
+			extBeans.clear();
 			ExtBean bean;
-			for (int i = 0; i < 4; i += 1) {
+			for (int i = 0; i < 4; i++) {
 				bean = new ExtBean();
 				bean.setIp(ipCheckButton[i].getSelection() == true ? BooleanType.YES
 						: BooleanType.NO);
@@ -467,7 +466,7 @@ public class FilterRuleDialog extends Dialog {
 						bean.setLink(FilterLinkType.OR);
 					}
 				} else {
-					// дефолтное значение для логического блока 
+					// дефолтное значение для логического блока
 					bean.setLink(FilterLinkType.OR);
 				}
 				extBeans.add(bean);
@@ -481,7 +480,7 @@ public class FilterRuleDialog extends Dialog {
 	 * Установка полей в начальные значения
 	 */
 	protected void setFieldsToDefault() {
-		blockButton.setSelection(false);
+		fixButton.setSelection(false);
 		modeCombo.select(0);
 		noRadioButton.setSelection(true);
 		synRadioButton.setSelection(false);

@@ -30,8 +30,8 @@ public class FiltersTreeContentProvider implements ITreeContentProvider {
 	public Object[] getChildren(Object parentElement) {
 		if (parentElement instanceof FiltersBean) {
 			FiltersBean filtersBean = (FiltersBean) parentElement;
-			System.out.println(filtersBean);
-			if (filtersBean.getFilter() != null && filtersBean.getFilter().getItem() != null) {
+			if (filtersBean.getFilter() != null
+					&& filtersBean.getFilter().getItem() != null) {
 				return filtersBean.getFilter().getItem().toArray();
 			}
 		}
@@ -47,7 +47,8 @@ public class FiltersTreeContentProvider implements ITreeContentProvider {
 	public boolean hasChildren(Object element) {
 		if (element instanceof FiltersBean) {
 			FiltersBean filtersBean = (FiltersBean) element;
-			if (filtersBean.getFilter() != null && filtersBean.getFilter().getItem() != null) {
+			if (filtersBean.getFilter() != null
+					&& filtersBean.getFilter().getItem() != null) {
 				return true;
 			}
 		}

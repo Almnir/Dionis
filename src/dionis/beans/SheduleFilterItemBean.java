@@ -2,6 +2,12 @@ package dionis.beans;
 
 import dionis.xml.BooleanType;
 
+/**
+ * Класс-бин правила по расписанию
+ * 
+ * @author Ярных А.О.
+ *
+ */
 public class SheduleFilterItemBean extends FilterItemBean implements
 		IFilterItem {
 
@@ -14,7 +20,7 @@ public class SheduleFilterItemBean extends FilterItemBean implements
 		if (days.getTue() == BooleanType.YES) {
 			sb.append("Вт");
 		}
-		if (days.getFri() == BooleanType.YES) {
+		if (days.getWed() == BooleanType.YES) {
 			sb.append("Ср");
 		}
 		if (days.getThu() == BooleanType.YES) {

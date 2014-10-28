@@ -9,6 +9,12 @@ import dionis.xml.FilterProtocolType;
 import dionis.xml.FilterStatusType;
 import dionis.xml.FilterTCPFlagsType;
 
+/**
+ * Корневой класс бина для правил
+ * 
+ * @author Ярных А.О.
+ *
+ */
 public class FilterItemBean extends ModelObject implements
 		PropertyChangeListener, IFilterItem {
 
@@ -27,6 +33,8 @@ public class FilterItemBean extends ModelObject implements
 	protected TimeInterval1Bean timeInterval1;
 	protected TimeInterval2Bean timeInterval2;
 
+	private FiltersBean parent;
+	
 	@Override
 	public BooleanType getBlock() {
 		return block;
@@ -180,4 +188,49 @@ public class FilterItemBean extends ModelObject implements
 	public void propertyChange(PropertyChangeEvent evt) {
 	}
 
+	public FiltersBean getParent() {
+		return parent;
+	}
+
+	public void setParent(FiltersBean parent) {
+		this.parent = parent;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		if (getBlock() == BooleanType.YES) {
+			sb.append("X");
+		}
+		if (getFix() == BooleanType.YES) {
+			sb.append("!");
+		}
+		sb.append(" ");
+		// адрес_отправителя/значащих_бит адрес_получателя/значащих_бит протокол
+		// порт-порт отправителя(получателя/все)
+		sb.append(getSource().getIp()).append("/")
+				.append(getSource().getBits()).append(" ");
+		sb.append(getTarget().getIp()).append("/")
+				.append(getTarget().getBits()).append(" ");
+		sb.append(getProtocol()).append(" ");
+		sb.append(getPorts().getLow()).append("-").append(getPorts().getHigh())
+				.append(" ");
+		String portsType = "";
+		switch (getPorts().getType()) {
+		case ALL:
+			portsType = "Все";
+			break;
+
+		case SOURCE:
+			portsType = "Отправителя";
+			break;
+
+		case TARGET:
+			portsType = "Получателя";
+			break;
+		}
+		sb.append(portsType);
+		return sb.toString();
+	}
+	
 }

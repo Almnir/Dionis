@@ -1,19 +1,15 @@
 package dionis.views;
 
-import java.util.LinkedList;
 import java.util.TimeZone;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.dialogs.InputDialog;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
@@ -23,8 +19,6 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
-import org.eclipse.swt.events.MenuEvent;
-import org.eclipse.swt.events.MenuListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -49,16 +43,23 @@ import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.part.ViewPart;
 
-import dionis.beans.FilterBean;
+import dionis.actions.filter.AddExtendedItemAction;
+import dionis.actions.filter.AddNewBlankFilterAction;
+import dionis.actions.filter.AddSheduleItemAction;
+import dionis.actions.filter.AddStandardItemAction;
+import dionis.actions.filter.AddTemplateItemAction;
+import dionis.actions.filter.BlockFilterItemAction;
+import dionis.actions.filter.ChangeFilterItemAction;
+import dionis.actions.filter.ChangeNameAction;
+import dionis.actions.filter.DeleteFilterAction;
+import dionis.actions.filter.MakeTemplateItemAction;
+import dionis.actions.filter.RemoveFilterItemAction;
+import dionis.actions.filter.UnblockFilterItemAction;
 import dionis.beans.FiltersBean;
 import dionis.beans.IFilterItem;
 import dionis.beans.InterfaceBean;
-import dionis.beans.StandardFilterItemBean;
 import dionis.beans.TunnelBean;
-import dionis.dialogs.FilterDialog;
 import dionis.dialogs.InterfaceDialog;
-import dionis.dialogs.FilterRuleDialog;
-import dionis.dialogs.SheduleRuleDialog;
 import dionis.dialogs.TunnelDialog;
 import dionis.formatters.TimeZoneTimeFormatter;
 import dionis.models.DionisXAO;
@@ -173,6 +174,11 @@ public class DionisView extends ViewPart {
 	private TreeColumn dataColumn;
 	private TreeColumn extendedDataColumn;
 	private TreeColumn nameColumn;
+
+	public static int TREE_COLUMN_NAME = 0;
+	public static int TREE_COLUMN_INDEX = 1;
+	public static int TREE_COLUMN_DATA = 2;
+	public static int TREE_COLUMN_EXTENDED = 3;
 
 	public DionisView() {
 		super();
@@ -1524,7 +1530,8 @@ public class DionisView extends ViewPart {
 		tbtmNewItem.setControl(composite_5);
 		composite_5.setLayout(new GridLayout(1, false));
 
-		filterTreeViewer = new TreeViewer(composite_5, SWT.BORDER);
+		filterTreeViewer = new TreeViewer(composite_5, SWT.BORDER
+				| SWT.FULL_SELECTION);
 		filterTree = filterTreeViewer.getTree();
 		filterTree.setHeaderVisible(true);
 		filterTree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true,
@@ -1568,291 +1575,78 @@ public class DionisView extends ViewPart {
 
 		// обработчик появления меню
 		mgr.addMenuListener(new IMenuListener() {
-			private Action addNewNameAction;
-			private Action addTemplateItemAction;
-
 			public void menuAboutToShow(IMenuManager manager) {
 
-				// Действие для "Добавить новый пустой фильтр"
-				addNewNameAction = new Action("Добавить новый пустой фильтр") {
-					public void run() {
-						FilterDialog dialog = new FilterDialog(shell);
-						if (dialog.open() == Window.OK) {
-							FilterBean filterBean = new FilterBean();
-							filterBean.setName(dialog.getName());
-							FiltersBean fsbean = new FiltersBean();
-							fsbean.setFilter(filterBean);
-							FiltersModel.getInstance().getData().add(fsbean);
-							Display.getDefault().asyncExec(new Runnable() {
-								@Override
-								public void run() {
-									filterTreeViewer.setInput(FiltersModel
-											.getInstance().getDataArray());
-									nameColumn.pack();
-								}
-							});
-						}
-
-					}
-				};
-				// Действие для "Добавить фильтр по шаблону"
-				addTemplateItemAction = new Action("Добавить фильтр по шаблону") {
-					public void run() {
-					}
-				};
 				// текущий выбор
 				final IStructuredSelection selection = (IStructuredSelection) filterTreeViewer
 						.getSelection();
 				// если ничего не выбрано
 				if (selection.isEmpty()) {
 					// Добавить новый пустой фильтр
-					mgr.add(addNewNameAction);
+					mgr.add(new AddNewBlankFilterAction(filterTreeViewer));
 					/** Добавить фильтр по шаблону **/
-					mgr.add(addTemplateItemAction);
+					mgr.add(new AddTemplateItemAction());
 					// если есть выбор
 				} else {
 					// если выбран фильтр
 					if (selection.getFirstElement() instanceof FiltersBean) {
 						// Изменить имя фильтра
-						Action changeNameAction = new Action(
-								"Изменить имя фильтра") {
-							public void run() {
-								FiltersBean fsb = (FiltersBean) selection
-										.getFirstElement();
-								int index = FiltersModel.getInstance()
-										.getData().indexOf(fsb);
-								InputDialog dialog = new InputDialog(shell,
-										"Ввод имени",
-										"Новое название фильтра: ", fsb
-												.getFilter().getName(), null);
-								if (dialog.open() == Window.OK) {
-									if (fsb.getFilter() == null) {
-										FilterBean fbean = new FilterBean();
-										fbean.setName(dialog.getValue());
-									} else {
-										fsb.getFilter().setName(
-												dialog.getValue());
-									}
-									FiltersModel.getInstance().getData()
-											.set(index, fsb);
-									Display.getDefault().asyncExec(
-											new Runnable() {
-												@Override
-												public void run() {
-													filterTreeViewer.refresh();
-													nameColumn.pack();
-												}
-											});
-								}
-
-							};
-						};
-						mgr.add(changeNameAction);
+						mgr.add(new ChangeNameAction(filterTreeViewer,
+								selection));
 						// Добавить новый пустой фильтр
-						mgr.add(addNewNameAction);
+						mgr.add(new AddNewBlankFilterAction(filterTreeViewer));
 						// Удалить весь фильтр
-						Action deleteFilterAction = new Action(
-								"Удалить весь фильтр") {
-							public void run() {
-								final FiltersBean fsb = (FiltersBean) selection
-										.getFirstElement();
-								boolean dialog = MessageDialog.openConfirm(
-										shell, "Подтверждение",
-										"Удалить фильтр "
-												+ fsb.getFilter().getName()
-												+ " ?");
-								if (dialog == true) {
-									FiltersModel.getInstance().getData()
-											.remove(fsb);
-									Display.getDefault().asyncExec(
-											new Runnable() {
-												@Override
-												public void run() {
-													filterTreeViewer
-															.setInput(FiltersModel
-																	.getInstance()
-																	.getDataArray());
-												}
-											});
-								}
-							}
-						};
-						mgr.add(deleteFilterAction);
+						mgr.add(new DeleteFilterAction(filterTreeViewer,
+								selection));
 						// разделитель
 						mgr.add(new Separator(
 								IWorkbenchActionConstants.MB_ADDITIONS));
-						// Добавить правило
 						/** Добавить стандартный IP фильтр **/
-						Action addStandardItemAction = new Action(
-								"Добавить правило") {
-							public void run() {
-								final FiltersBean fsb = (FiltersBean) selection
-										.getFirstElement();
-								FilterRuleDialog dialog = new FilterRuleDialog(
-										shell, null, Constants.DLG_STANDARD);
-								if (dialog.open() == Window.OK) {
-									java.util.List<FiltersBean> filtersList = FiltersModel
-											.getInstance().getData();
-									int index = filtersList.indexOf(fsb);
-									if (fsb.getFilter() != null
-											&& fsb.getFilter().getItem() != null) {
-										fsb.getFilter().getItem()
-												.add(dialog.getData());
-									} else {
-										FilterBean filterBean = new FilterBean();
-										filterBean.setName(fsb.getFilter().getName());
-										LinkedList<IFilterItem> lfi = new LinkedList<>();
-										lfi.add(dialog.getData());
-										filterBean.setItem(lfi);
-										fsb.setFilter(filterBean);
-									}
-									FiltersModel.getInstance().getData()
-											.set(index, fsb);
-									Display.getDefault().asyncExec(
-											new Runnable() {
-												@Override
-												public void run() {
-													filterTreeViewer
-															.setInput(FiltersModel
-																	.getInstance()
-																	.getDataArray());
-													dataColumn.pack();
-												}
-											});
-								}
-							}
-						};
-						mgr.add(addStandardItemAction);
+						mgr.add(new AddStandardItemAction(filterTreeViewer,
+								selection));
 						/** Добавить расширенный IP фильтр **/
-						Action addExtendedItemAction = new Action(
-								"Добавить расширенное правило") {
-							public void run() {
-								final FiltersBean fsb = (FiltersBean) selection
-										.getFirstElement();
-								FilterRuleDialog dialog = new FilterRuleDialog(
-										shell, null, Constants.DLG_EXTENDED);
-								if (dialog.open() == Window.OK) {
-									java.util.List<FiltersBean> filtersList = FiltersModel
-											.getInstance().getData();
-									int index = filtersList.indexOf(fsb);
-									if (fsb.getFilter() != null
-											&& fsb.getFilter().getItem() != null) {
-										fsb.getFilter().getItem()
-												.add(dialog.getData());
-									} else {
-										FilterBean filterBean = new FilterBean();
-										filterBean.setName(fsb.getFilter().getName());
-										LinkedList<IFilterItem> lfi = new LinkedList<>();
-										lfi.add(dialog.getData());
-										filterBean.setItem(lfi);
-										fsb.setFilter(filterBean);
-									}
-									FiltersModel.getInstance().getData()
-											.set(index, fsb);
-									Display.getDefault().asyncExec(
-											new Runnable() {
-												@Override
-												public void run() {
-													filterTreeViewer
-															.setInput(FiltersModel
-																	.getInstance()
-																	.getDataArray());
-													dataColumn.pack();
-													extendedDataColumn.pack();
-												}
-											});
-								}
-							}
-						};
-						mgr.add(addExtendedItemAction);
+						mgr.add(new AddExtendedItemAction(filterTreeViewer,
+								selection));
 						/** Добавить элемент расписания **/
-						Action addSheduleItemAction = new Action(
-								"Добавить элемент расписания") {
-							public void run() {
-								final FiltersBean fsb = (FiltersBean) selection
-										.getFirstElement();
-								SheduleRuleDialog dialog = new SheduleRuleDialog(
-										shell, null);
-								if (dialog.open() == Window.OK) {
-									java.util.List<FiltersBean> filtersList = FiltersModel
-											.getInstance().getData();
-									int index = filtersList.indexOf(fsb);
-									if (fsb.getFilter() != null
-											&& fsb.getFilter().getItem() != null) {
-										fsb.getFilter().getItem()
-												.add(dialog.getData());
-									} else {
-										FilterBean filterBean = new FilterBean();
-										filterBean.setName(fsb.getFilter().getName());
-										LinkedList<IFilterItem> lfi = new LinkedList<>();
-										lfi.add(dialog.getData());
-										filterBean.setItem(lfi);
-										fsb.setFilter(filterBean);
-									}
-									FiltersModel.getInstance().getData()
-											.set(index, fsb);
-									Display.getDefault().asyncExec(
-											new Runnable() {
-												@Override
-												public void run() {
-													filterTreeViewer
-															.setInput(FiltersModel
-																	.getInstance()
-																	.getDataArray());
-													dataColumn.pack();
-												}
-											});
-								}
-							}
-						};
-						mgr.add(addSheduleItemAction);
+						mgr.add(new AddSheduleItemAction(filterTreeViewer,
+								selection));
 						// разделитель
 						mgr.add(new Separator(
 								IWorkbenchActionConstants.MB_ADDITIONS));
 						/** Создать шаблон фильтра **/
-						Action makeTemplateItemAction = new Action(
-								"Создать шаблон фильтра") {
-							public void run() {
-							}
-						};
-						mgr.add(makeTemplateItemAction);
+						mgr.add(new MakeTemplateItemAction());
 						/** Добавить фильтр по шаблону **/
-						mgr.add(addTemplateItemAction);
+						mgr.add(new AddTemplateItemAction());
 					} else
 					// если выбрано правило
 					if (selection.getFirstElement() instanceof IFilterItem) {
 						/** Изменить правило **/
-						Action changeItemAction = new Action("Изменить") {
-							public void run() {
-								if (selection.getFirstElement() instanceof StandardFilterItemBean) {
-									StandardFilterItemBean sitem = (StandardFilterItemBean) selection
-											.getFirstElement();
-									java.util.List<FiltersBean> filtersList = FiltersModel
-											.getInstance().getData();
-									int index = 0;
-									for (FiltersBean fbean : filtersList) {
-										if (fbean.getFilter() != null
-												&& fbean.getFilter().getItem() != null) {
-											java.util.List<IFilterItem> ruleList = fbean
-													.getFilter().getItem();
-											for (IFilterItem item : ruleList) {
-												if (item.equals(sitem)) {
-													break;
-												}
-											}
-										}
-									}
-									FilterRuleDialog dialog = new FilterRuleDialog(
-											shell, sitem,
-											Constants.DLG_STANDARD);
-									if (dialog.open() == Window.OK) {
-
-									}
-								}
-							}
-						};
-						mgr.add(changeItemAction);
-
+						mgr.add(new ChangeFilterItemAction(filterTreeViewer,
+								selection));
+						/** Удалить правило **/
+						mgr.add(new RemoveFilterItemAction(filterTreeViewer,
+								selection));
+						// разделитель
+						mgr.add(new Separator(
+								IWorkbenchActionConstants.MB_ADDITIONS));
+						/** Добавить стандартный IP фильтр **/
+						mgr.add(new AddStandardItemAction(filterTreeViewer,
+								selection));
+						/** Добавить расширенный IP фильтр **/
+						mgr.add(new AddExtendedItemAction(filterTreeViewer,
+								selection));
+						/** Добавить элемент расписания **/
+						mgr.add(new AddSheduleItemAction(filterTreeViewer,
+								selection));
+						// разделитель
+						mgr.add(new Separator(
+								IWorkbenchActionConstants.MB_ADDITIONS));
+						/** Заблокировать элемент **/
+						mgr.add(new BlockFilterItemAction(filterTreeViewer,
+								selection));
+						/** Разблокировать элемент **/
+						mgr.add(new UnblockFilterItemAction(filterTreeViewer,
+								selection));
 					}
 
 				}

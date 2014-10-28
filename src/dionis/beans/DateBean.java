@@ -4,6 +4,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 public class DateBean extends ModelObject implements PropertyChangeListener {
+	private boolean dateBlock;
 	protected DateBeginBean begin;
 	protected DateEndBean end;
 
@@ -27,6 +28,15 @@ public class DateBean extends ModelObject implements PropertyChangeListener {
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
+	}
+
+	public boolean isDateBlock() {
+		return dateBlock;
+	}
+
+	public void setDateBlock(boolean dateBlock) {
+		firePropertyChange("dateBlock", this.dateBlock,
+				this.dateBlock = dateBlock);
 	}
 
 }

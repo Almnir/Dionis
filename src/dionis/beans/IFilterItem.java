@@ -7,6 +7,12 @@ import dionis.xml.FilterProtocolType;
 import dionis.xml.FilterStatusType;
 import dionis.xml.FilterTCPFlagsType;
 
+/**
+ * Интерфейс для правил фильтрации
+ * 
+ * @author Ярных А.О.
+ *
+ */
 public interface IFilterItem {
 
 	public abstract BooleanType getBlock();
@@ -64,5 +70,9 @@ public interface IFilterItem {
 	public abstract TimeInterval2Bean getTimeInterval2();
 
 	public abstract void setTimeInterval2(TimeInterval2Bean timeInterval2);
+
+	public abstract void setParent(FiltersBean parent);
+
+	public abstract FiltersBean getParent();
 
 }

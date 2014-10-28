@@ -251,11 +251,15 @@ public class SheduleRuleDialog extends Dialog {
 					friCheckButton.setSelection(true);
 				else
 					friCheckButton.setSelection(false);
+				if (data.getDays().getSat() == BooleanType.YES)
+					satCheckButton.setSelection(true);
+				else
+					satCheckButton.setSelection(false);
 				if (data.getDays().getSun() == BooleanType.YES)
 					sunCheckButton.setSelection(true);
 				else
 					sunCheckButton.setSelection(false);
-				if (data.getDate() != null) {
+				if (data.getDate() != null && data.getDate().isDateBlock()) {
 					dateCheckButton.setSelection(true);
 					beginDateTime.setDate(data.getDate().getBegin().getYear(),
 							data.getDate().getBegin().getMonth(), data
@@ -314,6 +318,7 @@ public class SheduleRuleDialog extends Dialog {
 			} else {
 				ddate = data.getDate();
 			}
+			ddate.setDateBlock(true);
 			DateBeginBean beginBean = new DateBeginBean();
 			beginBean.setYear((short) beginDateTime.getYear());
 			beginBean.setMonth((byte) beginDateTime.getMonth());
@@ -361,10 +366,22 @@ public class SheduleRuleDialog extends Dialog {
 		satCheckButton.setSelection(false);
 		sunCheckButton.setSelection(false);
 		dateCheckButton.setSelection(true);
-		beginTimeInterval1.setDate(0, 0, 0);
-		endTimeInterval1.setDate(0, 0, 0);
-		beginTimeInterval2.setDate(0, 0, 0);
-		endTimeInterval2.setDate(0, 0, 0);
+		// int year = GregorianCalendar.getInstance().get(Calendar.YEAR);
+		// int month = GregorianCalendar.getInstance().get(Calendar.MONTH);
+		// int day = GregorianCalendar.getInstance().get(Calendar.DATE);
+		int year = 0;
+		int month = 0;
+		int day = 0;
+		beginDateTime.setYear(year);
+		beginDateTime.setMonth(month);
+		beginDateTime.setDay(day);
+		endDateTime.setYear(year);
+		endDateTime.setMonth(month);
+		endDateTime.setDay(day);
+		beginTimeInterval1.setDate(year, month, day);
+		endTimeInterval1.setDate(year, month, day);
+		beginTimeInterval2.setDate(year, month, day);
+		endTimeInterval2.setDate(year, month, day);
 	}
 
 	/**
