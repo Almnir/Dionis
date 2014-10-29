@@ -1,4 +1,4 @@
-package dionis.actions.filter;
+package dionis.actions.filters;
 
 import java.util.LinkedList;
 
@@ -11,31 +11,33 @@ import org.eclipse.swt.widgets.Display;
 import dionis.beans.FilterBean;
 import dionis.beans.FiltersBean;
 import dionis.beans.IFilterItem;
-import dionis.dialogs.SheduleRuleDialog;
+import dionis.dialogs.FilterRuleDialog;
 import dionis.models.FiltersModel;
+import dionis.utils.Constants;
 import dionis.views.DionisView;
 
 /**
- * Класс действия добавления правила расписания
+ * Класс действия добавления нового расширенного правила
  * 
  * @author Ярных А.О.
  *
  */
-public class AddSheduleItemAction extends Action {
+public class AddExtendedItemAction extends Action {
 
 	private TreeViewer viewer;
 	private IStructuredSelection selection;
 	private FiltersBean fsb;
 
-	public AddSheduleItemAction(TreeViewer viewer,
+	public AddExtendedItemAction(TreeViewer viewer,
 			IStructuredSelection selection) {
 		this.viewer = viewer;
 		this.selection = selection;
-		super.setText("Добавить элемент расписания");
+		super.setText("Добавить расширенное правило");
 	}
 
 	@Override
 	public void run() {
+		fsb = null;
 		// текущий выбор
 		if (selection.getFirstElement() instanceof IFilterItem) {
 			IFilterItem item = (IFilterItem) selection.getFirstElement();
@@ -44,9 +46,9 @@ public class AddSheduleItemAction extends Action {
 		} else if (selection.getFirstElement() instanceof FiltersBean) {
 			fsb = (FiltersBean) selection.getFirstElement();
 		}
-		// диалог правила расписания
-		SheduleRuleDialog dialog = new SheduleRuleDialog(viewer.getControl()
-				.getShell(), null);
+		// диалог расширенного правила
+		FilterRuleDialog dialog = new FilterRuleDialog(viewer.getControl()
+				.getShell(), null, Constants.DLG_EXTENDED);
 		if (dialog.open() == Window.OK) {
 			// данные модели
 			java.util.List<FiltersBean> filtersList = FiltersModel
@@ -83,8 +85,11 @@ public class AddSheduleItemAction extends Action {
 					viewer.setExpandedState(fsb, true);
 					viewer.getTree().getColumn(DionisView.TREE_COLUMN_DATA)
 							.pack();
+					viewer.getTree().getColumn(DionisView.TREE_COLUMN_EXTENDED)
+							.pack();
 				}
 			});
 		}
+
 	}
 }

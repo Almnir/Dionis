@@ -1,4 +1,4 @@
-package dionis.actions.filter;
+package dionis.actions.filters;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.IStructuredSelection;

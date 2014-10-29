@@ -22,6 +22,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
@@ -36,12 +37,14 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 
 import dionis.beans.DisableDatagramsBean;
+import dionis.beans.FiltersBean;
 import dionis.beans.InterfaceBean;
 import dionis.beans.InterfaceFiltersBean;
 import dionis.beans.InterfaceIPBean;
 import dionis.beans.InterfaceParametrsBean;
 import dionis.beans.InterfaceRouteBean;
 import dionis.beans.InterfaceRoutesBean;
+import dionis.models.FiltersModel;
 import dionis.models.InterfaceRouteModel;
 import dionis.providers.InterfaceRouteLabelProvider;
 import dionis.xml.BooleanType;
@@ -190,10 +193,15 @@ public class InterfaceDialog extends Dialog {
 		filterInputCombo.setLayoutData(gd_combo_3);
 		filterInputComboViewer = new ComboViewer(filterInputCombo);
 		filterInputComboViewer.setContentProvider(new ArrayContentProvider());
-		filterInputComboViewer.setLabelProvider(new LabelProvider());
-		// TODO: доделать связь с таблицей фильтров
-		// ib
-		// comboViewer_2.setInput(new String[] { ib.getFilters().getInput() });
+		filterInputComboViewer.setLabelProvider(new LabelProvider() {
+			@Override
+			public String getText(Object element) {
+				FiltersBean fsb = (FiltersBean) element;
+				return fsb.getFilter().getName();
+			}
+		});
+		filterInputComboViewer.setInput(FiltersModel.getInstance()
+				.getDataArray());
 
 		Label lblIp_1 = new Label(container, SWT.NONE);
 		lblIp_1.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false,
@@ -216,8 +224,15 @@ public class InterfaceDialog extends Dialog {
 		filterOutputCombo.setLayoutData(gd_combo_4);
 		filterOutputComboViewer = new ComboViewer(filterOutputCombo);
 		filterOutputComboViewer.setContentProvider(new ArrayContentProvider());
-		filterOutputComboViewer.setLabelProvider(new LabelProvider());
-		// TODO: доделать связь с таблицей фильтров
+		filterOutputComboViewer.setLabelProvider(new LabelProvider() {
+			@Override
+			public String getText(Object element) {
+				FiltersBean fsb = (FiltersBean) element;
+				return fsb.getFilter().getName();
+			}
+		});
+		filterOutputComboViewer.setInput(FiltersModel.getInstance()
+				.getDataArray());
 
 		Label lblNewLabel = new Label(container, SWT.NONE);
 		lblNewLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false,
@@ -309,10 +324,9 @@ public class InterfaceDialog extends Dialog {
 		mntmNewItem.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				if (table.getSelection() != null
-						&& table.getSelection().length > 0) {
-					IStructuredSelection sel = (IStructuredSelection) tableViewer
-							.getSelection();
+				IStructuredSelection sel = (IStructuredSelection) tableViewer
+						.getSelection();
+				if (!sel.isEmpty()) {
 					// выбранный элемент таблицы как бин
 					InterfaceRouteBean ibean = (InterfaceRouteBean) sel
 							.getFirstElement();
@@ -328,8 +342,15 @@ public class InterfaceDialog extends Dialog {
 						// замена бина в модели по выбранному индексу
 						InterfaceRouteModel.getInstance().getData()
 								.set(indx, dialog.getInterfaceRouteBean());
-						// обновление данных для таблицы
-						tableViewer.refresh();
+						Display.getDefault().asyncExec(new Runnable() {
+							@Override
+							public void run() {
+								// обновление данных для таблицы
+								tableViewer.setInput(InterfaceRouteModel
+										.getInstance().getDataArray());
+							}
+						});
+
 					}
 				}
 			}
@@ -350,8 +371,14 @@ public class InterfaceDialog extends Dialog {
 					InterfaceRouteModel.getInstance().getData()
 							.add(dialog.getInterfaceRouteBean());
 					// обновление данных для таблицы
-					tableViewer.setInput(InterfaceRouteModel.getInstance()
-							.getDataArray());
+					Display.getDefault().asyncExec(new Runnable() {
+						@Override
+						public void run() {
+							// обновление данных для таблицы
+							tableViewer.setInput(InterfaceRouteModel
+									.getInstance().getDataArray());
+						}
+					});
 				}
 			}
 		});
@@ -362,17 +389,22 @@ public class InterfaceDialog extends Dialog {
 		mntmNewItem_2.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				if (table.getSelection() != null
-						&& table.getSelection().length > 0) {
-					IStructuredSelection sel = (IStructuredSelection) tableViewer
-							.getSelection();
+				IStructuredSelection sel = (IStructuredSelection) tableViewer
+						.getSelection();
+				if (!sel.isEmpty()) {
 					// выбранный элемент таблицы как бин
 					InterfaceRouteBean ibean = (InterfaceRouteBean) sel
 							.getFirstElement();
 					InterfaceRouteModel.getInstance().getData().remove(ibean);
-					// обновление данных для таблицы
-					tableViewer.setInput(InterfaceRouteModel.getInstance()
-							.getDataArray());
+					Display.getDefault().asyncExec(new Runnable() {
+						@Override
+						public void run() {
+							// обновление данных для таблицы
+							tableViewer.setInput(InterfaceRouteModel
+									.getInstance().getDataArray());
+						}
+					});
+
 				}
 			}
 		});
@@ -655,24 +687,23 @@ public class InterfaceDialog extends Dialog {
 	// }
 
 	private void getAll() {
-		if (interfaceBean == null) {
+		if (interfaceBean != null) {
 			// новый экземпляр бина
-			setInterfaceBean(new InterfaceBean());
-			InterfaceIPBean ipb = new InterfaceIPBean();
-			getInterfaceBean().setIp(ipb);
-			InterfaceFiltersBean filtersBean = new InterfaceFiltersBean();
-			getInterfaceBean().setFilters(filtersBean);
-			DisableDatagramsBean datagramsBean = new DisableDatagramsBean();
-			datagramsBean.setNotTunneled(BooleanType.YES);
-			datagramsBean.setForward(BooleanType.YES);
-			getInterfaceBean().setDisableDatagrams(datagramsBean);
-			InterfaceRoutesBean routes = new InterfaceRoutesBean();
-			LinkedList<InterfaceRouteBean> route = new LinkedList<InterfaceRouteBean>();
-			routes.setRoute(route);
-			getInterfaceBean().setRoutes(routes);
-			InterfaceRouteModel.getInstance().removeAll();
+//			setInterfaceBean(new InterfaceBean());
+//			InterfaceIPBean ipb = new InterfaceIPBean();
+//			getInterfaceBean().setIp(ipb);
+//			InterfaceFiltersBean filtersBean = new InterfaceFiltersBean();
+//			getInterfaceBean().setFilters(filtersBean);
+//			DisableDatagramsBean datagramsBean = new DisableDatagramsBean();
+//			datagramsBean.setNotTunneled(BooleanType.YES);
+//			datagramsBean.setForward(BooleanType.YES);
+//			getInterfaceBean().setDisableDatagrams(datagramsBean);
+//			InterfaceRoutesBean routes = new InterfaceRoutesBean();
+//			LinkedList<InterfaceRouteBean> route = new LinkedList<InterfaceRouteBean>();
+//			routes.setRoute(route);
+//			getInterfaceBean().setRoutes(routes);
+//			InterfaceRouteModel.getInstance().removeAll();
 			// System.out.println("clean");
-		} else {
 			nameText.setText(interfaceBean.getName());
 			typeCombo.select((interfaceBean.getType() != null) ? interfaceBean
 					.getType().ordinal() : 0);
@@ -680,15 +711,26 @@ public class InterfaceDialog extends Dialog {
 					.getMode().ordinal() : 0);
 			localIpText.setText(interfaceBean.getIp().getLocal());
 			remoteIpText.setText(interfaceBean.getIp().getRemote());
-			// TODO: !!!
-			// filterInputCombo.select(index)
 			timerSpinner.setSelection(interfaceBean.getTimer());
 			natCombo.select((interfaceBean.getNat() != null) ? interfaceBean
 					.getNat().ordinal() : 0);
 			mtuSpinner.setSelection(interfaceBean.getMtu());
-			// TODO !!!
-			// params???
-
+			InterfaceFiltersBean filtersBean = interfaceBean.getFilters();
+			// если есть фильтры
+			if (filtersBean != null) {
+				String inputFilterName = filtersBean.getInput();
+				String outputFilterName = filtersBean.getOutput();
+				for (FiltersBean fb : FiltersModel.getInstance().getData()) {
+					if (fb.getFilter().getName().equals(inputFilterName)) {
+						filterInputCombo.select(FiltersModel.getInstance()
+								.getData().indexOf(fb));
+					}
+					if (fb.getFilter().getName().equals(outputFilterName)) {
+						filterOutputCombo.select(FiltersModel.getInstance()
+								.getData().indexOf(fb));
+					}
+				}
+			}
 			DisableDatagramsBean datagrams = interfaceBean
 					.getDisableDatagrams();
 			tunnelButton
@@ -713,11 +755,11 @@ public class InterfaceDialog extends Dialog {
 			proxyButton
 					.setSelection(datagrams.getProxyARP() == BooleanType.YES ? true
 							: false);
-			System.out.println("Before: "
-					+ InterfaceRouteModel.getInstance().toString());
-			InterfaceRouteModel.getInstance().removeAll();
-			System.out.println("After clean: "
-					+ InterfaceRouteModel.getInstance().toString());
+//			System.out.println("Before: "
+//					+ InterfaceRouteModel.getInstance().getData().toString());
+//			InterfaceRouteModel.getInstance().removeAll();
+//			System.out.println("After clean: "
+//					+ InterfaceRouteModel.getInstance().getData().toString());
 			InterfaceRouteModel.getInstance().setData(
 					interfaceBean.getRoutes().getRoute());
 			System.out.println("New routes : "
@@ -729,6 +771,9 @@ public class InterfaceDialog extends Dialog {
 
 	@Override
 	protected void okPressed() {
+		if (interfaceBean == null) {
+			interfaceBean = new InterfaceBean(); 
+		}
 		interfaceBean.setName(nameText.getText());
 		if (typeCombo.getSelectionIndex() != -1) {
 			interfaceBean.setType(Arrays.asList(InterfaceType.values()).get(
@@ -754,10 +799,9 @@ public class InterfaceDialog extends Dialog {
 		interfaceBean.setMtu((short) mtuSpinner.getSelection());
 		InterfaceRoutesBean routes = new InterfaceRoutesBean();
 		routes.setRoute(InterfaceRouteModel.getInstance().getData());
-		// routes.setRoute(InterfaceRouteModel.getInstance().getData());
 		System.out.println("instance: "
 				+ InterfaceRouteModel.getInstance().toString());
-		System.out.println("routes: " + routes.getRoute().toString());
+		System.out.println("routes: " + routes.getRoute().size());
 
 		interfaceBean.setRoutes(routes);
 		DisableDatagramsBean disableDatagrams = new DisableDatagramsBean();

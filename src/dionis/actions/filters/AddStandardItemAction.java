@@ -1,4 +1,4 @@
-package dionis.actions.filter;
+package dionis.actions.filters;
 
 import java.util.LinkedList;
 
