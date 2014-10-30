@@ -7,6 +7,8 @@ import dionis.xml.BooleanType;
 
 public class TunnelEncryptionBean extends ModelObject implements
 		PropertyChangeListener {
+
+	private static final long serialVersionUID = 0;
 	protected BooleanType method;
 	protected long serNumber;
 	protected short channel;

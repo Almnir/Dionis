@@ -2,8 +2,12 @@ package dionis.beans;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.Serializable;
 
-public class DateBean extends ModelObject implements PropertyChangeListener {
+public class DateBean extends ModelObject implements PropertyChangeListener,
+		Serializable {
+	private static final long serialVersionUID = 0;
+
 	private boolean dateBlock;
 	protected DateBeginBean begin;
 	protected DateEndBean end;

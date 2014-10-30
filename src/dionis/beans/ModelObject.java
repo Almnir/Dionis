@@ -2,34 +2,35 @@ package dionis.beans;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.Serializable;
 
-public class ModelObject {
-  private PropertyChangeSupport changeSupport = 
-      new PropertyChangeSupport(this);
+public class ModelObject implements Serializable {
 
-  public void addPropertyChangeListener(PropertyChangeListener 
-      listener) {
-    changeSupport.addPropertyChangeListener(listener);
-  }
+	private static final long serialVersionUID = 0;
 
-  public void removePropertyChangeListener(PropertyChangeListener 
-      listener) {
-    changeSupport.removePropertyChangeListener(listener);
-  }
+	private PropertyChangeSupport changeSupport = new PropertyChangeSupport(
+			this);
 
-  public void addPropertyChangeListener(String propertyName,
-      PropertyChangeListener listener) {
-    changeSupport.addPropertyChangeListener(propertyName, listener);
-  }
+	public void addPropertyChangeListener(PropertyChangeListener listener) {
+		changeSupport.addPropertyChangeListener(listener);
+	}
 
-  public void removePropertyChangeListener(String propertyName,
-      PropertyChangeListener listener) {
-    changeSupport.removePropertyChangeListener(propertyName, listener);
-  }
+	public void removePropertyChangeListener(PropertyChangeListener listener) {
+		changeSupport.removePropertyChangeListener(listener);
+	}
 
-  protected void firePropertyChange(String propertyName, 
-      Object oldValue,
-      Object newValue) {
-    changeSupport.firePropertyChange(propertyName, oldValue, newValue);
-  }
-} 
+	public void addPropertyChangeListener(String propertyName,
+			PropertyChangeListener listener) {
+		changeSupport.addPropertyChangeListener(propertyName, listener);
+	}
+
+	public void removePropertyChangeListener(String propertyName,
+			PropertyChangeListener listener) {
+		changeSupport.removePropertyChangeListener(propertyName, listener);
+	}
+
+	protected void firePropertyChange(String propertyName, Object oldValue,
+			Object newValue) {
+		changeSupport.firePropertyChange(propertyName, oldValue, newValue);
+	}
+}

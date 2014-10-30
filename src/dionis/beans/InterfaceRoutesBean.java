@@ -7,6 +7,7 @@ import java.util.List;
 public class InterfaceRoutesBean extends ModelObject implements
 		PropertyChangeListener {
 
+	private static final long serialVersionUID = 0;
 	protected List<InterfaceRouteBean> route;
 
 	public InterfaceRoutesBean() {

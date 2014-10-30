@@ -2,9 +2,12 @@ package dionis.beans;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.Serializable;
 
 public class TimeInterval1Bean extends ModelObject implements
-		PropertyChangeListener {
+		PropertyChangeListener, Serializable {
+
+	private static final long serialVersionUID = 0;
 
 	protected TimeInterval1BeginBean begin;
 	protected TimeInterval1EndBean end;

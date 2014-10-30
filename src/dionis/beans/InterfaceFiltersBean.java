@@ -2,6 +2,8 @@ package dionis.beans;
 
 public class InterfaceFiltersBean extends ModelObject {
 
+	private static final long serialVersionUID = 0;
+	
 	protected String input;
 	protected String output;
 

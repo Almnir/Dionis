@@ -2,6 +2,8 @@ package dionis.beans;
 
 public class InterfaceIPBean extends ModelObject {
 
+	private static final long serialVersionUID = 0;
+	
 	protected String local;
 	protected String remote;
 

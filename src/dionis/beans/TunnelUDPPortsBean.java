@@ -1,6 +1,8 @@
 package dionis.beans;
 
 public class TunnelUDPPortsBean extends ModelObject {
+
+	private static final long serialVersionUID = 0;
 	protected int sender;
 	protected int receiver;
 

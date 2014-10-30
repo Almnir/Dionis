@@ -267,7 +267,6 @@ public class DionisView extends ViewPart {
 		tabFolder.setVisible(true);
 		tabFolder.setEnabled(true);
 		createCommonSettingsTabs();
-		// createNetSettingsTabs();
 		tabFolder.setSelection(1);
 	}
 
@@ -1264,7 +1263,7 @@ public class DionisView extends ViewPart {
 
 		TableColumn tblclmnNewColumn = new TableColumn(interfaceTable, SWT.NONE);
 		tblclmnNewColumn.setWidth(10);
-		tblclmnNewColumn.setText("№");
+		tblclmnNewColumn.setText("#");
 
 		TableColumn tblclmnNewColumn_1 = new TableColumn(interfaceTable,
 				SWT.NONE);
@@ -1506,7 +1505,7 @@ public class DionisView extends ViewPart {
 					// Добавить новый пустой фильтр
 					mgr.add(new AddNewBlankFilterAction(filterTreeViewer));
 					/** Добавить фильтр по шаблону **/
-					mgr.add(new AddTemplateItemAction());
+					mgr.add(new AddTemplateItemAction(filterTreeViewer));
 					// если есть выбор
 				} else {
 					// если выбран фильтр
@@ -1535,9 +1534,10 @@ public class DionisView extends ViewPart {
 						mgr.add(new Separator(
 								IWorkbenchActionConstants.MB_ADDITIONS));
 						/** Создать шаблон фильтра **/
-						mgr.add(new MakeTemplateItemAction());
+						mgr.add(new MakeTemplateItemAction(filterTreeViewer,
+								selection));
 						/** Добавить фильтр по шаблону **/
-						mgr.add(new AddTemplateItemAction());
+						mgr.add(new AddTemplateItemAction(filterTreeViewer));
 					} else
 					// если выбрано правило
 					if (selection.getFirstElement() instanceof IFilterItem) {
@@ -1600,7 +1600,7 @@ public class DionisView extends ViewPart {
 
 		TableColumn tblclmnNewColumn_14 = new TableColumn(tunnelTable, SWT.NONE);
 		tblclmnNewColumn_14.setWidth(100);
-		tblclmnNewColumn_14.setText("№");
+		tblclmnNewColumn_14.setText("#");
 
 		TableColumn tblclmnNewColumn_15 = new TableColumn(tunnelTable, SWT.NONE);
 		tblclmnNewColumn_15.setWidth(100);

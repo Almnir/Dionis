@@ -2,6 +2,7 @@ package dionis.beans;
 
 public class VLANBean extends ModelObject implements Cloneable {
 
+	private static final long serialVersionUID = 0;
 	protected String ip;
 	protected short bits;
 	protected int vnid;

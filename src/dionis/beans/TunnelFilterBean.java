@@ -9,6 +9,7 @@ import dionis.xml.TunnelProtocolType;
 public class TunnelFilterBean extends ModelObject implements
 		PropertyChangeListener, Cloneable {
 
+	private static final long serialVersionUID = 0;
 	protected FilterStatusType status;
 	protected TunnelFilterSourceBean source;
 	protected TunnelFilterTargetBean target;

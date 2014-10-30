@@ -4,6 +4,7 @@ import java.util.List;
 
 public class VLANsBean extends ModelObject {
 
+	private static final long serialVersionUID = 0;
 	protected List<VLANBean> vlan;
 
 	public VLANsBean() {

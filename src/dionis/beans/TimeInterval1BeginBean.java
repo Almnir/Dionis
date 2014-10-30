@@ -2,6 +2,7 @@ package dionis.beans;
 
 public class TimeInterval1BeginBean extends ModelObject {
 
+	private static final long serialVersionUID = 0;
 	protected short hour;
 	protected short minute;
 

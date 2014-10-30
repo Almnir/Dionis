@@ -1,10 +1,15 @@
 package dionis.beans;
 
+import java.io.Serializable;
+
 import dionis.xml.BooleanType;
 import dionis.xml.FilterLinkType;
 import dionis.xml.FilterOperationType;
 
-public class ExtBean extends ModelObject {
+public class ExtBean extends ModelObject implements Serializable {
+
+	private static final long serialVersionUID = 0;
+
 	protected BooleanType ip;
 	protected short offset;
 	protected FilterOperationType operation;

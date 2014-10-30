@@ -1,9 +1,12 @@
 package dionis.beans;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class FilterBean extends ModelObject {
+public class FilterBean extends ModelObject implements Serializable {
 
+	private static final long serialVersionUID = 0;
+	
 	protected String name;
 	protected List<IFilterItem> item;
 

@@ -10,6 +10,8 @@ import dionis.xml.InterfaceType;
 public class InterfaceBean extends ModelObject implements
 		PropertyChangeListener {
 
+	private static final long serialVersionUID = 0;
+	
 	protected String name;
 	protected InterfaceType type;
 	protected InterfaceModeType mode;

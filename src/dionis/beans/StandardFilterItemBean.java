@@ -1,5 +1,7 @@
 package dionis.beans;
 
+import java.io.Serializable;
+
 /**
  * Класс-бин стандартного IP правила
  * 
@@ -7,6 +9,8 @@ package dionis.beans;
  *
  */
 public class StandardFilterItemBean extends FilterItemBean implements
-		IFilterItem {
+		IFilterItem, Serializable {
+
+	private static final long serialVersionUID = 0;
 
 }

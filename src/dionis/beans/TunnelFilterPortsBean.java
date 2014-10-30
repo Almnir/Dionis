@@ -2,6 +2,7 @@ package dionis.beans;
 
 public class TunnelFilterPortsBean extends ModelObject {
 
+	private static final long serialVersionUID = 0;
 	protected int low;
 	protected int high;
 

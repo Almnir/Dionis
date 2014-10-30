@@ -7,6 +7,7 @@ import dionis.xml.BooleanType;
 
 public class UDPBean extends ModelObject implements PropertyChangeListener {
 
+	private static final long serialVersionUID = 0;
 	protected BooleanType title;
 	protected TunnelUDPPortsBean ports;
 

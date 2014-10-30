@@ -1,8 +1,12 @@
 package dionis.beans;
 
+import java.io.Serializable;
+
 import dionis.xml.BooleanType;
 
-public class DaysBean extends ModelObject {
+public class DaysBean extends ModelObject implements Serializable {
+	private static final long serialVersionUID = 0;
+
 	protected BooleanType mon;
 	protected BooleanType tue;
 	protected BooleanType wed;

@@ -8,6 +8,7 @@ import dionis.xml.BooleanType;
 public class TunnelBean extends ModelObject implements PropertyChangeListener,
 		Cloneable {
 
+	private static final long serialVersionUID = 0;
 	protected int id;
 	protected TunnelIPBean ip;
 	protected UDPBean udp;

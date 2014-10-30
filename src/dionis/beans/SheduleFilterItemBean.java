@@ -1,5 +1,7 @@
 package dionis.beans;
 
+import java.io.Serializable;
+
 import dionis.xml.BooleanType;
 
 /**
@@ -9,7 +11,9 @@ import dionis.xml.BooleanType;
  *
  */
 public class SheduleFilterItemBean extends FilterItemBean implements
-		IFilterItem {
+		IFilterItem, Serializable {
+
+	private static final long serialVersionUID = 0;
 
 	@Override
 	public String toString() {
@@ -37,14 +41,20 @@ public class SheduleFilterItemBean extends FilterItemBean implements
 		}
 		sb.append(" ");
 		if (date != null) {
-			sb.append(date.getBegin().getDay()).append("/").append(date.getBegin().getMonth()).append("/").append(date.getBegin().getYear());
+			sb.append(date.getBegin().getDay()).append("/")
+					.append(date.getBegin().getMonth()).append("/")
+					.append(date.getBegin().getYear());
 			sb.append("-");
-			sb.append(date.getEnd().getDay()).append("/").append(date.getEnd().getMonth()).append("/").append(date.getEnd().getYear());
+			sb.append(date.getEnd().getDay()).append("/")
+					.append(date.getEnd().getMonth()).append("/")
+					.append(date.getEnd().getYear());
 			sb.append(" ");
 		}
-		sb.append(timeInterval1.getBegin()).append("-").append(timeInterval1.getEnd());
+		sb.append(timeInterval1.getBegin()).append("-")
+				.append(timeInterval1.getEnd());
 		sb.append(" ");
-		sb.append(timeInterval2.getBegin()).append("-").append(timeInterval2.getEnd());
+		sb.append(timeInterval2.getBegin()).append("-")
+				.append(timeInterval2.getEnd());
 		return sb.toString();
 	}
 }

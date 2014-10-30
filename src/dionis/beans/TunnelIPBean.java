@@ -2,6 +2,7 @@ package dionis.beans;
 
 public class TunnelIPBean extends ModelObject {
 
+	private static final long serialVersionUID = 0;
 	protected String local;
 	protected String remote;
 

@@ -3,6 +3,8 @@ package dionis.beans;
 import java.util.List;
 
 public class TunnelFiltersBean extends ModelObject {
+
+	private static final long serialVersionUID = 0;
 	protected List<TunnelFilterBean> filter;
 
 	public TunnelFiltersBean() {

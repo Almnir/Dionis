@@ -18,6 +18,8 @@ import dionis.xml.FilterTCPFlagsType;
 public class FilterItemBean extends ModelObject implements
 		PropertyChangeListener, IFilterItem {
 
+	private static final long serialVersionUID = 0;
+	
 	protected BooleanType block;
 	protected BooleanType fix;
 	protected FilterStatusType mode;

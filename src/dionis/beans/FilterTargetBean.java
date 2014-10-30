@@ -1,6 +1,11 @@
 package dionis.beans;
 
-public class FilterTargetBean extends ModelObject {
+import java.io.Serializable;
+
+public class FilterTargetBean extends ModelObject implements Serializable {
+	
+	private static final long serialVersionUID = 0;
+	
 	protected String ip;
 	protected short bits;
 

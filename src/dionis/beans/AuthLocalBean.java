@@ -4,6 +4,7 @@ import dionis.xml.InterfaceAuthorityType;
 
 public class AuthLocalBean extends ModelObject {
 
+	private static final long serialVersionUID = 0;
 	protected InterfaceAuthorityType auth;
 	protected String name;
 	protected String password;

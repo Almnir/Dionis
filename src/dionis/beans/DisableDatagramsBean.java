@@ -4,6 +4,8 @@ import dionis.xml.BooleanType;
 
 public class DisableDatagramsBean extends ModelObject {
 
+	private static final long serialVersionUID = 0;
+
 	protected BooleanType notTunneled;
 	protected BooleanType dhcp;
 	protected BooleanType multicast;

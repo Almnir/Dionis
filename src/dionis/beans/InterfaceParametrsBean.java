@@ -13,6 +13,7 @@ import dionis.xml.Script;
 public class InterfaceParametrsBean extends ModelObject implements
 		PropertyChangeListener {
 
+	private static final long serialVersionUID = 0;
 	protected BooleanType seq;
 	protected BooleanType chksum;
 	protected TOSBean tos;

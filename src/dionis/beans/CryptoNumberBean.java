@@ -2,6 +2,7 @@ package dionis.beans;
 
 public class CryptoNumberBean extends ModelObject {
 
+	private static final long serialVersionUID = 0;
 	protected long local;
 	protected long remote;
 

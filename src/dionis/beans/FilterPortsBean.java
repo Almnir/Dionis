@@ -1,8 +1,12 @@
 package dionis.beans;
 
+import java.io.Serializable;
+
 import dionis.xml.FilterPortsType;
 
-public class FilterPortsBean extends ModelObject {
+public class FilterPortsBean extends ModelObject implements Serializable {
+
+	private static final long serialVersionUID = 0;
 
 	protected int low;
 	protected int high;

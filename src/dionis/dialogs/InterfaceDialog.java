@@ -1,7 +1,6 @@
 package dionis.dialogs;
 
 import java.util.Arrays;
-import java.util.LinkedList;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -689,20 +688,21 @@ public class InterfaceDialog extends Dialog {
 	private void getAll() {
 		if (interfaceBean != null) {
 			// новый экземпляр бина
-//			setInterfaceBean(new InterfaceBean());
-//			InterfaceIPBean ipb = new InterfaceIPBean();
-//			getInterfaceBean().setIp(ipb);
-//			InterfaceFiltersBean filtersBean = new InterfaceFiltersBean();
-//			getInterfaceBean().setFilters(filtersBean);
-//			DisableDatagramsBean datagramsBean = new DisableDatagramsBean();
-//			datagramsBean.setNotTunneled(BooleanType.YES);
-//			datagramsBean.setForward(BooleanType.YES);
-//			getInterfaceBean().setDisableDatagrams(datagramsBean);
-//			InterfaceRoutesBean routes = new InterfaceRoutesBean();
-//			LinkedList<InterfaceRouteBean> route = new LinkedList<InterfaceRouteBean>();
-//			routes.setRoute(route);
-//			getInterfaceBean().setRoutes(routes);
-//			InterfaceRouteModel.getInstance().removeAll();
+			// setInterfaceBean(new InterfaceBean());
+			// InterfaceIPBean ipb = new InterfaceIPBean();
+			// getInterfaceBean().setIp(ipb);
+			// InterfaceFiltersBean filtersBean = new InterfaceFiltersBean();
+			// getInterfaceBean().setFilters(filtersBean);
+			// DisableDatagramsBean datagramsBean = new DisableDatagramsBean();
+			// datagramsBean.setNotTunneled(BooleanType.YES);
+			// datagramsBean.setForward(BooleanType.YES);
+			// getInterfaceBean().setDisableDatagrams(datagramsBean);
+			// InterfaceRoutesBean routes = new InterfaceRoutesBean();
+			// LinkedList<InterfaceRouteBean> route = new
+			// LinkedList<InterfaceRouteBean>();
+			// routes.setRoute(route);
+			// getInterfaceBean().setRoutes(routes);
+			// InterfaceRouteModel.getInstance().removeAll();
 			// System.out.println("clean");
 			nameText.setText(interfaceBean.getName());
 			typeCombo.select((interfaceBean.getType() != null) ? interfaceBean
@@ -755,11 +755,11 @@ public class InterfaceDialog extends Dialog {
 			proxyButton
 					.setSelection(datagrams.getProxyARP() == BooleanType.YES ? true
 							: false);
-//			System.out.println("Before: "
-//					+ InterfaceRouteModel.getInstance().getData().toString());
-//			InterfaceRouteModel.getInstance().removeAll();
-//			System.out.println("After clean: "
-//					+ InterfaceRouteModel.getInstance().getData().toString());
+			// System.out.println("Before: "
+			// + InterfaceRouteModel.getInstance().getData().toString());
+			// InterfaceRouteModel.getInstance().removeAll();
+			// System.out.println("After clean: "
+			// + InterfaceRouteModel.getInstance().getData().toString());
 			InterfaceRouteModel.getInstance().setData(
 					interfaceBean.getRoutes().getRoute());
 			System.out.println("New routes : "
@@ -772,7 +772,7 @@ public class InterfaceDialog extends Dialog {
 	@Override
 	protected void okPressed() {
 		if (interfaceBean == null) {
-			interfaceBean = new InterfaceBean(); 
+			interfaceBean = new InterfaceBean();
 		}
 		interfaceBean.setName(nameText.getText());
 		if (typeCombo.getSelectionIndex() != -1) {

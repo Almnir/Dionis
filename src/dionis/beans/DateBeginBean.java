@@ -2,6 +2,7 @@ package dionis.beans;
 
 public class DateBeginBean extends ModelObject {
 
+	private static final long serialVersionUID = 0;
 	protected byte day;
 	protected byte month;
 	protected short year;

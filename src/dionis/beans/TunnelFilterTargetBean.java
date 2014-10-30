@@ -1,6 +1,8 @@
 package dionis.beans;
 
 public class TunnelFilterTargetBean extends ModelObject {
+
+	private static final long serialVersionUID = 0;
 	protected String ip;
 	protected short bits;
 

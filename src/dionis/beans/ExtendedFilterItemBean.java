@@ -1,5 +1,6 @@
 package dionis.beans;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
 import dionis.utils.Constants;
@@ -13,7 +14,9 @@ import dionis.xml.FilterOperationType;
  *
  */
 public class ExtendedFilterItemBean extends FilterItemBean implements
-		IFilterItem {
+		IFilterItem, Serializable {
+
+	private static final long serialVersionUID = 0;
 
 	/**
 	 * Метод, возвращающий заполнение расширенной информации о бине фильтра
@@ -35,7 +38,8 @@ public class ExtendedFilterItemBean extends FilterItemBean implements
 					eb0.getOperation().ordinal()));
 			sb.append(eb0.getData());
 			sb.append(")");
-			// если следующий блок имеет логическую операцию или признак блока IP+
+			// если следующий блок имеет логическую операцию или признак блока
+			// IP+
 			if (eb1.getOperation() != FilterOperationType.NOP
 					&& eb1.getIp() == BooleanType.YES) {
 				// если есть логическая связь

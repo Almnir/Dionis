@@ -4,6 +4,7 @@ import dionis.xml.BooleanType;
 
 public class TOSBean extends ModelObject {
 
+	private static final long serialVersionUID = 0;
 	protected BooleanType copy;
 	protected short value;
 
