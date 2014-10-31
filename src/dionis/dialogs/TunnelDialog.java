@@ -321,30 +321,19 @@ public class TunnelDialog extends Dialog {
 
 		changeItem.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				if (table.getSelection() != null
-						&& table.getSelection().length > 0) {
-					IStructuredSelection sel = (IStructuredSelection) tableViewer
-							.getSelection();
+				IStructuredSelection sel = (IStructuredSelection) tableViewer
+						.getSelection();
+				if (!sel.isEmpty()) {
 					TunnelFilterDialog dialog = new TunnelFilterDialog(
 							getShell(), sel);
 					if (dialog.open() == Window.OK) {
-						Job job = new Job("change") {
-
+						Display.getDefault().asyncExec(new Runnable() {
 							@Override
-							protected IStatus run(IProgressMonitor monitor) {
-								Display.getDefault().asyncExec(new Runnable() {
-									@Override
-									public void run() {
-										tableViewer.setInput(TunnelFilterModel
-												.getInstance().getDataArray());
-									}
-								});
-								return Status.OK_STATUS;
+							public void run() {
+								tableViewer.setInput(TunnelFilterModel
+										.getInstance().getDataArray());
 							}
-						};
-						job.setPriority(Job.SHORT);
-						job.schedule();
-
+						});
 					}
 				}
 			}
@@ -359,22 +348,13 @@ public class TunnelDialog extends Dialog {
 				TunnelFilterDialog dialog = new TunnelFilterDialog(getShell(),
 						null);
 				if (dialog.open() == Window.OK) {
-					Job job = new Job("add") {
-
+					Display.getDefault().asyncExec(new Runnable() {
 						@Override
-						protected IStatus run(IProgressMonitor monitor) {
-							Display.getDefault().asyncExec(new Runnable() {
-								@Override
-								public void run() {
-									tableViewer.setInput(TunnelFilterModel
-											.getInstance().getDataArray());
-								}
-							});
-							return Status.OK_STATUS;
+						public void run() {
+							tableViewer.setInput(TunnelFilterModel
+									.getInstance().getDataArray());
 						}
-					};
-					job.setPriority(Job.SHORT);
-					job.schedule();
+					});
 				}
 			}
 		});
@@ -390,22 +370,13 @@ public class TunnelDialog extends Dialog {
 				TunnelFilterBean tunnelFilter = (TunnelFilterBean) sel
 						.getFirstElement();
 				TunnelFilterModel.getInstance().removeData(tunnelFilter);
-				Job job = new Job("remove") {
-
+				Display.getDefault().asyncExec(new Runnable() {
 					@Override
-					protected IStatus run(IProgressMonitor monitor) {
-						Display.getDefault().asyncExec(new Runnable() {
-							@Override
-							public void run() {
-								tableViewer.setInput(TunnelFilterModel
-										.getInstance().getDataArray());
-							}
-						});
-						return Status.OK_STATUS;
+					public void run() {
+						tableViewer.setInput(TunnelFilterModel.getInstance()
+								.getDataArray());
 					}
-				};
-				job.setPriority(Job.SHORT);
-				job.schedule();
+				});
 			}
 		});
 
@@ -446,22 +417,13 @@ public class TunnelDialog extends Dialog {
 					e1.printStackTrace();
 				}
 				TunnelFilterModel.getInstance().addData(filterPaste);
-				Job job = new Job("paste") {
-
+				Display.getDefault().asyncExec(new Runnable() {
 					@Override
-					protected IStatus run(IProgressMonitor monitor) {
-						Display.getDefault().asyncExec(new Runnable() {
-							@Override
-							public void run() {
-								tableViewer.setInput(TunnelFilterModel
-										.getInstance().getDataArray());
-							}
-						});
-						return Status.OK_STATUS;
+					public void run() {
+						tableViewer.setInput(TunnelFilterModel.getInstance()
+								.getDataArray());
 					}
-				};
-				job.setPriority(Job.SHORT);
-				job.schedule();
+				});
 			}
 		});
 
@@ -679,7 +641,7 @@ public class TunnelDialog extends Dialog {
 	@Override
 	protected void cancelPressed() {
 		// очищаем синглтон с состоянием модели фильтрации туннелей
-		TunnelFilterModel.getInstance().removeAll();
+//		TunnelFilterModel.getInstance().removeAll();
 		super.cancelPressed();
 	}
 

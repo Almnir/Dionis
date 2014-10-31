@@ -1,6 +1,8 @@
 package dionis.dialogs;
 
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -44,6 +46,7 @@ import dionis.beans.InterfaceParametrsBean;
 import dionis.beans.InterfaceRouteBean;
 import dionis.beans.InterfaceRoutesBean;
 import dionis.models.FiltersModel;
+import dionis.models.InterfaceModel;
 import dionis.models.InterfaceRouteModel;
 import dionis.providers.InterfaceRouteLabelProvider;
 import dionis.xml.BooleanType;
@@ -69,7 +72,6 @@ public class InterfaceDialog extends Dialog {
 	private Button clusterButton;
 	private Button ipButton;
 	private Button proxyButton;
-	private InterfaceBean interfaceBean;
 	private ComboViewer comboViewer;
 	private ComboViewer modeComboViewer;
 	private ComboViewer filterInputComboViewer;
@@ -87,14 +89,23 @@ public class InterfaceDialog extends Dialog {
 	private TableColumn tblclmnNewColumn_3;
 	private TableViewerColumn tableViewerColumn_3;
 	private Button otherParamsButton;
+	private InterfaceBean data;
+	private boolean newadd;
 
 	/**
 	 * Create the dialog.
 	 * 
 	 * @param parentShell
 	 */
-	public InterfaceDialog(Shell parentShell) {
+	public InterfaceDialog(Shell parentShell, IStructuredSelection sel) {
 		super(parentShell);
+		if (sel != null) {
+			this.data = (InterfaceBean) sel.getFirstElement();
+			this.newadd = false;
+		} else {
+			this.data = new InterfaceBean();
+			this.newadd = true;
+		}
 	}
 
 	/**
@@ -326,21 +337,10 @@ public class InterfaceDialog extends Dialog {
 				IStructuredSelection sel = (IStructuredSelection) tableViewer
 						.getSelection();
 				if (!sel.isEmpty()) {
-					// выбранный элемент таблицы как бин
-					InterfaceRouteBean ibean = (InterfaceRouteBean) sel
-							.getFirstElement();
-					// индекс бина в списке
-					int indx = InterfaceRouteModel.getInstance().getData()
-							.indexOf(ibean);
 					// создание диалога
 					InterfaceRouteDialog dialog = new InterfaceRouteDialog(
-							getShell());
-					// передача бина диалогу
-					dialog.setInterfaceRouteBean(ibean);
+							getShell(), sel);
 					if (dialog.open() == Window.OK) {
-						// замена бина в модели по выбранному индексу
-						InterfaceRouteModel.getInstance().getData()
-								.set(indx, dialog.getInterfaceRouteBean());
 						Display.getDefault().asyncExec(new Runnable() {
 							@Override
 							public void run() {
@@ -363,12 +363,8 @@ public class InterfaceDialog extends Dialog {
 			public void widgetSelected(SelectionEvent e) {
 				// создание диалога
 				InterfaceRouteDialog dialog = new InterfaceRouteDialog(
-						getShell());
-				dialog.setInterfaceRouteBean(null);
+						getShell(), null);
 				if (dialog.open() == Window.OK) {
-					// замена бина в модели по выбранному индексу
-					InterfaceRouteModel.getInstance().getData()
-							.add(dialog.getInterfaceRouteBean());
 					// обновление данных для таблицы
 					Display.getDefault().asyncExec(new Runnable() {
 						@Override
@@ -437,36 +433,33 @@ public class InterfaceDialog extends Dialog {
 				if (!tctext.isEmpty()) {
 					InterfaceType itype = InterfaceType.valueOf(typeCombo
 							.getText());
-					InterfaceParametrsBean params = interfaceBean
-							.getParametrs();
+					InterfaceParametrsBean params = data.getParametrs();
 					if (params == null) {
 						params = new InterfaceParametrsBean();
 					} else {
 						// устанавливаем родительский бин
-						params.setInterfaceBean(interfaceBean);
+						params.setInterfaceBean(data);
 					}
 					switch (itype) {
 					case GRE:
 						GREDialog greDialog = new GREDialog(getShell());
 						greDialog.setParametrs(params);
 						if (greDialog.open() == Window.OK) {
-							interfaceBean.setParametrs(greDialog.getParametrs());
+							data.setParametrs(greDialog.getParametrs());
 						}
 						break;
 					case VLAN:
 						VLANDialog vlanDialog = new VLANDialog(getShell());
 						vlanDialog.setParametrs(params);
 						if (vlanDialog.open() == Window.OK) {
-							interfaceBean.setParametrs(vlanDialog
-									.getParametrs());
+							data.setParametrs(vlanDialog.getParametrs());
 						}
 						break;
 					case ODI:
 						ODIDialog odiDialog = new ODIDialog(getShell());
 						odiDialog.setParametrsBean(params);
 						if (odiDialog.open() == Window.OK) {
-							interfaceBean.setParametrs(odiDialog
-									.getParametrsBean());
+							data.setParametrs(odiDialog.getParametrsBean());
 						}
 						break;
 
@@ -528,282 +521,126 @@ public class InterfaceDialog extends Dialog {
 		return container;
 	}
 
-	// private void bindData() {
-	// // контекст датабиндинга
-	// DataBindingContext ctx = new DataBindingContext();
-	// // имя
-	// IObservableValue widgetValue = WidgetProperties.text(SWT.Modify)
-	// .observe(text);
-	// IObservableValue modelValue = BeanProperties.value(InterfaceBean.class,
-	// "name").observe(getInterfaceBean());
-	// ctx.bindValue(widgetValue, modelValue);
-	// // Тип
-	// widgetValue = ViewersObservables.observeSingleSelection(comboViewer);
-	// modelValue = BeanProperties.value("type").observe(getInterfaceBean());
-	// ctx.bindValue(widgetValue, modelValue);
-	// // режим активизации
-	// widgetValue = ViewersObservables.observeSingleSelection(comboViewer_1);
-	// modelValue = BeanProperties.value("mode").observe(getInterfaceBean());
-	// ctx.bindValue(widgetValue, modelValue);
-	// // локальный ip
-	// widgetValue = WidgetProperties.text(SWT.Modify).observe(text_2);
-	// modelValue = BeanProperties.value(InterfaceBean.class, "ip.local")
-	// .observe(getInterfaceBean());
-	// ctx.bindValue(widgetValue, modelValue);
-	// // фильтр входящих
-	// widgetValue = ViewersObservables.observeSingleSelection(comboViewer_2);
-	// modelValue =
-	// BeanProperties.value("filters.input").observe(getInterfaceBean());
-	// ctx.bindValue(widgetValue, modelValue);
-	// // удалённый ip
-	// widgetValue = WidgetProperties.text(SWT.Modify).observe(text_1);
-	// modelValue = BeanProperties.value(InterfaceBean.class, "ip.remote")
-	// .observe(getInterfaceBean());
-	// ctx.bindValue(widgetValue, modelValue);
-	// // фильтр исходящих
-	// widgetValue = ViewersObservables.observeSingleSelection(comboViewer_3);
-	// modelValue =
-	// BeanProperties.value("filters.input").observe(getInterfaceBean());
-	// ctx.bindValue(widgetValue, modelValue);
-	// // Таймер неактивности
-	// widgetValue = SWTObservables.observeSelection(spinner);
-	// modelValue = BeanProperties.value("timer").observe(getInterfaceBean());
-	// // NAT режим
-	// widgetValue = ViewersObservables.observeSingleSelection(comboViewer_4);
-	// modelValue = BeanProperties.value("nat").observe(getInterfaceBean());
-	// ctx.bindValue(widgetValue, modelValue);
-	// // MTU
-	// widgetValue = SWTObservables.observeSelection(spinner_1);
-	// modelValue = BeanProperties.value("mtu").observe(getInterfaceBean());
-	// ctx.bindValue(widgetValue, modelValue);
-	// /** **/
-	// // Не туннелированных
-	// widgetValue = SWTObservables.observeSelection(button);
-	// modelValue = BeanProperties.value(InterfaceBean.class,
-	// "disableDatagrams.notTunneled").observe(getInterfaceBean());
-	// // стратегия для конверсии boolean -> BooleanType
-	// UpdateValueStrategy updateValueStrategy = new UpdateValueStrategy()
-	// .setConverter(new Boolean2BooleanTypeConverter());
-	// // стратегия для обратной конверсии BooleanType -> boolean
-	// UpdateValueStrategy updateFromValueStrategy = new UpdateValueStrategy()
-	// .setConverter(new BooleanType2BooleanConverter());
-	// ctx.bindValue(widgetValue, modelValue, updateValueStrategy,
-	// updateFromValueStrategy);
-	// // Транзитных
-	// widgetValue = SWTObservables.observeSelection(btnCheckButton);
-	// modelValue = BeanProperties.value(InterfaceBean.class,
-	// "disableDatagrams.forward").observe(getInterfaceBean());
-	// ctx.bindValue(widgetValue, modelValue, updateValueStrategy,
-	// updateFromValueStrategy);
-	// // DHCP протокола
-	// widgetValue = SWTObservables.observeSelection(btnCheckButton_1);
-	// modelValue = BeanProperties.value(InterfaceBean.class,
-	// "disableDatagrams.dhcp").observe(getInterfaceBean());
-	// ctx.bindValue(widgetValue, modelValue, updateValueStrategy,
-	// updateFromValueStrategy);
-	// // RIP протокола
-	// widgetValue = SWTObservables.observeSelection(btnCheckButton_2);
-	// modelValue = BeanProperties.value(InterfaceBean.class,
-	// "disableDatagrams.rip").observe(getInterfaceBean());
-	// ctx.bindValue(widgetValue, modelValue, updateValueStrategy,
-	// updateFromValueStrategy);
-	// // Multicast
-	// widgetValue = SWTObservables.observeSelection(btnCheckButton_3);
-	// modelValue = BeanProperties.value(InterfaceBean.class,
-	// "disableDatagrams.multicast").observe(getInterfaceBean());
-	// ctx.bindValue(widgetValue, modelValue, updateValueStrategy,
-	// updateFromValueStrategy);
-	// // Cluster
-	// widgetValue = SWTObservables.observeSelection(btnCheckButton_4);
-	// modelValue = BeanProperties.value(InterfaceBean.class,
-	// "disableDatagrams.cluster").observe(getInterfaceBean());
-	// ctx.bindValue(widgetValue, modelValue, updateValueStrategy,
-	// updateFromValueStrategy);
-	// // IP статистика
-	// widgetValue = SWTObservables.observeSelection(btnIp);
-	// modelValue = BeanProperties.value(InterfaceBean.class,
-	// "disableDatagrams.ipStat").observe(getInterfaceBean());
-	// ctx.bindValue(widgetValue, modelValue, updateValueStrategy,
-	// updateFromValueStrategy);
-	// // Прокси ARP
-	// widgetValue = SWTObservables.observeSelection(btnCheckButton_5);
-	// modelValue = BeanProperties.value(InterfaceBean.class,
-	// "disableDatagrams.proxyARP").observe(getInterfaceBean());
-	// ctx.bindValue(widgetValue, modelValue, updateValueStrategy,
-	// updateFromValueStrategy);
-	// ObservableListContentProvider contentProvider = new
-	// ObservableListContentProvider();
-	// tableViewer.setContentProvider(contentProvider);
-	//
-	// List<InterfaceRouteBean> routesList = ib.getRoutes().getRoute();
-	// IObservableSet knownElements = contentProvider.getKnownElements();
-	// final IObservableMap ips = BeanProperties.value(
-	// InterfaceRouteBean.class, "ip").observeDetail(knownElements);
-	// final IObservableMap bitss = BeanProperties.value(
-	// InterfaceRouteBean.class, "bits").observeDetail(knownElements);
-	// final IObservableMap gateways = BeanProperties.value(
-	// InterfaceRouteBean.class, "gateway").observeDetail(
-	// knownElements);
-	// final IObservableMap metrics = BeanProperties.value(
-	// InterfaceRouteBean.class, "metric")
-	// .observeDetail(knownElements);
-	// final IObservableMap tags = BeanProperties.value(
-	// InterfaceRouteBean.class, "tag").observeDetail(knownElements);
-	//
-	// IObservableMap[] maps = { ips, bitss, gateways, metrics, tags };
-	//
-	// ILabelProvider labelProvider = new ObservableMapLabelProvider(maps) {
-	// @Override
-	// public String getColumnText(Object element, int columnIndex) {
-	// String rv = "";
-	// switch (columnIndex) {
-	// case 0:
-	// rv = ips.get(element).toString() + "/"
-	// + bitss.get(element).toString();
-	// break;
-	// case 1:
-	// rv = gateways.get(element).toString();
-	// break;
-	//
-	// case 2:
-	// rv = metrics.get(element).toString();
-	// break;
-	//
-	// case 3:
-	// rv = tags.get(element).toString();
-	// break;
-	//
-	// }
-	// return rv;
-	// }
-	// };
-	//
-	// IObservableList input = Properties.selfList(InterfaceRouteBean.class)
-	// .observe(routesList);
-	//
-	// tableViewer.setLabelProvider(labelProvider);
-	// tableViewer.setInput(input);
-	// }
-
 	private void getAll() {
-		if (interfaceBean != null) {
-			// новый экземпляр бина
-			// setInterfaceBean(new InterfaceBean());
-			// InterfaceIPBean ipb = new InterfaceIPBean();
-			// getInterfaceBean().setIp(ipb);
-			// InterfaceFiltersBean filtersBean = new InterfaceFiltersBean();
-			// getInterfaceBean().setFilters(filtersBean);
-			// DisableDatagramsBean datagramsBean = new DisableDatagramsBean();
-			// datagramsBean.setNotTunneled(BooleanType.YES);
-			// datagramsBean.setForward(BooleanType.YES);
-			// getInterfaceBean().setDisableDatagrams(datagramsBean);
-			// InterfaceRoutesBean routes = new InterfaceRoutesBean();
-			// LinkedList<InterfaceRouteBean> route = new
-			// LinkedList<InterfaceRouteBean>();
-			// routes.setRoute(route);
-			// getInterfaceBean().setRoutes(routes);
-			// InterfaceRouteModel.getInstance().removeAll();
-			// System.out.println("clean");
-			nameText.setText(interfaceBean.getName());
-			typeCombo.select((interfaceBean.getType() != null) ? interfaceBean
-					.getType().ordinal() : 0);
-			modeCombo.select((interfaceBean.getMode() != null) ? interfaceBean
-					.getMode().ordinal() : 0);
-			localIpText.setText(interfaceBean.getIp().getLocal());
-			remoteIpText.setText(interfaceBean.getIp().getRemote());
-			timerSpinner.setSelection(interfaceBean.getTimer());
-			natCombo.select((interfaceBean.getNat() != null) ? interfaceBean
-					.getNat().ordinal() : 0);
-			mtuSpinner.setSelection(interfaceBean.getMtu());
-			InterfaceFiltersBean filtersBean = interfaceBean.getFilters();
-			// если есть фильтры
-			if (filtersBean != null) {
-				String inputFilterName = filtersBean.getInput();
-				String outputFilterName = filtersBean.getOutput();
-				for (FiltersBean fb : FiltersModel.getInstance().getData()) {
-					if (fb.getFilter().getName().equals(inputFilterName)) {
-						filterInputCombo.select(FiltersModel.getInstance()
-								.getData().indexOf(fb));
-					}
-					if (fb.getFilter().getName().equals(outputFilterName)) {
-						filterOutputCombo.select(FiltersModel.getInstance()
-								.getData().indexOf(fb));
+		setFieldsToDefault();
+		if (data != null) {
+			if (newadd == false) {
+				/** изменение **/
+				nameText.setText(data.getName());
+				typeCombo.select(data.getType().ordinal());
+				modeCombo.select(data.getMode().ordinal());
+				localIpText.setText(data.getIp().getLocal());
+				remoteIpText.setText(data.getIp().getRemote());
+				timerSpinner.setSelection(data.getTimer());
+				natCombo.select(data.getNat().ordinal());
+				mtuSpinner.setSelection(data.getMtu());
+				InterfaceFiltersBean filtersBean = data.getFilters();
+				// если есть фильтры
+				if (filtersBean != null) {
+					String inputFilterName = filtersBean.getInput();
+					String outputFilterName = filtersBean.getOutput();
+					for (FiltersBean fb : FiltersModel.getInstance().getData()) {
+						if (fb.getFilter().getName().equals(inputFilterName)) {
+							filterInputCombo.select(FiltersModel.getInstance()
+									.getData().indexOf(fb));
+						}
+						if (fb.getFilter().getName().equals(outputFilterName)) {
+							filterOutputCombo.select(FiltersModel.getInstance()
+									.getData().indexOf(fb));
+						}
 					}
 				}
+				DisableDatagramsBean datagrams = data.getDisableDatagrams();
+				tunnelButton
+						.setSelection(datagrams.getNotTunneled() == BooleanType.YES ? true
+								: false);
+				transitButton
+						.setSelection(datagrams.getForward() == BooleanType.YES ? true
+								: false);
+				dhcpButton
+						.setSelection(datagrams.getDhcp() == BooleanType.YES ? true
+								: false);
+				ripButton
+						.setSelection(datagrams.getRip() == BooleanType.YES ? true
+								: false);
+				multicastButton
+						.setSelection(datagrams.getMulticast() == BooleanType.YES ? true
+								: false);
+				clusterButton
+						.setSelection(datagrams.getCluster() == BooleanType.YES ? true
+								: false);
+				ipButton.setSelection(datagrams.getIpStat() == BooleanType.YES ? true
+						: false);
+				proxyButton
+						.setSelection(datagrams.getProxyARP() == BooleanType.YES ? true
+								: false);
+				// таблица
+				System.out.println("Before: "
+						+ InterfaceRouteModel.getInstance().toString());
+				InterfaceRouteModel.getInstance().removeAll();
+				System.out.println("After clean: "
+						+ InterfaceRouteModel.getInstance().toString());
+				InterfaceRouteModel.getInstance().setData(
+						data.getRoutes().getRoute());
+				System.out.println("New filters : "
+						+ data.getRoutes().getRoute().toString());
+				System.out.println("After having set new values: "
+						+ InterfaceRouteModel.getInstance().toString());
 			}
-			DisableDatagramsBean datagrams = interfaceBean
-					.getDisableDatagrams();
-			tunnelButton
-					.setSelection(datagrams.getNotTunneled() == BooleanType.YES ? true
-							: false);
-			transitButton
-					.setSelection(datagrams.getForward() == BooleanType.YES ? true
-							: false);
-			dhcpButton
-					.setSelection(datagrams.getDhcp() == BooleanType.YES ? true
-							: false);
-			ripButton.setSelection(datagrams.getRip() == BooleanType.YES ? true
-					: false);
-			multicastButton
-					.setSelection(datagrams.getMulticast() == BooleanType.YES ? true
-							: false);
-			clusterButton
-					.setSelection(datagrams.getCluster() == BooleanType.YES ? true
-							: false);
-			ipButton.setSelection(datagrams.getIpStat() == BooleanType.YES ? true
-					: false);
-			proxyButton
-					.setSelection(datagrams.getProxyARP() == BooleanType.YES ? true
-							: false);
-			// System.out.println("Before: "
-			// + InterfaceRouteModel.getInstance().getData().toString());
-			// InterfaceRouteModel.getInstance().removeAll();
-			// System.out.println("After clean: "
-			// + InterfaceRouteModel.getInstance().getData().toString());
-			InterfaceRouteModel.getInstance().setData(
-					interfaceBean.getRoutes().getRoute());
-			System.out.println("New routes : "
-					+ interfaceBean.getRoutes().getRoute().toString());
-			System.out.println("After having set new values: "
-					+ InterfaceRouteModel.getInstance().toString());
 		}
+	}
+
+	private void setFieldsToDefault() {
+		nameText.setText("");
+		typeCombo.select(0);
+		modeCombo.select(0);
+		localIpText.setText("0.0.0.0");
+		remoteIpText.setText("0.0.0.0");
+		timerSpinner.setSelection(0);
+		natCombo.select(0);
+		mtuSpinner.setSelection(0);
+		tunnelButton.setSelection(false);
+		transitButton.setSelection(false);
+		dhcpButton.setSelection(false);
+		ripButton.setSelection(false);
+		multicastButton.setSelection(false);
+		clusterButton.setSelection(false);
+		ipButton.setSelection(false);
+		proxyButton.setSelection(false);
 	}
 
 	@Override
 	protected void okPressed() {
-		if (interfaceBean == null) {
-			interfaceBean = new InterfaceBean();
-		}
-		interfaceBean.setName(nameText.getText());
+		data.setName(nameText.getText());
 		if (typeCombo.getSelectionIndex() != -1) {
-			interfaceBean.setType(Arrays.asList(InterfaceType.values()).get(
+			data.setType(Arrays.asList(InterfaceType.values()).get(
 					typeCombo.getSelectionIndex()));
 		}
 		if (modeCombo.getSelectionIndex() != -1) {
-			interfaceBean.setMode(Arrays.asList(InterfaceModeType.values())
-					.get(modeCombo.getSelectionIndex()));
+			data.setMode(Arrays.asList(InterfaceModeType.values()).get(
+					modeCombo.getSelectionIndex()));
 		}
 		InterfaceIPBean ipbean = new InterfaceIPBean();
 		ipbean.setLocal(localIpText.getText());
 		ipbean.setRemote(remoteIpText.getText());
-		interfaceBean.setIp(ipbean);
+		data.setIp(ipbean);
 		InterfaceFiltersBean filters = new InterfaceFiltersBean();
 		filters.setInput(filterInputCombo.getText());
 		filters.setOutput(filterOutputCombo.getText());
-		interfaceBean.setFilters(filters);
-		interfaceBean.setTimer(timerSpinner.getSelection());
+		data.setFilters(filters);
+		data.setTimer(timerSpinner.getSelection());
 		if (natCombo.getSelectionIndex() != -1) {
-			interfaceBean.setNat(Arrays.asList(InterfaceNatType.values()).get(
+			data.setNat(Arrays.asList(InterfaceNatType.values()).get(
 					natCombo.getSelectionIndex()));
 		}
-		interfaceBean.setMtu((short) mtuSpinner.getSelection());
-		InterfaceRoutesBean routes = new InterfaceRoutesBean();
-		routes.setRoute(InterfaceRouteModel.getInstance().getData());
-		System.out.println("instance: "
-				+ InterfaceRouteModel.getInstance().toString());
-		System.out.println("routes: " + routes.getRoute().size());
-
-		interfaceBean.setRoutes(routes);
+		data.setMtu((short) mtuSpinner.getSelection());
+		// InterfaceRoutesBean routes = new InterfaceRoutesBean();
+		// routes.setRoute(InterfaceRouteModel.getInstance().getData());
+		// System.out.println("instance: "
+		// + InterfaceRouteModel.getInstance().toString());
+		// System.out.println("routes: " + routes.getRoute().size());
+		//
+		// data.setRoutes(routes);
 		DisableDatagramsBean disableDatagrams = new DisableDatagramsBean();
 		disableDatagrams
 				.setNotTunneled(tunnelButton.getSelection() == true ? BooleanType.YES
@@ -829,8 +666,45 @@ public class InterfaceDialog extends Dialog {
 		disableDatagrams
 				.setProxyARP(proxyButton.getSelection() == true ? BooleanType.YES
 						: BooleanType.NO);
-		interfaceBean.setDisableDatagrams(disableDatagrams);
+		data.setDisableDatagrams(disableDatagrams);
+
+		// добавляем ссылку на модель маршрутов
+		InterfaceRoutesBean routess = new InterfaceRoutesBean();
+		List<InterfaceRouteBean> routessList = new LinkedList<InterfaceRouteBean>();
+		routessList.addAll(InterfaceRouteModel.getInstance().getData());
+		routess.setRoute(routessList);
+		data.setRoutes(routess);
+		// очищаем синглтон с состоянием модели маршрутов (роутов)
+		InterfaceRouteModel.getInstance().removeAll();
+		// получаем данные модели
+		List<InterfaceBean> interfaceList = InterfaceModel.getInstance()
+				.getData();
+		// если список не пуст
+		if (interfaceList != null) {
+			// изменяем элемент в списке
+			int indexx = interfaceList.indexOf(data);
+			if (indexx == -1) {
+				// если нет в списке - добавить
+				interfaceList.add(data);
+			} else {
+				// если есть - заменить на текущее
+				interfaceList.set(indexx, data);
+			}
+		} else {
+			// новый список
+			interfaceList = new LinkedList<InterfaceBean>();
+			interfaceList.add(data);
+		}
+		// меняем список в модели на изменённый
+		InterfaceModel.getInstance().setData(interfaceList);
 		super.okPressed();
+	}
+
+	@Override
+	protected void cancelPressed() {
+		// очищаем синглтон с состоянием модели роутов
+		InterfaceRouteModel.getInstance().removeAll();
+		super.cancelPressed();
 	}
 
 	/**
@@ -852,13 +726,5 @@ public class InterfaceDialog extends Dialog {
 	@Override
 	protected Point getInitialSize() {
 		return new Point(1114, 447);
-	}
-
-	public InterfaceBean getInterfaceBean() {
-		return interfaceBean;
-	}
-
-	public void setInterfaceBean(InterfaceBean interfaceBean) {
-		this.interfaceBean = interfaceBean;
 	}
 }

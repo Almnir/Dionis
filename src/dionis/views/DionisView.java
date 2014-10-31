@@ -1348,19 +1348,9 @@ public class DionisView extends ViewPart {
 				IStructuredSelection sel = (IStructuredSelection) interfaceTableViewer
 						.getSelection();
 				if (!sel.isEmpty()) {
-					// выбранный элемент таблицы как бин
-					InterfaceBean ibean = (InterfaceBean) sel.getFirstElement();
-					// индекс бина в списке
-					int indx = InterfaceModel.getInstance().getData()
-							.indexOf(ibean);
 					// создание диалога
-					InterfaceDialog dialog = new InterfaceDialog(shell);
-					// передача бина диалогу
-					dialog.setInterfaceBean(ibean);
+					InterfaceDialog dialog = new InterfaceDialog(shell, sel);
 					if (dialog.open() == Window.OK) {
-						// замена бина в модели по выбранному индексу
-						InterfaceModel.getInstance().getData()
-								.set(indx, dialog.getInterfaceBean());
 						Display.getDefault().asyncExec(new Runnable() {
 							@Override
 							public void run() {
@@ -1377,18 +1367,12 @@ public class DionisView extends ViewPart {
 		final MenuItem menuItem_1 = new MenuItem(menu, SWT.NONE);
 		menuItem_1.setText("Добавить");
 
-		// InterfaceModel.getInstance().addData(new InterfaceBean());
-
 		menuItem_1.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				// создание диалога
-				InterfaceDialog dialog = new InterfaceDialog(shell);
-				dialog.setInterfaceBean(null);
+				InterfaceDialog dialog = new InterfaceDialog(shell, null);
 				if (dialog.open() == Window.OK) {
-					// замена бина в модели по выбранному индексу
-					InterfaceModel.getInstance().getData()
-							.add(dialog.getInterfaceBean());
 					Display.getDefault().asyncExec(new Runnable() {
 						@Override
 						public void run() {
@@ -1410,7 +1394,6 @@ public class DionisView extends ViewPart {
 				IStructuredSelection sel = (IStructuredSelection) interfaceTableViewer
 						.getSelection();
 				if (!sel.isEmpty()) {
-
 					// выбранный элемент таблицы как бин
 					InterfaceBean ibean = (InterfaceBean) sel.getFirstElement();
 					InterfaceModel.getInstance().getData().remove(ibean);
