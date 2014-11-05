@@ -39,7 +39,7 @@ public class InterfaceParametrsBean extends ModelObject implements
 	protected Integer bandrecv;
 	protected String mac;
 	protected VLANsBean vlaNs;
-	private InterfaceBean interfaceBean;
+	private InterfaceBean interfacesBean;
 
 	public InterfaceParametrsBean() {
 	}
@@ -155,8 +155,8 @@ public class InterfaceParametrsBean extends ModelObject implements
 		firePropertyChange("vlaNs", this.vlaNs, this.vlaNs = value);
 	}
 
-	public void setInterfaceBean(InterfaceBean interfaceBean) {
-		this.interfaceBean = interfaceBean;
+	public void setInterfacesBean(InterfaceBean interfacesBean) {
+		this.interfacesBean = interfacesBean;
 	}
 
 	public TOSBean getTos() {
@@ -259,8 +259,8 @@ public class InterfaceParametrsBean extends ModelObject implements
 		return mac;
 	}
 
-	public InterfaceBean getInterfaceBean() {
-		return interfaceBean;
+	public InterfaceBean getInterfacesBean() {
+		return interfacesBean;
 	}
 
 	@Override

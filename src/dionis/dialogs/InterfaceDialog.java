@@ -337,10 +337,13 @@ public class InterfaceDialog extends Dialog {
 				IStructuredSelection sel = (IStructuredSelection) tableViewer
 						.getSelection();
 				if (!sel.isEmpty()) {
+					InterfaceRouteBean bean = (InterfaceRouteBean) sel.getFirstElement();
+					int index = InterfaceRouteModel.getInstance().getData().indexOf(bean);
 					// создание диалога
 					InterfaceRouteDialog dialog = new InterfaceRouteDialog(
-							getShell(), sel);
+							getShell(), bean);
 					if (dialog.open() == Window.OK) {
+						InterfaceRouteModel.getInstance().getData().set(index, dialog.getInterfaceRouteBean());
 						Display.getDefault().asyncExec(new Runnable() {
 							@Override
 							public void run() {
@@ -365,6 +368,7 @@ public class InterfaceDialog extends Dialog {
 				InterfaceRouteDialog dialog = new InterfaceRouteDialog(
 						getShell(), null);
 				if (dialog.open() == Window.OK) {
+					InterfaceRouteModel.getInstance().getData().add(dialog.getInterfaceRouteBean());
 					// обновление данных для таблицы
 					Display.getDefault().asyncExec(new Runnable() {
 						@Override
@@ -438,7 +442,7 @@ public class InterfaceDialog extends Dialog {
 						params = new InterfaceParametrsBean();
 					} else {
 						// устанавливаем родительский бин
-						params.setInterfaceBean(data);
+						params.setInterfacesBean(data);
 					}
 					switch (itype) {
 					case GRE:

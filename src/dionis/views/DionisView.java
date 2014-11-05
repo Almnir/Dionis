@@ -61,7 +61,7 @@ import dionis.beans.InterfaceBean;
 import dionis.beans.TunnelBean;
 import dionis.dialogs.ARPElementDialog;
 import dionis.dialogs.AddressTableDialog;
-import dionis.dialogs.InterfaceDialog;
+import dionis.dialogs.InterfaceBeanDialog;
 import dionis.dialogs.NATAddressDialog;
 import dionis.dialogs.PortConfigurationDialog;
 import dionis.dialogs.TunnelDialog;
@@ -1348,9 +1348,16 @@ public class DionisView extends ViewPart {
 				IStructuredSelection sel = (IStructuredSelection) interfaceTableViewer
 						.getSelection();
 				if (!sel.isEmpty()) {
+					InterfaceBean bean = (InterfaceBean) sel
+							.getFirstElement();
+					int index = InterfaceModel.getInstance().getData()
+							.indexOf(bean);
 					// создание диалога
-					InterfaceDialog dialog = new InterfaceDialog(shell, sel);
+					InterfaceBeanDialog dialog = new InterfaceBeanDialog(shell,
+							bean);
 					if (dialog.open() == Window.OK) {
+						InterfaceModel.getInstance().getData()
+								.set(index, dialog.getInterfacesBean());
 						Display.getDefault().asyncExec(new Runnable() {
 							@Override
 							public void run() {
@@ -1371,8 +1378,11 @@ public class DionisView extends ViewPart {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				// создание диалога
-				InterfaceDialog dialog = new InterfaceDialog(shell, null);
+				InterfaceBeanDialog dialog = new InterfaceBeanDialog(shell,
+						null);
 				if (dialog.open() == Window.OK) {
+					InterfaceModel.getInstance().getData()
+							.add(dialog.getInterfacesBean());
 					Display.getDefault().asyncExec(new Runnable() {
 						@Override
 						public void run() {
@@ -1395,7 +1405,8 @@ public class DionisView extends ViewPart {
 						.getSelection();
 				if (!sel.isEmpty()) {
 					// выбранный элемент таблицы как бин
-					InterfaceBean ibean = (InterfaceBean) sel.getFirstElement();
+					InterfaceBean ibean = (InterfaceBean) sel
+							.getFirstElement();
 					InterfaceModel.getInstance().getData().remove(ibean);
 					Display.getDefault().asyncExec(new Runnable() {
 						@Override

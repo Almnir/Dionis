@@ -1,11 +1,13 @@
 package dionis.dialogs;
 
-import java.util.LinkedList;
-import java.util.List;
-
+import org.eclipse.core.databinding.DataBindingContext;
+import org.eclipse.core.databinding.UpdateValueStrategy;
+import org.eclipse.core.databinding.beans.BeanProperties;
+import org.eclipse.core.databinding.beans.BeansObservables;
+import org.eclipse.core.databinding.observable.value.IObservableValue;
+import org.eclipse.jface.databinding.swt.SWTObservables;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
@@ -18,7 +20,6 @@ import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 
 import dionis.beans.InterfaceRouteBean;
-import dionis.models.InterfaceRouteModel;
 
 public class InterfaceRouteDialog extends Dialog {
 
@@ -27,18 +28,21 @@ public class InterfaceRouteDialog extends Dialog {
 	private Text ipText;
 	private Spinner metricSpinner;
 	private Spinner tagSpinner;
-	private InterfaceRouteBean data;
-	private boolean newadd;
+	private InterfaceRouteBean bean;
+	private DataBindingContext ctx;
 
-	public InterfaceRouteDialog(Shell parentShell, IStructuredSelection sel) {
+	public InterfaceRouteDialog(Shell parentShell,
+			InterfaceRouteBean bean) {
 		super(parentShell);
-		if (sel != null) {
-			this.data = (InterfaceRouteBean) sel.getFirstElement();
-			this.newadd = false;
+		if (bean == null) {
+			this.bean = new InterfaceRouteBean();
 		} else {
-			this.data = new InterfaceRouteBean();
-			this.newadd = true;
+			this.bean = bean;
 		}
+	}
+
+	public InterfaceRouteBean getInterfaceRouteBean() {
+		return bean;
 	}
 
 	/**
@@ -90,12 +94,40 @@ public class InterfaceRouteDialog extends Dialog {
 		tagSpinner.setMinimum(0);
 		tagSpinner.setMaximum(255);
 
-		getAll();
+		bindData();
 
-		// if (interfaceRouteBean != null) {
-		// m_bindingContext = initDataBindings();
-		// }
 		return container;
+	}
+
+	private void bindData() {
+		// контекст датабиндинга
+		ctx = new DataBindingContext();
+		UpdateValueStrategy strategy = new UpdateValueStrategy(
+				UpdateValueStrategy.POLICY_ON_REQUEST);
+		UpdateValueStrategy strategy_text = new UpdateValueStrategy(
+				UpdateValueStrategy.POLICY_CONVERT);
+		// значащих бит
+		IObservableValue widgetValue = SWTObservables
+				.observeSelection(bitsSpinner);
+		IObservableValue modelValue = BeanProperties.value("bits")
+				.observe(bean);
+		ctx.bindValue(widgetValue, modelValue, strategy, null);
+		// адрес шлюза
+		widgetValue = SWTObservables.observeText(gatewayText, SWT.Modify);
+		modelValue = BeansObservables.observeValue(bean, "gateway");
+		ctx.bindValue(widgetValue, modelValue, strategy_text, null);
+		// ip адрес
+		widgetValue = SWTObservables.observeText(ipText, SWT.Modify);
+		modelValue = BeansObservables.observeValue(bean, "ip");
+		ctx.bindValue(widgetValue, modelValue, strategy_text, null);
+		// метрика шлюза
+		widgetValue = SWTObservables.observeSelection(metricSpinner);
+		modelValue = BeanProperties.value("metric").observe(bean);
+		ctx.bindValue(widgetValue, modelValue, strategy, null);
+		// метка
+		widgetValue = SWTObservables.observeSelection(tagSpinner);
+		modelValue = BeanProperties.value("tag").observe(bean);
+		ctx.bindValue(widgetValue, modelValue, strategy, null);
 	}
 
 	/**
@@ -119,54 +151,9 @@ public class InterfaceRouteDialog extends Dialog {
 		return new Point(450, 258);
 	}
 
-	private void getAll() {
-		setFieldsToDefault();
-		if (data != null) {
-			if (newadd == false) {
-				/** изменение **/
-				bitsSpinner.setSelection(data.getBits());
-				gatewayText.setText(data.getGateway());
-				ipText.setText(data.getIp());
-				metricSpinner.setSelection(data.getMetric());
-				tagSpinner.setSelection(data.getTag());
-			}
-		}
-	}
-
-	private void setFieldsToDefault() {
-		bitsSpinner.setSelection(0);
-		gatewayText.setText("");
-		ipText.setText("");
-		metricSpinner.setSelection(0);
-		tagSpinner.setSelection(0);
-	}
-
 	@Override
 	protected void okPressed() {
-		data.setBits((short) bitsSpinner.getSelection());
-		data.setGateway(gatewayText.getText());
-		data.setIp(ipText.getText());
-		data.setMetric((short) metricSpinner.getSelection());
-		data.setTag((short) tagSpinner.getSelection());
-		List<InterfaceRouteBean> routesList = InterfaceRouteModel.getInstance().getData();
-		// если список не пуст
-		if (routesList != null) {
-			// изменяем элемент в списке
-			int indexx = routesList.indexOf(data);
-			if (indexx == -1) {
-				// если нет в списке - добавить
-				routesList.add(data);
-			} else {
-				// если есть - заменить на текущее
-				routesList.set(indexx, data);
-			}
-		} else {
-			// новый список
-			routesList = new LinkedList<InterfaceRouteBean>();
-			routesList.add(data);
-		}
-		// меняем список в модели на изменённый
-		InterfaceRouteModel.getInstance().setData(routesList);		
+		ctx.updateModels();
 		super.okPressed();
 	}
 

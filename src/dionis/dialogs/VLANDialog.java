@@ -20,8 +20,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
 
-import dionis.beans.InterfaceBean;
 import dionis.beans.InterfaceParametrsBean;
+import dionis.beans.InterfaceBean;
 import dionis.models.InterfaceModel;
 
 public class VLANDialog extends Dialog {
@@ -132,8 +132,8 @@ public class VLANDialog extends Dialog {
 			List<InterfaceBean> listBeans = new LinkedList<InterfaceBean>();
 			for (InterfaceBean ibean : interfaceList) {
 				// если найденный в списке совпадает с текущим - не включать
-				if (parametrs.getInterfaceBean() != null
-						&& parametrs.getInterfaceBean().getName()
+				if (parametrs.getInterfacesBean() != null
+						&& parametrs.getInterfacesBean().getName()
 								.equals(ibean.getName())) {
 					continue;
 				}
