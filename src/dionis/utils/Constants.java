@@ -1,5 +1,9 @@
 package dionis.utils;
 
+import org.eclipse.core.databinding.validation.IValidator;
+import org.eclipse.core.databinding.validation.ValidationStatus;
+import org.eclipse.core.runtime.IStatus;
+
 /**
  * Константы для работы с данными "Дионис"
  * 
@@ -96,7 +100,7 @@ public interface Constants {
 	String[] FILTER_LOGIC = { "Нет", "==", "!=", ">", ">=", "<", "<=" };
 	
 	/** Стандартный фильтр **/
-	public static final int DLG_STANDARD = 0;
+	int DLG_STANDARD = 0;
 	/** Расширенный фильтр **/
-	public static final int DLG_EXTENDED = 1;
+	int DLG_EXTENDED = 1;
 }
