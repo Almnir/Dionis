@@ -98,6 +98,7 @@ public class TunnelDialog extends Dialog {
 		} else {
 			this.data = new TunnelBean();
 			this.newadd = true;
+			TunnelFilterModel.getNewInstance();
 		}
 	}
 
@@ -640,6 +641,7 @@ public class TunnelDialog extends Dialog {
 
 	@Override
 	protected void cancelPressed() {
+		TunnelFilterModel.getNewInstance();
 		// очищаем синглтон с состоянием модели фильтрации туннелей
 //		TunnelFilterModel.getInstance().removeAll();
 		super.cancelPressed();

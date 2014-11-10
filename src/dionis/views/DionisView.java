@@ -61,7 +61,7 @@ import dionis.beans.InterfaceBean;
 import dionis.beans.TunnelBean;
 import dionis.dialogs.ARPElementDialog;
 import dionis.dialogs.AddressTableDialog;
-import dionis.dialogs.InterfaceBeanDialog;
+import dionis.dialogs.InterfaceDialog;
 import dionis.dialogs.NATAddressDialog;
 import dionis.dialogs.PortConfigurationDialog;
 import dionis.dialogs.TunnelDialog;
@@ -1353,7 +1353,7 @@ public class DionisView extends ViewPart {
 					int index = InterfaceModel.getInstance().getData()
 							.indexOf(bean);
 					// создание диалога
-					InterfaceBeanDialog dialog = new InterfaceBeanDialog(shell,
+					InterfaceDialog dialog = new InterfaceDialog(shell,
 							bean);
 					if (dialog.open() == Window.OK) {
 						InterfaceModel.getInstance().getData()
@@ -1378,7 +1378,7 @@ public class DionisView extends ViewPart {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				// создание диалога
-				InterfaceBeanDialog dialog = new InterfaceBeanDialog(shell,
+				InterfaceDialog dialog = new InterfaceDialog(shell,
 						null);
 				if (dialog.open() == Window.OK) {
 					InterfaceModel.getInstance().getData()
