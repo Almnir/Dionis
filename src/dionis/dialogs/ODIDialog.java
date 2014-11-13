@@ -3,13 +3,20 @@ package dionis.dialogs;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.databinding.DataBindingContext;
+import org.eclipse.core.databinding.UpdateValueStrategy;
+import org.eclipse.core.databinding.beans.BeanProperties;
+import org.eclipse.core.databinding.observable.list.IObservableList;
+import org.eclipse.core.databinding.observable.map.IObservableMap;
+import org.eclipse.core.databinding.observable.set.IObservableSet;
+import org.eclipse.core.databinding.observable.value.IObservableValue;
+import org.eclipse.core.databinding.property.Properties;
+import org.eclipse.jface.databinding.swt.SWTObservables;
+import org.eclipse.jface.databinding.viewers.ObservableListContentProvider;
+import org.eclipse.jface.databinding.viewers.ObservableMapLabelProvider;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
@@ -33,34 +40,58 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 
 import dionis.beans.InterfaceParametrsBean;
 import dionis.beans.VLANBean;
 import dionis.beans.VLANsBean;
-import dionis.providers.ODILabelProvider;
+import dionis.models.ODIModel;
 
+/**
+ * Диалог отображения и настройки ODI параметров интерфейса
+ * 
+ * @author Ярных А.О.
+ *
+ */
 public class ODIDialog extends Dialog {
 	private Text macText;
 	private Table table;
 	private TableViewer tableViewer;
-	private InterfaceParametrsBean parametrsBean;
-	protected VLANBean copyPasteFilter;
 	private MenuItem pasteItem;
 	private Spinner frameSpinner;
 	private Spinner buffSizeSpinner;
 	private Spinner receiveLimitSpinner;
 	private Spinner sendLimitSpinner;
-	List<VLANBean> vlanBeans = new LinkedList<VLANBean>();
+	private DataBindingContext ctx;
 
-	/**
-	 * Create the dialog.
-	 * 
-	 * @param parentShell
-	 */
-	public ODIDialog(Shell parentShell) {
+	// бин параметров
+	private InterfaceParametrsBean parametrs;
+	// модель VLANs
+	private ODIModel vlanBeans = new ODIModel();
+	// кэшированная модель VLANs
+	private ODIModel oldVlanBeans = new ODIModel();
+	// кэш копипасты
+	protected VLANBean copyPasteFilter;
+
+	@SuppressWarnings("unchecked")
+	public ODIDialog(Shell parentShell, InterfaceParametrsBean parametrs) {
 		super(parentShell);
+		this.parametrs = parametrs;
+		if (this.parametrs.getVlaNs() == null) {
+			List<VLANBean> vlan = new LinkedList<VLANBean>();
+			VLANsBean vlaNsBean = new VLANsBean();
+			vlaNsBean.setVlan(vlan);
+			this.parametrs.setVlaNs(vlaNsBean);
+		}
+		// установка модели из бина конкретного интерфейса
+		vlanBeans.setData(this.parametrs.getVlaNs().getVlan());
+		// кэш объекта модели бина
+		try {
+			oldVlanBeans.setData((LinkedList<VLANBean>) vlanBeans.clone());
+		} catch (CloneNotSupportedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -71,6 +102,9 @@ public class ODIDialog extends Dialog {
 	@SuppressWarnings("unused")
 	@Override
 	protected Control createDialogArea(Composite parent) {
+
+		parent.getShell().setText("Дополнительные параметры");
+
 		Composite container = (Composite) super.createDialogArea(parent);
 		container.setLayout(new GridLayout(3, false));
 
@@ -140,9 +174,6 @@ public class ODIDialog extends Dialog {
 		tblclmnNewColumn.setWidth(100);
 		tblclmnNewColumn.setText("VNID");
 
-		tableViewer.setContentProvider(ArrayContentProvider.getInstance());
-		tableViewer.setLabelProvider(new ODILabelProvider());
-
 		Menu menu = new Menu(table);
 		table.setMenu(menu);
 
@@ -151,33 +182,24 @@ public class ODIDialog extends Dialog {
 
 		changeItem.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				if (table.getSelection() != null
-						&& table.getSelection().length > 0) {
-					IStructuredSelection sel = (IStructuredSelection) tableViewer
-							.getSelection();
-					ODIVLANDialog dialog = new ODIVLANDialog(getShell(), sel);
+				IStructuredSelection sel = (IStructuredSelection) tableViewer
+						.getSelection();
+				if (!sel.isEmpty()) {
+					VLANBean bean = (VLANBean) sel.getFirstElement();
+					int index = vlanBeans.getData().indexOf(bean);
+					ODIVLANDialog dialog = new ODIVLANDialog(getShell(), bean);
 					if (dialog.open() == Window.OK) {
-						VLANBean dialogbean = dialog.getData();
 						// изменяем элемент в списке
-						int indexx = vlanBeans.indexOf(dialogbean);
 						// если есть - заменить на текущее
-						vlanBeans.set(indexx, dialogbean);
-						Job job = new Job("change") {
-
+						vlanBeans.getData().set(index, dialog.getVlanBean());
+						Display.getDefault().asyncExec(new Runnable() {
 							@Override
-							protected IStatus run(IProgressMonitor monitor) {
-								Display.getDefault().asyncExec(new Runnable() {
-									@Override
-									public void run() {
-										tableViewer.setInput(vlanBeans);
-									}
-								});
-								return Status.OK_STATUS;
+							public void run() {
+								tableViewer.setInput(Properties.selfList(
+										VLANBean.class).observe(
+										vlanBeans.getData()));
 							}
-						};
-						job.setPriority(Job.SHORT);
-						job.schedule();
-
+						});
 					}
 				}
 			}
@@ -186,28 +208,21 @@ public class ODIDialog extends Dialog {
 		final MenuItem addItem = new MenuItem(menu, SWT.NONE);
 		addItem.setText("Добавить");
 
-		// обработчик добавления фильтров туннелей в таблицу
+		// обработчик добавления в таблицу
 		addItem.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				ODIVLANDialog dialog = new ODIVLANDialog(getShell(), null);
 				if (dialog.open() == Window.OK) {
 					// добавляем бин в список
-					vlanBeans.add(dialog.getData());
-					Job job = new Job("add") {
-
+					vlanBeans.getData().add(dialog.getVlanBean());
+					Display.getDefault().asyncExec(new Runnable() {
 						@Override
-						protected IStatus run(IProgressMonitor monitor) {
-							Display.getDefault().asyncExec(new Runnable() {
-								@Override
-								public void run() {
-									tableViewer.setInput(vlanBeans);
-								}
-							});
-							return Status.OK_STATUS;
+						public void run() {
+							tableViewer.setInput(Properties.selfList(
+									VLANBean.class)
+									.observe(vlanBeans.getData()));
 						}
-					};
-					job.setPriority(Job.SHORT);
-					job.schedule();
+					});
 				}
 			}
 		});
@@ -215,28 +230,21 @@ public class ODIDialog extends Dialog {
 		final MenuItem removeItem = new MenuItem(menu, SWT.NONE);
 		removeItem.setText("Удалить");
 
-		// обработчик удаления строк в таблице фильтров туннелей
+		// обработчик удаления строк в таблице
 		removeItem.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				IStructuredSelection sel = (IStructuredSelection) tableViewer
 						.getSelection();
 				VLANBean vlanBean = (VLANBean) sel.getFirstElement();
-				vlanBeans.remove(vlanBean);
-				Job job = new Job("remove") {
-
+				vlanBeans.getData().remove(vlanBean);
+				Display.getDefault().asyncExec(new Runnable() {
 					@Override
-					protected IStatus run(IProgressMonitor monitor) {
-						Display.getDefault().asyncExec(new Runnable() {
-							@Override
-							public void run() {
-								tableViewer.setInput(vlanBeans);
-							}
-						});
-						return Status.OK_STATUS;
+					public void run() {
+						tableViewer.setInput(Properties
+								.selfList(VLANBean.class).observe(
+										vlanBeans.getData()));
 					}
-				};
-				job.setPriority(Job.SHORT);
-				job.schedule();
+				});
 			}
 		});
 
@@ -245,10 +253,9 @@ public class ODIDialog extends Dialog {
 
 		copyItem.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				if (table.getSelection() != null
-						&& table.getSelection().length > 0) {
-					IStructuredSelection sel = (IStructuredSelection) tableViewer
-							.getSelection();
+				IStructuredSelection sel = (IStructuredSelection) tableViewer
+						.getSelection();
+				if (!sel.isEmpty()) {
 					VLANBean vlanBean = (VLANBean) sel.getFirstElement();
 					// скопировать ссылку на текущее выделение
 					try {
@@ -274,22 +281,15 @@ public class ODIDialog extends Dialog {
 				} catch (CloneNotSupportedException e1) {
 					e1.printStackTrace();
 				}
-				vlanBeans.add(vlanBean);
-				Job job = new Job("paste") {
-
+				vlanBeans.getData().add(vlanBean);
+				Display.getDefault().asyncExec(new Runnable() {
 					@Override
-					protected IStatus run(IProgressMonitor monitor) {
-						Display.getDefault().asyncExec(new Runnable() {
-							@Override
-							public void run() {
-								tableViewer.setInput(vlanBeans);
-							}
-						});
-						return Status.OK_STATUS;
+					public void run() {
+						tableViewer.setInput(Properties
+								.selfList(VLANBean.class).observe(
+										vlanBeans.getData()));
 					}
-				};
-				job.setPriority(Job.SHORT);
-				job.schedule();
+				});
 			}
 		});
 
@@ -299,8 +299,9 @@ public class ODIDialog extends Dialog {
 		menu.addListener(SWT.Show, new Listener() {
 			@Override
 			public void handleEvent(Event event) {
-				TableItem[] selected = table.getSelection();
-				if (selected.length == 0) {
+				IStructuredSelection sel = (IStructuredSelection) tableViewer
+						.getSelection();
+				if (sel.isEmpty()) {
 					changeItem.setEnabled(false);
 					addItem.setEnabled(true);
 					removeItem.setEnabled(false);
@@ -331,55 +332,106 @@ public class ODIDialog extends Dialog {
 				false, false, 1, 1));
 		receiveLimitSpinner.setMinimum(0);
 
-		init();
+		setDefaultValues();
+		bindData();
 
 		return container;
 	}
 
-	private void init() {
-		setDefaultValues();
-		if (parametrsBean != null) {
-			frameSpinner
-					.setSelection(parametrsBean.getFrame() != null ? parametrsBean
-							.getFrame() : 0);
-			buffSizeSpinner
-					.setSelection(parametrsBean.getBuf() != null ? parametrsBean
-							.getBuf() : 8);
-			macText.setText(parametrsBean.getMac() != null ? parametrsBean
-					.getMac() : "0.0.0.0");
-			// устанавливаем модель отображения таблицы VLAN
-			if (parametrsBean.getVlaNs() != null
-					&& parametrsBean.getVlaNs().getVlan() != null) {
-				vlanBeans.addAll(parametrsBean.getVlaNs().getVlan());
-				tableViewer.setInput(vlanBeans);
+	private void bindData() {
+		// контекст датабиндинга
+		ctx = new DataBindingContext();
+		// Номер фрейма
+		IObservableValue widgetValue = SWTObservables
+				.observeSelection(frameSpinner);
+		IObservableValue modelValue = BeanProperties.value("frame").observe(
+				parametrs);
+		ctx.bindValue(widgetValue, modelValue, new UpdateValueStrategy(
+				UpdateValueStrategy.POLICY_ON_REQUEST), null);
+		// Размер буфера обмена
+		widgetValue = SWTObservables.observeSelection(buffSizeSpinner);
+		modelValue = BeanProperties.value("buf").observe(parametrs);
+		ctx.bindValue(widgetValue, modelValue, new UpdateValueStrategy(
+				UpdateValueStrategy.POLICY_ON_REQUEST), null);
+		// MAC адрес
+		widgetValue = SWTObservables.observeText(macText, SWT.Modify);
+		modelValue = BeanProperties.value(InterfaceParametrsBean.class, "mac")
+				.observe(parametrs);
+		ctx.bindValue(widgetValue, modelValue, new UpdateValueStrategy(
+				UpdateValueStrategy.POLICY_CONVERT), null);
+		// Таблица
+		ObservableListContentProvider contentProvider = new ObservableListContentProvider();
+		tableViewer.setContentProvider(contentProvider);
+		// извлечь элементы наблюдения
+		IObservableSet knownElements = contentProvider.getKnownElements();
+		// выставить соответствие в свойствах
+		final IObservableMap ips = BeanProperties.value(VLANBean.class, "ip")
+				.observeDetail(knownElements);
+		final IObservableMap bitss = BeanProperties.value(VLANBean.class,
+				"bits").observeDetail(knownElements);
+		final IObservableMap vnids = BeanProperties.value(VLANBean.class,
+				"vnid").observeDetail(knownElements);
+		// свойства в массив
+		IObservableMap[] maps = { ips, bitss, vnids };
+		// провайдер отображения
+		ILabelProvider labelProvider = new ObservableMapLabelProvider(maps) {
+			@Override
+			public String getColumnText(Object element, int columnIndex) {
+				String rv = "";
+				switch (columnIndex) {
+				case 0:
+					rv = ips.get(element).toString() + "/"
+							+ bitss.get(element).toString();
+					break;
+				case 1:
+					rv = vnids.get(element).toString();
+					break;
+				}
+				return rv;
 			}
-			sendLimitSpinner
-					.setSelection(parametrsBean.getBandwidth() != null ? parametrsBean
-							.getBandwidth() : 0);
-			receiveLimitSpinner
-					.setSelection(parametrsBean.getBandrecv() != null ? parametrsBean
-							.getBandrecv() : 0);
-		}
+		};
+		// данные для вьюера
+		IObservableList input = Properties.selfList(VLANBean.class).observe(
+				vlanBeans.getData());
+		tableViewer.setLabelProvider(labelProvider);
+		tableViewer.setInput(input);
+		// Ограничение скорости передачи
+		widgetValue = SWTObservables.observeSelection(sendLimitSpinner);
+		modelValue = BeanProperties.value("bandwidth").observe(parametrs);
+		ctx.bindValue(widgetValue, modelValue, new UpdateValueStrategy(
+				UpdateValueStrategy.POLICY_ON_REQUEST), null);
+		// Ограничение скорости приёма
+		widgetValue = SWTObservables.observeSelection(receiveLimitSpinner);
+		modelValue = BeanProperties.value("bandrecv").observe(parametrs);
+		ctx.bindValue(widgetValue, modelValue, new UpdateValueStrategy(
+				UpdateValueStrategy.POLICY_ON_REQUEST), null);
+		// обновить виджеты данными бина
+		ctx.updateTargets();
 	}
 
 	@Override
 	protected void okPressed() {
-		parametrsBean.setFrame((short) frameSpinner.getSelection());
-		parametrsBean.setBuf(buffSizeSpinner.getSelection());
-		parametrsBean.setMac(macText.getText());
-		VLANsBean vlaNsBean = new VLANsBean();
-		vlaNsBean.setVlan(vlanBeans);
-		parametrsBean.setVlaNs(vlaNsBean);
-		parametrsBean.setBandwidth(sendLimitSpinner.getSelection());
-		parametrsBean.setBandrecv(receiveLimitSpinner.getSelection());
+		// обновляем модели
+		ctx.updateModels();
+		// устанавливаем модель таблицы
+		this.parametrs.getVlaNs().setVlan(vlanBeans.getData());
 		super.okPressed();
 	}
 
+	@Override
+	protected void cancelPressed() {
+		// восстанавливаем модель таблицы
+		this.parametrs.getVlaNs().setVlan(oldVlanBeans.getData());
+		super.cancelPressed();
+	}
+
+	/**
+	 * Установка дефолтных значений
+	 */
 	private void setDefaultValues() {
 		frameSpinner.setSelection(0);
 		buffSizeSpinner.setSelection(8);
 		macText.setText("0.0.0.0");
-		vlanBeans.clear();
 		sendLimitSpinner.setSelection(0);
 		receiveLimitSpinner.setSelection(0);
 	}
@@ -403,13 +455,5 @@ public class ODIDialog extends Dialog {
 	@Override
 	protected Point getInitialSize() {
 		return new Point(529, 461);
-	}
-
-	public InterfaceParametrsBean getParametrsBean() {
-		return parametrsBean;
-	}
-
-	public void setParametrsBean(InterfaceParametrsBean parametrsBean) {
-		this.parametrsBean = parametrsBean;
 	}
 }

@@ -8,7 +8,6 @@ import dionis.xml.InterfaceDFType;
 import dionis.xml.InterfaceParametrType;
 import dionis.xml.InterfaceParametrsMediaType;
 import dionis.xml.InterfaceParametrsModeType;
-import dionis.xml.Script;
 
 public class InterfaceParametrsBean extends ModelObject implements
 		PropertyChangeListener {
@@ -26,7 +25,7 @@ public class InterfaceParametrsBean extends ModelObject implements
 	protected Integer wait;
 	protected InterfaceParametrType type;
 	protected String ports;
-	protected Script script;
+	protected ScriptBean script;
 	protected Integer send;
 	protected Integer recv;
 	protected InterfaceParametrsMediaType media;
@@ -94,7 +93,11 @@ public class InterfaceParametrsBean extends ModelObject implements
 		firePropertyChange("ports", this.ports, this.ports = value);
 	}
 
-	public void setScript(Script value) {
+	public void setScript(ScriptBean value) {
+		value.addPropertyChangeListener("retries", this);
+		value.addPropertyChangeListener("time", this);
+		value.addPropertyChangeListener("address", this);
+		value.addPropertyChangeListener("elements", this);
 		firePropertyChange("script", this.script, this.script = value);
 	}
 
@@ -215,7 +218,7 @@ public class InterfaceParametrsBean extends ModelObject implements
 		return ports;
 	}
 
-	public Script getScript() {
+	public ScriptBean getScript() {
 		return script;
 	}
 

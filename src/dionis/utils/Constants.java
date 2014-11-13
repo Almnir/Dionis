@@ -1,8 +1,5 @@
 package dionis.utils;
 
-import org.eclipse.core.databinding.validation.IValidator;
-import org.eclipse.core.databinding.validation.ValidationStatus;
-import org.eclipse.core.runtime.IStatus;
 
 /**
  * Константы для работы с данными "Дионис"
@@ -98,7 +95,15 @@ public interface Constants {
 	String[] FILTER_DIRECTION = { "Все", "Отправителя", "Получателя" };
 	/** Логические операции **/
 	String[] FILTER_LOGIC = { "Нет", "==", "!=", ">", ">=", "<", "<=" };
-	
+	/** Тип интерфейса по виду подключения **/
+	String[] CONNECTION_TYPE = { "Оптика", "Витая пара" };
+	/** Тип интерфейса по режиму передачи данных **/
+
+	String[] CONNECTION_MODE = { "Автоопределение", "100Full", "100Half", "10Full", "10Half" , "Receive", "Send"};
+	/** Тип режима активизации интерфейса **/
+	String[] INTERFACE_MODE_TYPE = { "Статический", "Входящий", "Исходящий", "Двусторонний" };
+	/** Тип NAT интерфейса **/
+	String[] INTERFACE_NAT_TYPE = { " ", "Внутренний", "Внешний" };
 	/** Стандартный фильтр **/
 	int DLG_STANDARD = 0;
 	/** Расширенный фильтр **/

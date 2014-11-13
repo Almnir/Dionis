@@ -1,7 +1,16 @@
 package dionis.dialogs;
 
+import org.eclipse.core.databinding.DataBindingContext;
+import org.eclipse.core.databinding.UpdateValueStrategy;
+import org.eclipse.core.databinding.beans.BeanProperties;
+import org.eclipse.core.databinding.observable.value.IObservableValue;
+import org.eclipse.jface.databinding.swt.SWTObservables;
+import org.eclipse.jface.databinding.viewers.ViewersObservables;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.ComboViewer;
+import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
@@ -16,10 +25,16 @@ import org.eclipse.swt.widgets.Spinner;
 
 import dionis.beans.InterfaceParametrsBean;
 import dionis.beans.TOSBean;
+import dionis.utils.BindHelper;
 import dionis.utils.Constants;
-import dionis.xml.BooleanType;
 import dionis.xml.InterfaceDFType;
 
+/**
+ * Диалог GRE дополнительных параметров интерфейса
+ * 
+ * @author Ярных А.О.
+ *
+ */
 public class GREDialog extends Dialog {
 
 	private InterfaceParametrsBean parametrs;
@@ -32,14 +47,21 @@ public class GREDialog extends Dialog {
 	private Spinner latencySpinner;
 	private Spinner intervalSpinner;
 	private Spinner timeoutSpinner;
+	private DataBindingContext ctx;
+	private ComboViewer flagComboViewer;
 
 	/**
 	 * Create the dialog.
 	 * 
 	 * @param parentShell
 	 */
-	public GREDialog(Shell parentShell) {
+	public GREDialog(Shell parentShell, InterfaceParametrsBean parametrs) {
 		super(parentShell);
+		this.parametrs = parametrs;
+		if (this.parametrs.getTos() == null) {
+			TOSBean tosBean = new TOSBean();
+			this.parametrs.setTos(tosBean);
+		}
 	}
 
 	/**
@@ -78,7 +100,19 @@ public class GREDialog extends Dialog {
 				false, 1, 1);
 		gd_flagCombo.widthHint = 130;
 		flagCombo.setLayoutData(gd_flagCombo);
-		flagCombo.setItems(Constants.DF_FLAG);
+		flagComboViewer = new ComboViewer(flagCombo);
+		flagComboViewer.setContentProvider(new ArrayContentProvider());
+		flagComboViewer.setLabelProvider(new LabelProvider() {
+			@Override
+			public String getText(Object element) {
+				if (element instanceof InterfaceDFType) {
+					InterfaceDFType iTypeElement = (InterfaceDFType) element;
+					return Constants.DF_FLAG[iTypeElement.ordinal()];
+				}
+				return super.getText(element);
+			}
+		});
+		flagComboViewer.setInput(InterfaceDFType.values());
 
 		Label lblNewLabel_4 = new Label(container, SWT.NONE);
 		GridData gd_lblNewLabel_4 = new GridData(SWT.LEFT, SWT.CENTER, false,
@@ -152,70 +186,66 @@ public class GREDialog extends Dialog {
 		timeoutSpinner.setMaximum(65535);
 		new Label(container, SWT.NONE);
 
-		init();
+		bindData();
 
 		return container;
 	}
 
-	private void init() {
-		numerationCheck
-				.setSelection(parametrs.getSeq() == BooleanType.YES ? true
-						: false);
-		if (parametrs.getTos() != null) {
-			copyTOSCheck
-					.setSelection(parametrs.getTos().getCopy() == BooleanType.YES ? true
-							: false);
-			tosSpinner.setSelection(parametrs.getTos().getValue());
-		}
-		controlSumCheck
-				.setSelection(parametrs.getChksum() == BooleanType.YES ? true
-						: false);
-		if (parametrs.getDf() != null) {
-			flagCombo.select(parametrs.getDf().ordinal());
-		} else {
-			flagCombo.select(0);
-		}
-		if (parametrs.getBuf() != null) {
-			bufferSpinner.setSelection(parametrs.getBuf());
-		} else {
-			bufferSpinner.setSelection(0);
-		}
-		if (parametrs.getDelay() != null) {
-			latencySpinner.setSelection(parametrs.getDelay());
-		} else {
-			latencySpinner.setSelection(0);
-		}
-		if (parametrs.getInterval() != null) {
-			intervalSpinner.setSelection(parametrs.getInterval());
-		} else {
-			intervalSpinner.setSelection(0);
-		}
-		if (parametrs.getWait() != null) {
-			timeoutSpinner.setSelection(parametrs.getWait());
-		} else {
-			timeoutSpinner.setSelection(0);
-		}
+	private void bindData() {
+		// контекст датабиндинга
+		ctx = new DataBindingContext();
+		// нумерация пакетов
+		IObservableValue modelValue = BeanProperties.value(
+				InterfaceParametrsBean.class, "seq").observe(parametrs);
+		BindHelper.bindCheckButton(ctx, numerationCheck, modelValue);
+		// копировать после TOS
+		modelValue = BeanProperties.value(InterfaceParametrsBean.class,
+				"tos.copy").observe(parametrs);
+		BindHelper.bindCheckButton(ctx, copyTOSCheck, modelValue);
+		// Установить значение TOS
+		IObservableValue widgetValue = SWTObservables
+				.observeSelection(tosSpinner);
+		modelValue = BeanProperties.value("tos.value").observe(parametrs);
+		ctx.bindValue(widgetValue, modelValue, new UpdateValueStrategy(
+				UpdateValueStrategy.POLICY_ON_REQUEST), null);
+		// Контрольная сумма
+		modelValue = BeanProperties.value(InterfaceParametrsBean.class,
+				"chksum").observe(parametrs);
+		BindHelper.bindCheckButton(ctx, controlSumCheck, modelValue);
+		// Флаг DF
+		widgetValue = ViewersObservables
+				.observeSingleSelection(flagComboViewer);
+		modelValue = BeanProperties.value("df").observe(parametrs);
+		ctx.bindValue(widgetValue, modelValue, new UpdateValueStrategy(
+				UpdateValueStrategy.POLICY_CONVERT), null);
+		// Размер буфера
+		widgetValue = SWTObservables.observeSelection(bufferSpinner);
+		modelValue = BeanProperties.value("buf").observe(parametrs);
+		ctx.bindValue(widgetValue, modelValue, new UpdateValueStrategy(
+				UpdateValueStrategy.POLICY_ON_REQUEST), null);
+		// Максимальная задержка пакетов
+		widgetValue = SWTObservables.observeSelection(latencySpinner);
+		modelValue = BeanProperties.value("delay").observe(parametrs);
+		ctx.bindValue(widgetValue, modelValue, new UpdateValueStrategy(
+				UpdateValueStrategy.POLICY_ON_REQUEST), null);
+		// Интервал отправки запросов
+		widgetValue = SWTObservables.observeSelection(intervalSpinner);
+		modelValue = BeanProperties.value("interval").observe(parametrs);
+		ctx.bindValue(widgetValue, modelValue, new UpdateValueStrategy(
+				UpdateValueStrategy.POLICY_ON_REQUEST), null);
+		// Максимальный интервал ожидания ответов
+		widgetValue = SWTObservables.observeSelection(timeoutSpinner);
+		modelValue = BeanProperties.value("wait").observe(parametrs);
+		ctx.bindValue(widgetValue, modelValue, new UpdateValueStrategy(
+				UpdateValueStrategy.POLICY_ON_REQUEST), null);
+		// обновить виджеты из бина
+		ctx.updateTargets();
 	}
 
 	@Override
 	protected void okPressed() {
-		parametrs
-				.setSeq(numerationCheck.getSelection() == true ? BooleanType.YES
-						: BooleanType.NO);
-		TOSBean tos = new TOSBean();
-		tos.setCopy(copyTOSCheck.getSelection() == true ? BooleanType.YES
-				: BooleanType.NO);
-		tos.setValue((short) tosSpinner.getSelection());
-		parametrs.setTos(tos);
-		parametrs
-				.setChksum(controlSumCheck.getSelection() == true ? BooleanType.YES
-						: BooleanType.NO);
-		parametrs
-				.setDf(InterfaceDFType.values()[flagCombo.getSelectionIndex()]);
-		parametrs.setBuf(bufferSpinner.getSelection());
-		parametrs.setDelay(latencySpinner.getSelection());
-		parametrs.setInterval(intervalSpinner.getSelection());
-		parametrs.setWait(timeoutSpinner.getSelection());
+		// обновить модель по подтверждению
+		ctx.updateModels();
 		super.okPressed();
 	}
 
@@ -238,14 +268,6 @@ public class GREDialog extends Dialog {
 	@Override
 	protected Point getInitialSize() {
 		return new Point(660, 315);
-	}
-
-	public InterfaceParametrsBean getParametrs() {
-		return parametrs;
-	}
-
-	public void setParametrs(InterfaceParametrsBean parametrs) {
-		this.parametrs = parametrs;
 	}
 
 }

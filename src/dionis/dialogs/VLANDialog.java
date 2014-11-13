@@ -3,12 +3,23 @@ package dionis.dialogs;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.eclipse.core.databinding.DataBindingContext;
+import org.eclipse.core.databinding.UpdateValueStrategy;
+import org.eclipse.core.databinding.beans.BeanProperties;
+import org.eclipse.core.databinding.observable.list.IObservableList;
+import org.eclipse.core.databinding.observable.map.IObservableMap;
+import org.eclipse.core.databinding.observable.set.IObservableSet;
+import org.eclipse.core.databinding.observable.value.IObservableValue;
+import org.eclipse.core.databinding.property.Properties;
+import org.eclipse.jface.databinding.swt.SWTObservables;
+import org.eclipse.jface.databinding.viewers.ObservableListContentProvider;
+import org.eclipse.jface.databinding.viewers.ObservableMapLabelProvider;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
+import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
@@ -20,10 +31,16 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
 
-import dionis.beans.InterfaceParametrsBean;
 import dionis.beans.InterfaceBean;
+import dionis.beans.InterfaceParametrsBean;
 import dionis.models.InterfaceModel;
 
+/**
+ * Диалог отображения выбора VLAN параметров
+ * 
+ * @author Ярных А.О.
+ *
+ */
 public class VLANDialog extends Dialog {
 
 	private Spinner vlanSpinner;
@@ -32,14 +49,16 @@ public class VLANDialog extends Dialog {
 	private ComboViewer interfaceComboViewer;
 	private Spinner sendSpeedSpinner;
 	private Spinner receiveSpeedSpinner;
+	private DataBindingContext ctx;
 
 	/**
 	 * Create the dialog.
 	 * 
 	 * @param parentShell
 	 */
-	public VLANDialog(Shell parentShell) {
+	public VLANDialog(Shell parentShell, InterfaceParametrsBean parametrs) {
 		super(parentShell);
+		this.parametrs = parametrs;
 	}
 
 	/**
@@ -66,19 +85,6 @@ public class VLANDialog extends Dialog {
 				false, 1, 1);
 		gd_interfaceCombo.widthHint = 119;
 		interfaceCombo.setLayoutData(gd_interfaceCombo);
-		interfaceComboViewer.setContentProvider(ArrayContentProvider
-				.getInstance());
-		interfaceComboViewer.setLabelProvider(new LabelProvider() {
-			@Override
-			public String getText(Object element) {
-				String rv = "";
-				if (element instanceof InterfaceBean) {
-					InterfaceBean ibean = (InterfaceBean) element;
-					rv = ibean.getName();
-				}
-				return rv;
-			}
-		});
 
 		Label lblNewLabel = new Label(container, SWT.NONE);
 		lblNewLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true,
@@ -117,71 +123,86 @@ public class VLANDialog extends Dialog {
 		receiveSpeedSpinner.setLayoutData(gd_receiveSpeedSpinner);
 		receiveSpeedSpinner.setMinimum(0);
 
-		init();
+		bindData();
 
 		return container;
 	}
 
-	private void init() {
-		List<InterfaceBean> interfaceList = InterfaceModel.getInstance()
-				.getData();
-		// если есть интерфейсы
-		if (interfaceList != null && !interfaceList.isEmpty()) {
-			// формируем список отображаемых чтобы не отображать текущий
-			// интерфейс
-			List<InterfaceBean> listBeans = new LinkedList<InterfaceBean>();
-			for (InterfaceBean ibean : interfaceList) {
-				// если найденный в списке совпадает с текущим - не включать
-				if (parametrs.getInterfacesBean() != null
-						&& parametrs.getInterfacesBean().getName()
-								.equals(ibean.getName())) {
-					continue;
-				}
-				// добавить в список
-				listBeans.add(ibean);
-			}
-			// данные в комбо
-			interfaceComboViewer.setInput(listBeans);
-			interfaceCombo.setEnabled(true);
+	private void bindData() {
+		// контекст датабиндинга
+		ctx = new DataBindingContext();
 
-			// ищем интерфейс по имени и устанавливаем выбор
-			for (int i = 0; i < listBeans.size(); i++) {
-				if (listBeans.get(i).getName()
-						.equals(parametrs.getBaseInterface())) {
-					interfaceCombo.select(i);
-					break;
-				}
+		ObservableListContentProvider contentProvider = new ObservableListContentProvider();
+		interfaceComboViewer.setContentProvider(contentProvider);
+
+		IObservableSet knownElements = contentProvider.getKnownElements();
+		final IObservableMap names = BeanProperties.value(InterfaceBean.class,
+				"name").observeDetail(knownElements);
+
+		IObservableMap[] labelMaps = { names };
+
+		ILabelProvider labelProvider = new ObservableMapLabelProvider(labelMaps) {
+			public String getText(Object element) {
+				return names.get(element).toString();
 			}
-		} else {
-			// если нет интерфейсов, то отключаем комбо
-			interfaceCombo.setEnabled(false);
+		};
+
+		interfaceComboViewer.setLabelProvider(labelProvider);
+
+		List<InterfaceBean> interfaces = InterfaceModel.getInstance().getData();
+		// делаем копию модели интерфейсов
+		List<InterfaceBean> interfaceList = new LinkedList<InterfaceBean>(
+				interfaces);
+		// удаляем себя
+		interfaceList.remove(parametrs.getInterfacesBean());
+		// данные для вьюера
+		IObservableList input = Properties.selfList(InterfaceBean.class)
+				.observe(interfaceList);
+		interfaceComboViewer.setInput(input);
+		// привязка выбора конкретного интерфейса в комбо
+		String selectedBean = parametrs.getBaseInterface();
+		// поиск по копии модели интерфейса с именем заданным полем бина
+		// параметров
+		for (InterfaceBean ifb : interfaceList) {
+			if (ifb.getName().equals(selectedBean)) {
+				IStructuredSelection sel = new StructuredSelection(ifb);
+				// установка выбора комбо
+				interfaceComboViewer.setSelection(sel);
+				break;
+			}
 		}
-		if (parametrs.getVnid() != null)
-			vlanSpinner.setSelection(parametrs.getVnid());
-		else
-			vlanSpinner.setSelection(1);
-		if (parametrs.getBandwidth() != null)
-			sendSpeedSpinner.setSelection(parametrs.getBandwidth());
-		else
-			sendSpeedSpinner.setSelection(0);
-		if (parametrs.getBandrecv() != null)
-			receiveSpeedSpinner.setSelection(parametrs.getBandrecv());
-		else
-			receiveSpeedSpinner.setSelection(0);
+		// VLAN идентификатор
+		IObservableValue widgetValue = SWTObservables
+				.observeSelection(vlanSpinner);
+		IObservableValue modelValue = BeanProperties.value("vnid").observe(
+				parametrs);
+		ctx.bindValue(widgetValue, modelValue, new UpdateValueStrategy(
+				UpdateValueStrategy.POLICY_ON_REQUEST), null);
+
+		// Скорость передачи
+		widgetValue = SWTObservables.observeSelection(sendSpeedSpinner);
+		modelValue = BeanProperties.value("bandwidth").observe(parametrs);
+		ctx.bindValue(widgetValue, modelValue, new UpdateValueStrategy(
+				UpdateValueStrategy.POLICY_ON_REQUEST), null);
+		// Скорость приёма
+		widgetValue = SWTObservables.observeSelection(receiveSpeedSpinner);
+		modelValue = BeanProperties.value("bandrecv").observe(parametrs);
+		ctx.bindValue(widgetValue, modelValue, new UpdateValueStrategy(
+				UpdateValueStrategy.POLICY_ON_REQUEST), null);
+		ctx.updateTargets();
 	}
 
 	@Override
 	protected void okPressed() {
-		IStructuredSelection selection = (IStructuredSelection) interfaceComboViewer
+		// обновление моделей
+		ctx.updateModels();
+		// установка имени выбранного интерфейса по текущему выбору в комбо
+		IStructuredSelection sel = (IStructuredSelection) interfaceComboViewer
 				.getSelection();
-		InterfaceBean ifaceBean = (InterfaceBean) selection.getFirstElement();
-		if (ifaceBean != null) {
-			String ifaceText = ifaceBean.getName();
-			parametrs.setBaseInterface(ifaceText);
+		if (!sel.isEmpty()) {
+			InterfaceBean ibn = (InterfaceBean) sel.getFirstElement();
+			parametrs.setBaseInterface(ibn.getName());
 		}
-		parametrs.setVnid(vlanSpinner.getSelection());
-		parametrs.setBandwidth(sendSpeedSpinner.getSelection());
-		parametrs.setBandrecv(receiveSpeedSpinner.getSelection());
 		super.okPressed();
 	}
 
@@ -204,13 +225,5 @@ public class VLANDialog extends Dialog {
 	@Override
 	protected Point getInitialSize() {
 		return new Point(367, 227);
-	}
-
-	public InterfaceParametrsBean getParametrs() {
-		return parametrs;
-	}
-
-	public void setParametrs(InterfaceParametrsBean parametrs) {
-		this.parametrs = parametrs;
 	}
 }
