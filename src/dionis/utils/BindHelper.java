@@ -3,12 +3,8 @@ package dionis.utils;
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.UpdateValueStrategy;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
-import org.eclipse.core.databinding.observable.value.SelectObservableValue;
-import org.eclipse.jface.databinding.swt.SWTObservables;
 import org.eclipse.jface.databinding.swt.WidgetProperties;
 import org.eclipse.swt.widgets.Button;
-
-import dionis.xml.BooleanType;
 
 /**
  * Хелпер класс для датабиндинга
@@ -36,10 +32,12 @@ public class BindHelper {
 		updateValueStrategy.setConverter(new Boolean2BooleanTypeConverter());
 		// стратегия для обратной конверсии BooleanType -> boolean
 		UpdateValueStrategy updateFromValueStrategy = new UpdateValueStrategy(
-				UpdateValueStrategy.POLICY_CONVERT)
+				UpdateValueStrategy.POLICY_ON_REQUEST)
 				.setConverter(new BooleanType2BooleanConverter());
-		IObservableValue widgetValue = WidgetProperties.selection().observe(button);
-		ctx.bindValue(widgetValue, modelValue, updateValueStrategy, updateFromValueStrategy);
+		IObservableValue widgetValue = WidgetProperties.selection().observe(
+				button);
+		ctx.bindValue(widgetValue, modelValue, updateValueStrategy,
+				updateFromValueStrategy);
 	}
 
 }

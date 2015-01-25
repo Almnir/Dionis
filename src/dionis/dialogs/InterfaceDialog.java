@@ -6,6 +6,7 @@ import org.eclipse.core.databinding.Binding;
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.UpdateValueStrategy;
 import org.eclipse.core.databinding.beans.BeanProperties;
+import org.eclipse.core.databinding.conversion.IConverter;
 import org.eclipse.core.databinding.observable.list.IObservableList;
 import org.eclipse.core.databinding.observable.map.IObservableMap;
 import org.eclipse.core.databinding.observable.set.IObservableSet;
@@ -573,6 +574,42 @@ public class InterfaceDialog extends Dialog {
 		modelValue = BeanProperties.value("type").observe(interfacesBean);
 		ctx.bindValue(widgetValue, modelValue, new UpdateValueStrategy(
 				UpdateValueStrategy.POLICY_CONVERT), null);
+		// --
+		IConverter typeConverter = new IConverter() {
+			public Object convert(Object fromObject) {
+				InterfaceType obj = (InterfaceType) fromObject;
+				if (obj == InterfaceType.GRE) {
+					return false;
+				}
+				return true;
+			}
+
+			public Object getFromType() {
+				return InterfaceType.class;
+			}
+
+			public Object getToType() {
+				return Boolean.class;
+			}
+		};
+		// 1. Observe changes in selection.
+		IObservableValue selection = ViewersObservables
+				.observeSingleSelection(typeComboViewer);
+
+		// 2. Observe the name property of the current selection.
+		IObservableValue detailObservable = BeanProperties.value(
+				(Class<?>) selection.getValueType(), "type",
+				InterfaceType.class).observeDetail(selection);
+
+		// 3. Bind the Text widget to the name detail (selection's
+		// name).
+		ctx.bindValue(detailObservable, SWTObservables
+				.observeEnabled(timerSpinner),
+				new UpdateValueStrategy(true,
+						UpdateValueStrategy.POLICY_CONVERT)
+						.setConverter(typeConverter), null);
+
+		// --
 		// режим активизации
 		widgetValue = ViewersObservables
 				.observeSingleSelection(modeComboViewer);
@@ -586,7 +623,7 @@ public class InterfaceDialog extends Dialog {
 		modelValue = BeanProperties.value("ip.local").observe(interfacesBean);
 		Binding bindValue = ctx.bindValue(widgetValue, modelValue,
 				new UpdateValueStrategy(UpdateValueStrategy.POLICY_ON_REQUEST)
-						.setAfterGetValidator(new IPAddressValidator()), null);
+						.setBeforeSetValidator(new IPAddressValidator()), null);
 		ControlDecorationSupport.create(bindValue, SWT.TOP | SWT.LEFT);
 		// фильтр входящих
 		widgetValue = ViewersObservables

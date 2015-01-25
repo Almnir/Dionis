@@ -6,6 +6,7 @@ import org.eclipse.swt.graphics.Image;
 
 import dionis.beans.InterfaceBean;
 import dionis.models.InterfaceModel;
+import dionis.utils.Constants;
 
 public class InterfaceLableProvider extends LabelProvider implements
 		ITableLabelProvider {
@@ -35,7 +36,8 @@ public class InterfaceLableProvider extends LabelProvider implements
 				break;
 
 			case 3:
-				rv = (ib.getMode() != null) ? ib.getMode().name() : "";
+				rv = (ib.getMode() != null) ? Constants.INTERFACE_MODE_TYPE[ib
+						.getMode().ordinal()] : "";
 				break;
 			case 4:
 				rv = ib.getIp() != null ? ib.getIp().getLocal() : "";
@@ -44,7 +46,8 @@ public class InterfaceLableProvider extends LabelProvider implements
 				rv = ib.getIp() != null ? ib.getIp().getRemote() : "";
 				break;
 			case 6:
-				rv = (ib.getNat() != null) ? ib.getNat().name() : "";
+				rv = (ib.getNat() != null) ? Constants.INTERFACE_NAT_TYPE[ib
+						.getNat().ordinal()] : "";
 				break;
 			case 7:
 				rv = ib.getFilters() != null ? ib.getFilters().getInput() : "";
@@ -62,7 +65,8 @@ public class InterfaceLableProvider extends LabelProvider implements
 				rv = String.valueOf(ib.getTimer());
 				break;
 			case 12:
-				rv = ib.getParametrs() != null ? ib.getParametrs().toString() : "";
+				rv = ib.getParametrs() != null ? ib.getParametrs().toString()
+						: "";
 				break;
 			case 13:
 				rv = ib.getRoutes() != null ? ib.getRoutes().toString() : "";

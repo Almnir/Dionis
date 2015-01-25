@@ -1,6 +1,5 @@
 package dionis.utils;
 
-
 /**
  * Константы для работы с данными "Дионис"
  * 
@@ -71,7 +70,8 @@ public interface Constants {
 			{ "+11:00", "Магадан", },
 			{ "+12:00", "Камчатка, Фиджи, Маршалловы о-ва" } };
 
-//	String[] TUNNEL_FILTER_STATUS = { "Разрешить", "Запретить", "Перезапуск" };
+	// String[] TUNNEL_FILTER_STATUS = { "Разрешить", "Запретить", "Перезапуск"
+	// };
 	/** Флаг DF **/
 	String[] DF_FLAG = { "Копировать", "Установить", "Сбросить" };
 
@@ -99,9 +99,11 @@ public interface Constants {
 	String[] CONNECTION_TYPE = { "Оптика", "Витая пара" };
 	/** Тип интерфейса по режиму передачи данных **/
 
-	String[] CONNECTION_MODE = { "Автоопределение", "100Full", "100Half", "10Full", "10Half" , "Receive", "Send"};
+	String[] CONNECTION_MODE = { "Автоопределение", "100Full", "100Half",
+			"10Full", "10Half" };
 	/** Тип режима активизации интерфейса **/
-	String[] INTERFACE_MODE_TYPE = { "Статический", "Входящий", "Исходящий", "Двусторонний" };
+	String[] INTERFACE_MODE_TYPE = { "Статический", "Входящий", "Исходящий",
+			"Двусторонний" };
 	/** Тип NAT интерфейса **/
 	String[] INTERFACE_NAT_TYPE = { " ", "Внутренний", "Внешний" };
 	/** Стандартный фильтр **/

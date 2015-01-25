@@ -3,10 +3,6 @@ package dionis.dialogs;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -643,7 +639,7 @@ public class TunnelDialog extends Dialog {
 	protected void cancelPressed() {
 		TunnelFilterModel.getNewInstance();
 		// очищаем синглтон с состоянием модели фильтрации туннелей
-//		TunnelFilterModel.getInstance().removeAll();
+		// TunnelFilterModel.getInstance().removeAll();
 		super.cancelPressed();
 	}
 

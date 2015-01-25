@@ -2,7 +2,6 @@
 package dionis.xml;
 
 import javax.xml.bind.annotation.XmlEnum;
-import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
 
@@ -17,8 +16,6 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;enumeration value="SIO"/>
  *     &lt;enumeration value="VLAN"/>
  *     &lt;enumeration value="SYN"/>
- *     &lt;enumeration value="Call"/>
- *     &lt;enumeration value="Receive"/>
  *   &lt;/restriction>
  * &lt;/simpleType>
  * </pre>
@@ -28,30 +25,16 @@ import javax.xml.bind.annotation.XmlType;
 @XmlEnum
 public enum InterfaceParametrType {
 
-    SIO("SIO"),
-    VLAN("VLAN"),
-    SYN("SYN"),
-    @XmlEnumValue("Call")
-    CALL("Call"),
-    @XmlEnumValue("Receive")
-    RECEIVE("Receive");
-    private final String value;
-
-    InterfaceParametrType(String v) {
-        value = v;
-    }
+    SIO,
+    VLAN,
+    SYN;
 
     public String value() {
-        return value;
+        return name();
     }
 
     public static InterfaceParametrType fromValue(String v) {
-        for (InterfaceParametrType c: InterfaceParametrType.values()) {
-            if (c.value.equals(v)) {
-                return c;
-            }
-        }
-        throw new IllegalArgumentException(v);
+        return valueOf(v);
     }
 
 }

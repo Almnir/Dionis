@@ -58,6 +58,8 @@ import dionis.actions.filters.UnblockFilterItemAction;
 import dionis.beans.FiltersBean;
 import dionis.beans.IFilterItem;
 import dionis.beans.InterfaceBean;
+import dionis.beans.SIOBean;
+import dionis.beans.SYNBean;
 import dionis.beans.TunnelBean;
 import dionis.dialogs.ARPElementDialog;
 import dionis.dialogs.AddressTableDialog;
@@ -338,8 +340,8 @@ public class DionisView extends ViewPart {
 		table.setContentProvider(ArrayContentProvider.getInstance());
 		table.setLabelProvider(new PortLabelProvider());
 		// == тест
-		SIO sio = new SIO();
-		SIO sio2 = new SIO();
+		SIOBean sio = new SIOBean();
+		SIOBean sio2 = new SIOBean();
 		sio.setBits((byte) 8);
 		sio.setControl(PortsSIOControlType.RTS_CTS);
 		sio.setDirection(PortsSIODirectionType.DYNAMIC);
@@ -347,12 +349,12 @@ public class DionisView extends ViewPart {
 		sio.setParity(PortsSIOParityType.NONE);
 		sio.setSpeed((float) 75.0);
 		sio.setStopBit((float) 1.5);
-		SYN syn = new SYN();
+		SYNBean syn = new SYNBean();
 		syn.setNumber((byte) 0);
-		java.util.List<SIO> sioList = new ArrayList<>();
+		java.util.List<SIOBean> sioList = new ArrayList<>();
 		sioList.add(sio);
 		sioList.add(sio2);
-		java.util.List<SYN> synList = new ArrayList<>();
+		java.util.List<SYNBean> synList = new ArrayList<>();
 		synList.add(syn);
 		PortsModel.getInstance().setAllPorts(sioList, synList);
 		// == тест
@@ -1262,7 +1264,7 @@ public class DionisView extends ViewPart {
 		interfaceTable.setLinesVisible(true);
 
 		TableColumn tblclmnNewColumn = new TableColumn(interfaceTable, SWT.NONE);
-		tblclmnNewColumn.setWidth(10);
+		tblclmnNewColumn.setWidth(50);
 		tblclmnNewColumn.setText("#");
 
 		TableColumn tblclmnNewColumn_1 = new TableColumn(interfaceTable,
@@ -1348,13 +1350,11 @@ public class DionisView extends ViewPart {
 				IStructuredSelection sel = (IStructuredSelection) interfaceTableViewer
 						.getSelection();
 				if (!sel.isEmpty()) {
-					InterfaceBean bean = (InterfaceBean) sel
-							.getFirstElement();
+					InterfaceBean bean = (InterfaceBean) sel.getFirstElement();
 					int index = InterfaceModel.getInstance().getData()
 							.indexOf(bean);
 					// создание диалога
-					InterfaceDialog dialog = new InterfaceDialog(shell,
-							bean);
+					InterfaceDialog dialog = new InterfaceDialog(shell, bean);
 					if (dialog.open() == Window.OK) {
 						InterfaceModel.getInstance().getData()
 								.set(index, dialog.getInterfacesBean());
@@ -1378,8 +1378,7 @@ public class DionisView extends ViewPart {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				// создание диалога
-				InterfaceDialog dialog = new InterfaceDialog(shell,
-						null);
+				InterfaceDialog dialog = new InterfaceDialog(shell, null);
 				if (dialog.open() == Window.OK) {
 					InterfaceModel.getInstance().getData()
 							.add(dialog.getInterfacesBean());
@@ -1405,8 +1404,7 @@ public class DionisView extends ViewPart {
 						.getSelection();
 				if (!sel.isEmpty()) {
 					// выбранный элемент таблицы как бин
-					InterfaceBean ibean = (InterfaceBean) sel
-							.getFirstElement();
+					InterfaceBean ibean = (InterfaceBean) sel.getFirstElement();
 					InterfaceModel.getInstance().getData().remove(ibean);
 					Display.getDefault().asyncExec(new Runnable() {
 						@Override

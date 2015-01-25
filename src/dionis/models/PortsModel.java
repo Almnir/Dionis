@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import dionis.xml.SIO;
-import dionis.xml.SYN;
+import dionis.beans.SIOBean;
+import dionis.beans.SYNBean;
 
 /**
  * Модель, описывающая совокупность портов для табличного отображения
@@ -16,8 +16,8 @@ import dionis.xml.SYN;
 public class PortsModel {
 
 	private List<Object> allPorts;
-	private List<SIO> sios;
-	private List<SYN> syns;
+	private List<SIOBean> sios;
+	private List<SYNBean> syns;
 
 	private static PortsModel instance = null;
 
@@ -32,7 +32,8 @@ public class PortsModel {
 		this.allPorts = Collections.synchronizedList(new ArrayList<Object>());
 	}
 
-	public synchronized void setAllPorts(List<SIO> sioList, List<SYN> synList) {
+	public synchronized void setAllPorts(List<SIOBean> sioList,
+			List<SYNBean> synList) {
 		this.sios = sioList;
 		this.syns = synList;
 		this.allPorts.addAll(sioList);
@@ -43,22 +44,22 @@ public class PortsModel {
 		return allPorts.toArray();
 	}
 
-	public synchronized List<SIO> getSios() {
+	public synchronized List<SIOBean> getSios() {
 		return sios;
 	}
 
-	public synchronized void setSios(List<SIO> sios) {
+	public synchronized void setSios(List<SIOBean> sios) {
 		this.sios = sios;
 		this.allPorts.clear();
 		this.allPorts.addAll(sios);
 		this.allPorts.addAll(this.syns);
 	}
 
-	public synchronized List<SYN> getSyns() {
+	public synchronized List<SYNBean> getSyns() {
 		return syns;
 	}
 
-	public synchronized void setSyns(List<SYN> syns) {
+	public synchronized void setSyns(List<SYNBean> syns) {
 		this.syns = syns;
 		this.allPorts.clear();
 		this.allPorts.addAll(this.sios);

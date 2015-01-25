@@ -338,8 +338,6 @@
                     <jaxb:typesafeEnumMember value="100Half" name="X_100_HALF"/>
                     <jaxb:typesafeEnumMember value="10Full" name="X_10_FULL"/>
                     <jaxb:typesafeEnumMember value="10Half" name="X_10_HALF"/>
-                    <jaxb:typesafeEnumMember value="Call" name="CALL"/>
-                    <jaxb:typesafeEnumMember value="Receive" name="RECEIVE"/>
                 </jaxb:typesafeEnumClass>
             </xs:appinfo>
         </xs:annotation>
@@ -349,7 +347,11 @@
             <xs:enumeration value="100Half"/>
             <xs:enumeration value="10Full"/>
             <xs:enumeration value="10Half"/>
+        </xs:restriction>
+    </xs:simpleType>
 
+    <xs:simpleType name="InterfaceParametrsSlipMode">
+        <xs:restriction base="xs:string">
             <xs:enumeration value="Call"/>
             <xs:enumeration value="Receive"/>
         </xs:restriction>
@@ -360,9 +362,6 @@
             <xs:enumeration value="SIO"/>
             <xs:enumeration value="VLAN"/>
             <xs:enumeration value="SYN"/>
-
-            <xs:enumeration value="Call"/>
-            <xs:enumeration value="Receive"/>
         </xs:restriction>
     </xs:simpleType>
 
